@@ -1,6 +1,6 @@
 # KingBlap Kodi Repository
 
-A Kodi add-on repository generated from the add-on folders in the supplied Kodi 22 backup snapshot dated October 4, 2026.
+A Kodi add-on repository assembled from the supplied Kodi 22 backup snapshot dated October 4, 2026, with GIPTV 2.8.0 included in place of XStream Player.
 
 ## Install in Kodi
 
@@ -21,7 +21,7 @@ Kodi catalog: https://kingblap.github.io/repo/zips/addons.xml
 
 ## Contents
 
-This repository contains 114 add-on packages from the supplied addons folder, plus this repository add-on. It does not include Kodi profile databases, add-on account data, settings, thumbnails, or a build wizard/archive. Individual packages retain their own add-on metadata and licensing information.
+This repository contains 113 add-on packages from the supplied addons folder and GIPTV 2.8.0 from the [Diggz Kodi 22 add-on catalog](https://github.com/nebulous42069/22/tree/master/22/zips/plugin.video.giptv), plus this repository add-on. XStream Player was removed. It does not include Kodi profile databases, add-on account data, settings, thumbnails, or a build wizard/archive. Individual packages retain their own add-on metadata and licensing information.
 
 - context.otaku — 1.0.35
 - context.prism — 4.0.2
@@ -39,6 +39,7 @@ This repository contains 114 add-on packages from the supplied addons folder, pl
 - plugin.video.forge — 0.2.13
 - plugin.video.gears — 2.4.3
 - plugin.video.genocide — 6.9.9
+- plugin.video.giptv — 2.8.0
 - plugin.video.homelander — 1.3.1
 - plugin.video.jet_guide — 0.0.21
 - plugin.video.loopguide — 3.8.2
@@ -49,7 +50,6 @@ This repository contains 114 add-on packages from the supplied addons folder, pl
 - plugin.video.tatv2 — 1.0.3
 - plugin.video.thechains — 6.0.1
 - plugin.video.watchnixtoons2 — 0.14.23
-- plugin.video.xstream-player — 2.1.5
 - plugin.video.zoro — 1.1.9
 - program.easyplayerswitch — 1.1.0
 - program.optiklean — 2.0.7
