@@ -5,8 +5,8 @@ A Kodi add-on repository generated from the add-on folders in the supplied Kodi 
 ## Install in Kodi
 
 1. In Kodi, open **Settings → System → Add-ons** and enable **Unknown sources** if needed.
-2. Download the repository installer to the Kodi device.
-3. Choose **Add-ons → Install from zip file** and select repository.kingblap-1.0.0.zip.
+2. In Kodi, open **File Manager → Add Source**, enter https://kingblap.github.io/, and name the source **KingBlap Kodi Repository**.
+3. Choose **Add-ons → Install from zip file → KingBlap Kodi Repository** and select repository.kingblap-1.0.0.zip.
 4. Choose **Install from repository → KingBlap Kodi Repository** to browse the add-ons.
 
 Repository URL: https://kingblap.github.io/  
