@@ -9,6 +9,12 @@ A Kodi add-on repository generated from the add-on folders in the supplied Kodi 
 3. Choose **Add-ons → Install from zip file → KingBlap Kodi Repository** and select repository.kingblap-1.0.0.zip.
 4. Choose **Install from repository → KingBlap Kodi Repository** to browse the add-ons.
 
+## Android phones, Android TV, and Fire TV Stick
+
+The repository installer and HTTPS catalog work in Kodi on Android, including phones, Android TV devices, and Fire TV Stick devices that can run Kodi. Use the same installation steps above; a touch screen or TV remote can navigate Kodi's menus. No Android APK or local file download is needed for the repository add-on.
+
+This repository was assembled from a Windows Kodi 22 snapshot. Its four native binary add-ons (`inputstream.adaptive`, `inputstream.ffmpegdirect`, `inputstream.rtmp`, and `pvr.iptvsimple`) are tagged `windows-x86_64`, so Kodi filters those Windows packages out on Android. Leave Kodi's official add-on repository enabled: it provides Android ARM builds of those binary dependencies where available. The other add-ons retain their original Kodi compatibility metadata, so individual add-on availability and service behavior can still vary by device and Kodi version.
+
 Repository URL: https://kingblap.github.io/  
 Installer: https://kingblap.github.io/repository.kingblap-1.0.0.zip  
 Kodi catalog: https://kingblap.github.io/repo/zips/addons.xml
