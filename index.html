@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KingBlap Kodi Repository</title>
+  <style>
+    :root { color-scheme: dark; --bg:#081326; --panel:#111f36; --accent:#49d9e6; --muted:#b9c8dc; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:radial-gradient(circle at 82% 15%,#164c67 0,transparent 35%),linear-gradient(135deg,#081326,#0c2138); color:#f3f7ff; font:16px/1.6 system-ui,Segoe UI,Arial,sans-serif; }
+    main { max-width:920px; margin:0 auto; padding:64px 24px 72px; }
+    .eyebrow { color:var(--accent); text-transform:uppercase; letter-spacing:.16em; font-size:.8rem; font-weight:700; }
+    h1 { font-size:clamp(2.4rem,7vw,4.5rem); line-height:1.05; margin:.35em 0; }
+    .lead { max-width:680px; color:var(--muted); font-size:1.15rem; }
+    .card { margin:32px 0; padding:28px; border:1px solid #2d4761; border-radius:20px; background:#0d1b2ee8; box-shadow:0 20px 60px #02091666; }
+    a.button { display:inline-block; background:var(--accent); color:#061522; padding:13px 20px; border-radius:10px; font-weight:800; text-decoration:none; }
+    a { color:#8cecf0; }
+    ol { padding-left:1.3em; }
+    li { padding:.35em 0; }
+    code { color:#a5eff4; background:#13273e; padding:.15em .35em; border-radius:5px; }
+    footer { margin-top:36px; color:#93a7bf; font-size:.9rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="eyebrow">Kodi 22 • Add-on repository</div>
+    <h1>KingBlap Kodi Repository</h1>
+    <p class="lead">Browse and install add-ons packaged from the October 4, 2026 Kodi snapshot.</p>
+    <section class="card">
+      <h2>Install the repository in Kodi</h2>
+      <ol>
+        <li>Download the repository installer ZIP to your Kodi device.</li>
+        <li>In Kodi, open <strong>Add-ons → Install from zip file</strong> and select the downloaded ZIP.</li>
+        <li>Open <strong>Install from repository → KingBlap Kodi Repository</strong>.</li>
+      </ol>
+      <p><a class="button" href="/repository.kingblap-1.0.0.zip">Download repository installer</a></p>
+      <p>Repository feed: <a href="/repo/zips/addons.xml">addons.xml</a> · <a href="/README.md">setup details</a></p>
+    </section>
+    <footer>Repository source files are published on GitHub. Add-ons retain their own metadata; compatibility and service availability vary by add-on.</footer>
+  </main>
+</body>
+</html>

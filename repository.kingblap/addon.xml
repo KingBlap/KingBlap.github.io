@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="repository.kingblap" name="KingBlap Kodi Repository" version="1.0.0" provider-name="KingBlap">
+    <extension point="xbmc.addon.repository" name="KingBlap Kodi Repository">
+        <dir>
+            <info compressed="false">https://kingblap.github.io/repo/zips/addons.xml</info>
+            <checksum>https://kingblap.github.io/repo/zips/addons.xml.md5</checksum>
+            <datadir zip="true">https://kingblap.github.io/repo/zips/</datadir>
+        </dir>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary>Install add-ons from the KingBlap Kodi repository.</summary>
+        <description>A Kodi 22 add-on repository built from the supplied Kodi add-ons snapshot.</description>
+        <disclaimer>Third-party add-ons retain their own metadata and licensing. Availability and compatibility depend on each add-on.</disclaimer>
+        <platform>all</platform>
+        <assets>
+            <icon>icon.png</icon>
+            <fanart>fanart.jpg</fanart>
+        </assets>
+    </extension>
+</addon>

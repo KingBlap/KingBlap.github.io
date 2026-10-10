@@ -1,0 +1,1040 @@
+{
+  "generated_from": "Kodi backup snapshot 2026-10-04",
+  "addons": [
+    {
+      "id": "context.otaku",
+      "version": "1.0.35",
+      "name": "Otaku - Global Context Menu Items",
+      "provider": "TeamOtaku",
+      "license": "GPL-3.0",
+      "zip": "repo/zips/context.otaku/context.otaku-1.0.35.zip",
+      "bytes": 6623194
+    },
+    {
+      "id": "context.prism",
+      "version": "4.0.2",
+      "name": "Prism - Global Context Menu Items",
+      "provider": "Nixgates",
+      "license": "GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007",
+      "zip": "repo/zips/context.prism/context.prism-4.0.2.zip",
+      "bytes": 46262
+    },
+    {
+      "id": "context.seren",
+      "version": "3.0.2",
+      "name": "Seren - Global Context Menu Items",
+      "provider": "Nixgates",
+      "license": "GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007",
+      "zip": "repo/zips/context.seren/context.seren-3.0.2.zip",
+      "bytes": 89190
+    },
+    {
+      "id": "inputstream.adaptive",
+      "version": "22.3.22",
+      "name": "InputStream Adaptive",
+      "provider": "peak3d, Team Kodi",
+      "license": "GPL-2.0-or-later",
+      "zip": "repo/zips/inputstream.adaptive/inputstream.adaptive-22.3.22.zip",
+      "bytes": 1326528
+    },
+    {
+      "id": "inputstream.ffmpegdirect",
+      "version": "22.2.7",
+      "name": "Inputstream FFmpeg Direct",
+      "provider": "Ross Nicholson",
+      "license": "GPL-2.0-or-later",
+      "zip": "repo/zips/inputstream.ffmpegdirect/inputstream.ffmpegdirect-22.2.7.zip",
+      "bytes": 9817543
+    },
+    {
+      "id": "inputstream.rtmp",
+      "version": "22.1.3",
+      "name": "RTMP Input",
+      "provider": "spiff",
+      "license": "GPL-2.0-or-later",
+      "zip": "repo/zips/inputstream.rtmp/inputstream.rtmp-22.1.3.zip",
+      "bytes": 1825005
+    },
+    {
+      "id": "metadata.generic.albums",
+      "version": "1.0.20",
+      "name": "Generic Album Scraper",
+      "provider": "Team Kodi",
+      "license": "GPL-2.0-only",
+      "zip": "repo/zips/metadata.generic.albums/metadata.generic.albums-1.0.20.zip",
+      "bytes": 147409
+    },
+    {
+      "id": "metadata.generic.artists",
+      "version": "1.0.20",
+      "name": "Generic Artist Scraper",
+      "provider": "Team Kodi",
+      "license": "GPL-2.0-only",
+      "zip": "repo/zips/metadata.generic.artists/metadata.generic.artists-1.0.20.zip",
+      "bytes": 138076
+    },
+    {
+      "id": "metadata.tvshows.themoviedb.org.python",
+      "version": "2.0.9",
+      "name": "TMDb TV Shows",
+      "provider": "Team Kodi",
+      "license": "GPL-3.0-or-later",
+      "zip": "repo/zips/metadata.tvshows.themoviedb.org.python/metadata.tvshows.themoviedb.org.python-2.0.9.zip",
+      "bytes": 158362
+    },
+    {
+      "id": "One.repo",
+      "version": "1.16",
+      "name": "[B]Repositorio: [COLOR aquamarine]ONE[/COLOR]PLAY[/B]",
+      "provider": "Team ONEPLAY",
+      "license": "",
+      "zip": "repo/zips/One.repo/One.repo-1.16.zip",
+      "bytes": 1535548
+    },
+    {
+      "id": "plugin.video.absolution",
+      "version": "4.4.1",
+      "name": "[COLORffc9a227]Absolution[/COLOR]",
+      "provider": "Chains",
+      "license": "GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007",
+      "zip": "repo/zips/plugin.video.absolution/plugin.video.absolution-4.4.1.zip",
+      "bytes": 1235683
+    },
+    {
+      "id": "plugin.video.cosmos",
+      "version": "4.3.26",
+      "name": "C.O.S.M.O.S",
+      "provider": "Zeus768 and Enigma",
+      "license": "GPL-2.0-only",
+      "zip": "repo/zips/plugin.video.cosmos/plugin.video.cosmos-4.3.26.zip",
+      "bytes": 19523122
+    },
+    {
+      "id": "plugin.video.dailymotion_com",
+      "version": "2.4.5",
+      "name": "DailyMotion.com",
+      "provider": "gujal",
+      "license": "GPL-2.0-or-later",
+      "zip": "repo/zips/plugin.video.dailymotion_com/plugin.video.dailymotion_com-2.4.5.zip",
+      "bytes": 273132
+    },
+    {
+      "id": "plugin.video.forge",
+      "version": "0.2.13",
+      "name": "Forge",
+      "provider": "Forge Project",
+      "license": "GPL-3.0-or-later",
+      "zip": "repo/zips/plugin.video.forge/plugin.video.forge-0.2.13.zip",
+      "bytes": 9963227
+    },
+    {
+      "id": "plugin.video.gears",
+      "version": "2.4.3",
+      "name": "[COLORghostwhite]The Gears[/COLOR]",
+      "provider": "chains",
+      "license": "",
+      "zip": "repo/zips/plugin.video.gears/plugin.video.gears-2.4.3.zip",
+      "bytes": 5874595
+    },
+    {
+      "id": "plugin.video.genocide",
+      "version": "6.9.9",
+      "name": "Genocide",
+      "provider": "genocide",
+      "license": "GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007",
+      "zip": "repo/zips/plugin.video.genocide/plugin.video.genocide-6.9.9.zip",
+      "bytes": 7675634
+    },
+    {
+      "id": "plugin.video.homelander",
+      "version": "1.3.1",
+      "name": "[COLOR red]Homelander[/COLOR]",
+      "provider": "Ghost",
+      "license": "GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007",
+      "zip": "repo/zips/plugin.video.homelander/plugin.video.homelander-1.3.1.zip",
+      "bytes": 1042997
+    },
+    {
+      "id": "plugin.video.jet_guide",
+      "version": "0.0.21",
+      "name": "TV Guide - Beta",
+      "provider": "JetJet",
+      "license": "",
+      "zip": "repo/zips/plugin.video.jet_guide/plugin.video.jet_guide-0.0.21.zip",
+      "bytes": 10031060
+    },
+    {
+      "id": "plugin.video.loopguide",
+      "version": "3.8.2",
+      "name": "Loop Guide",
+      "provider": "Munkee",
+      "license": "GPL-3.0",
+      "zip": "repo/zips/plugin.video.loopguide/plugin.video.loopguide-3.8.2.zip",
+      "bytes": 3620444
+    },
+    {
+      "id": "plugin.video.looptv",
+      "version": "26+matrix.2",
+      "name": "Loop TV",
+      "provider": "Munkee - RACC",
+      "license": "GPL-3.0",
+      "zip": "repo/zips/plugin.video.looptv/plugin.video.looptv-26+matrix.2.zip",
+      "bytes": 1255497
+    },
+    {
+      "id": "plugin.video.madtitansports",
+      "version": "2.0.44",
+      "name": "Mad Titan [COLORyellow]Sports[/COLOR] V2.0",
+      "provider": "Titans Team",
+      "license": "GPL-2.0-or-later",
+      "zip": "repo/zips/plugin.video.madtitansports/plugin.video.madtitansports-2.0.44.zip",
+      "bytes": 5756986
+    },
+    {
+      "id": "plugin.video.otaku",
+      "version": "5.3.3",
+      "name": "Otaku",
+      "provider": "TeamOtaku",
+      "license": "GPL-3.0",
+      "zip": "repo/zips/plugin.video.otaku/plugin.video.otaku-5.3.3.zip",
+      "bytes": 2277247
+    },
+    {
+      "id": "plugin.video.prism",
+      "version": "5.0.56",
+      "name": "Prism",
+      "provider": "Nixgates",
+      "license": "GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007",
+      "zip": "repo/zips/plugin.video.prism/plugin.video.prism-5.0.56.zip",
+      "bytes": 8589052
+    },
+    {
+      "id": "plugin.video.tatv2",
+      "version": "1.0.3",
+      "name": "Toonami Aftermath TV",
+      "provider": "Lolage",
+      "license": "",
+      "zip": "repo/zips/plugin.video.tatv2/plugin.video.tatv2-1.0.3.zip",
+      "bytes": 268553
+    },
+    {
+      "id": "plugin.video.thechains",
+      "version": "6.0.1",
+      "name": "The Chains",
+      "provider": "Chains",
+      "license": "",
+      "zip": "repo/zips/plugin.video.thechains/plugin.video.thechains-6.0.1.zip",
+      "bytes": 5599298
+    },
+    {
+      "id": "plugin.video.watchnixtoons2",
+      "version": "0.14.23",
+      "name": "WatchNixtoons2",
+      "provider": "WNT2",
+      "license": "",
+      "zip": "repo/zips/plugin.video.watchnixtoons2/plugin.video.watchnixtoons2-0.14.23.zip",
+      "bytes": 502887
+    },
+    {
+      "id": "plugin.video.xstream-player",
+      "version": "2.1.5",
+      "name": "XStream Player",
+      "provider": "XStream Player",
+      "license": "MIT",
+      "zip": "repo/zips/plugin.video.xstream-player/plugin.video.xstream-player-2.1.5.zip",
+      "bytes": 885394
+    },
+    {
+      "id": "plugin.video.zoro",
+      "version": "1.1.9",
+      "name": "Zoro",
+      "provider": "Ghost",
+      "license": "GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007",
+      "zip": "repo/zips/plugin.video.zoro/plugin.video.zoro-1.1.9.zip",
+      "bytes": 8339362
+    },
+    {
+      "id": "program.easyplayerswitch",
+      "version": "1.1.0",
+      "name": "Easy Player Switch",
+      "provider": "DigiTalking",
+      "license": "MIT",
+      "zip": "repo/zips/program.easyplayerswitch/program.easyplayerswitch-1.1.0.zip",
+      "bytes": 1206968
+    },
+    {
+      "id": "program.optiklean",
+      "version": "2.0.7",
+      "name": "OptiKlean",
+      "provider": "DigiTalking",
+      "license": "MIT",
+      "zip": "repo/zips/program.optiklean/program.optiklean-2.0.7.zip",
+      "bytes": 1161366
+    },
+    {
+      "id": "pvr.iptvsimple",
+      "version": "22.6.4",
+      "name": "IPTV Simple Client",
+      "provider": "nightik and Ross Nicholson",
+      "license": "GPL-2.0-or-later",
+      "zip": "repo/zips/pvr.iptvsimple/pvr.iptvsimple-22.6.4.zip",
+      "bytes": 1157919
+    },
+    {
+      "id": "repository.709",
+      "version": "1.0.2",
+      "name": " The[COLOR FF0C5EB4][B]7o9[/B][/COLOR]Repo",
+      "provider": "Zaxxon709",
+      "license": "",
+      "zip": "repo/zips/repository.709/repository.709-1.0.2.zip",
+      "bytes": 707104
+    },
+    {
+      "id": "repository.aliunde",
+      "version": "1.9.5",
+      "name": "[COLOR aqua]Aliunde Repository[/COLOR]",
+      "provider": "Aliunde",
+      "license": "",
+      "zip": "repo/zips/repository.aliunde/repository.aliunde-1.9.5.zip",
+      "bytes": 413456
+    },
+    {
+      "id": "repository.autowidget",
+      "version": "1.1",
+      "name": "AutoWidget Repository",
+      "provider": "drinfernoo",
+      "license": "",
+      "zip": "repo/zips/repository.autowidget/repository.autowidget-1.1.zip",
+      "bytes": 43166
+    },
+    {
+      "id": "repository.bugatsinho",
+      "version": "2.7",
+      "name": " Bugatsinho repository",
+      "provider": "Bugatsinho",
+      "license": "",
+      "zip": "repo/zips/repository.bugatsinho/repository.bugatsinho-2.7.zip",
+      "bytes": 424694
+    },
+    {
+      "id": "repository.butter",
+      "version": "2.2.0",
+      "name": "Butter Fingers Repo",
+      "provider": "J1",
+      "license": "",
+      "zip": "repo/zips/repository.butter/repository.butter-2.2.0.zip",
+      "bytes": 1181233
+    },
+    {
+      "id": "repository.chainsrepo",
+      "version": "0.0.15",
+      "name": "Chains Repository",
+      "provider": "Chains",
+      "license": "GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007",
+      "zip": "repo/zips/repository.chainsrepo/repository.chainsrepo-0.0.15.zip",
+      "bytes": 1044544
+    },
+    {
+      "id": "repository.cMaNWizard",
+      "version": "3.2",
+      "name": "cMaN's Wizard Repository",
+      "provider": "cMaN",
+      "license": "",
+      "zip": "repo/zips/repository.cMaNWizard/repository.cMaNWizard-3.2.zip",
+      "bytes": 943523
+    },
+    {
+      "id": "repository.cywteow",
+      "version": "1.1.1",
+      "name": "cywteow Add-ons",
+      "provider": "cywteow",
+      "license": "",
+      "zip": "repo/zips/repository.cywteow/repository.cywteow-1.1.1.zip",
+      "bytes": 513
+    },
+    {
+      "id": "repository.diggz",
+      "version": "28",
+      "name": "Diggz Repository",
+      "provider": "Diggz",
+      "license": "",
+      "zip": "repo/zips/repository.diggz/repository.diggz-28.zip",
+      "bytes": 70972
+    },
+    {
+      "id": "repository.doomzday",
+      "version": "1.1.0",
+      "name": "Doomzday Repo",
+      "provider": "DD Team",
+      "license": "",
+      "zip": "repo/zips/repository.doomzday/repository.doomzday-1.1.0.zip",
+      "bytes": 237241
+    },
+    {
+      "id": "repository.enigmawiz",
+      "version": "2.1.6",
+      "name": "[COLOR cyan]Enigma[/COLOR] Repo",
+      "provider": "Enigma Repo",
+      "license": "",
+      "zip": "repo/zips/repository.enigmawiz/repository.enigmawiz-2.1.6.zip",
+      "bytes": 3818518
+    },
+    {
+      "id": "repository.fenskeleton",
+      "version": "1.0.2",
+      "name": "FenSkeleton Repository",
+      "provider": "FenSkeleton",
+      "license": "",
+      "zip": "repo/zips/repository.fenskeleton/repository.fenskeleton-1.0.2.zip",
+      "bytes": 505
+    },
+    {
+      "id": "repository.forge",
+      "version": "0.1.0",
+      "name": "Forge Repository",
+      "provider": "Forge Project",
+      "license": "GPL-3.0-or-later",
+      "zip": "repo/zips/repository.forge/repository.forge-0.1.0.zip",
+      "bytes": 432147
+    },
+    {
+      "id": "repository.funstersplace",
+      "version": "0.3",
+      "name": "funstersplace Repository",
+      "provider": "funstersplace",
+      "license": "",
+      "zip": "repo/zips/repository.funstersplace/repository.funstersplace-0.3.zip",
+      "bytes": 1004454
+    },
+    {
+      "id": "repository.gaia.full",
+      "version": "8.0.0",
+      "name": "Gaia Repository (Full)",
+      "provider": "Gaia",
+      "license": "GPL 3.0",
+      "zip": "repo/zips/repository.gaia.full/repository.gaia.full-8.0.0.zip",
+      "bytes": 583228
+    },
+    {
+      "id": "repository.hooty",
+      "version": "1.0",
+      "name": "Hooty's Repository",
+      "provider": "Goldenfreddy0703",
+      "license": "",
+      "zip": "repo/zips/repository.hooty/repository.hooty-1.0.zip",
+      "bytes": 733868
+    },
+    {
+      "id": "repository.jewrepo",
+      "version": "1.6.0",
+      "name": "[COLOR purple]JewRepo[/COLOR]",
+      "provider": "JewBMX",
+      "license": "",
+      "zip": "repo/zips/repository.jewrepo/repository.jewrepo-1.6.0.zip",
+      "bytes": 89983
+    },
+    {
+      "id": "repository.jmooremcc",
+      "version": "1.1.0",
+      "name": "jmooremcc Addons",
+      "provider": "jmooremcc",
+      "license": "",
+      "zip": "repo/zips/repository.jmooremcc/repository.jmooremcc-1.1.0.zip",
+      "bytes": 50944
+    },
+    {
+      "id": "repository.kodifitzwell",
+      "version": "0.0.1",
+      "name": "kodifitzwell repository",
+      "provider": "kodifitzwell",
+      "license": "",
+      "zip": "repo/zips/repository.kodifitzwell/repository.kodifitzwell-0.0.1.zip",
+      "bytes": 13214
+    },
+    {
+      "id": "repository.loop",
+      "version": "3.0.4",
+      "name": "[COLORlime]Loop[/COLOR] Repository",
+      "provider": "The Loop",
+      "license": "",
+      "zip": "repo/zips/repository.loop/repository.loop-3.0.4.zip",
+      "bytes": 429397
+    },
+    {
+      "id": "repository.madforit",
+      "version": "1.6",
+      "name": "[COLORlime][I]Mad For It Repo[/I][/COLOR]",
+      "provider": "",
+      "license": "",
+      "zip": "repo/zips/repository.madforit/repository.madforit-1.6.zip",
+      "bytes": 203514
+    },
+    {
+      "id": "repository.Magnetic",
+      "version": "1.1.0b",
+      "name": "Magnetic Repo",
+      "provider": "1-cool-guy",
+      "license": "",
+      "zip": "repo/zips/repository.Magnetic/repository.Magnetic-1.1.0b.zip",
+      "bytes": 408691
+    },
+    {
+      "id": "repository.mtr81",
+      "version": "1.0",
+      "name": "mtr81",
+      "provider": "lg",
+      "license": "",
+      "zip": "repo/zips/repository.mtr81/repository.mtr81-1.0.zip",
+      "bytes": 492
+    },
+    {
+      "id": "repository.nixgates",
+      "version": "2.2.0",
+      "name": "Nixgates Repo",
+      "provider": "Nixgates",
+      "license": "",
+      "zip": "repo/zips/repository.nixgates/repository.nixgates-2.2.0.zip",
+      "bytes": 6396
+    },
+    {
+      "id": "repository.octopus",
+      "version": "0.7.0",
+      "name": "[COLOR aqua]Octopus Repository[/COLOR]",
+      "provider": "Twiglet",
+      "license": "",
+      "zip": "repo/zips/repository.octopus/repository.octopus-0.7.0.zip",
+      "bytes": 974633
+    },
+    {
+      "id": "repository.peno64",
+      "version": "1.5",
+      "name": "peno64 repository",
+      "provider": "peno64",
+      "license": "",
+      "zip": "repo/zips/repository.peno64/repository.peno64-1.5.zip",
+      "bytes": 305544
+    },
+    {
+      "id": "repository.prism",
+      "version": "1.0",
+      "name": "Prism's Repository",
+      "provider": "Goldenfreddy0703",
+      "license": "",
+      "zip": "repo/zips/repository.prism/repository.prism-1.0.zip",
+      "bytes": 8994
+    },
+    {
+      "id": "repository.redwizard",
+      "version": "1.2.2",
+      "name": "[COLOR red]The Red Repo[/COLOR]",
+      "provider": "[COLOR red]The Red Wizard[/COLOR]",
+      "license": "GNU GENERAL PUBLIC LICENSE Version 3",
+      "zip": "repo/zips/repository.redwizard/repository.redwizard-1.2.2.zip",
+      "bytes": 72583
+    },
+    {
+      "id": "repository.swagotaku",
+      "version": "0.0.2",
+      "name": "SwagOtaku Repo",
+      "provider": "SwagOtaku",
+      "license": "",
+      "zip": "repo/zips/repository.swagotaku/repository.swagotaku-0.0.2.zip",
+      "bytes": 245258
+    },
+    {
+      "id": "repository.the666mafia",
+      "version": "1.0",
+      "name": "[COLOR red]the666Mafia[/COLOR]",
+      "provider": "the666Mafia",
+      "license": "",
+      "zip": "repo/zips/repository.the666mafia/repository.the666mafia-1.0.zip",
+      "bytes": 497640
+    },
+    {
+      "id": "repository.thecrew",
+      "version": "0.3.8",
+      "name": "[COLOR orchid]THE CREW REPO[/COLOR]",
+      "provider": "The Crew",
+      "license": "GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007",
+      "zip": "repo/zips/repository.thecrew/repository.thecrew-0.3.8.zip",
+      "bytes": 2939529
+    },
+    {
+      "id": "repository.thelab",
+      "version": "25.3.27",
+      "name": "TheLab Repository",
+      "provider": "[COLORpurple]• [COLORorchid]Tech [COLORdarkorchid]E [COLORplum]Coyote [COLORpurple]•[/COLOR]",
+      "license": "",
+      "zip": "repo/zips/repository.thelab/repository.thelab-25.3.27.zip",
+      "bytes": 2714540
+    },
+    {
+      "id": "repository.vanilla21",
+      "version": "1.0.0",
+      "name": "Titan Vanilla Repository",
+      "provider": "malvinas2",
+      "license": "",
+      "zip": "repo/zips/repository.vanilla21/repository.vanilla21-1.0.0.zip",
+      "bytes": 167184
+    },
+    {
+      "id": "repository.zachmorris",
+      "version": "1.0.4",
+      "name": "Zach Morris Add-ons",
+      "provider": "zachmorris",
+      "license": "",
+      "zip": "repo/zips/repository.zachmorris/repository.zachmorris-1.0.4.zip",
+      "bytes": 194961
+    },
+    {
+      "id": "resource.uisounds.appletv",
+      "version": "0.0.2",
+      "name": "AppleTv UI Sounds",
+      "provider": "Fastcolors",
+      "license": "",
+      "zip": "repo/zips/resource.uisounds.appletv/resource.uisounds.appletv-0.0.2.zip",
+      "bytes": 308473
+    },
+    {
+      "id": "script.absolution.artwork",
+      "version": "4.1.7",
+      "name": "[COLORffc9a227]Absolution Artwork[/COLOR]",
+      "provider": "absolution",
+      "license": "",
+      "zip": "repo/zips/script.absolution.artwork/script.absolution.artwork-4.1.7.zip",
+      "bytes": 5989223
+    },
+    {
+      "id": "script.ezmaintenanceplus",
+      "version": "2026.04.05.0",
+      "name": "EZ Maintenance+",
+      "provider": "aenema, peno",
+      "license": "The MIT License",
+      "zip": "repo/zips/script.ezmaintenanceplus/script.ezmaintenanceplus-2026.04.05.0.zip",
+      "bytes": 266469
+    },
+    {
+      "id": "script.favourites",
+      "version": "8.1.2",
+      "name": "Favourites script",
+      "provider": "ronie, `Black",
+      "license": "GPL-2.0-only",
+      "zip": "repo/zips/script.favourites/script.favourites-8.1.2.zip",
+      "bytes": 134949
+    },
+    {
+      "id": "script.homelander.artwork",
+      "version": "1.0.4",
+      "name": "[COLOR red]Homelander [/COLOR]Artwork",
+      "provider": "Homelander",
+      "license": "",
+      "zip": "repo/zips/script.homelander.artwork/script.homelander.artwork-1.0.4.zip",
+      "bytes": 4848129
+    },
+    {
+      "id": "script.image.resource.select",
+      "version": "3.0.2",
+      "name": "Image Resource Select Addon",
+      "provider": "ronie",
+      "license": "GPL-2.0-only",
+      "zip": "repo/zips/script.image.resource.select/script.image.resource.select-3.0.2.zip",
+      "bytes": 32386
+    },
+    {
+      "id": "script.module.absolutionscrapers",
+      "version": "4.0.5",
+      "name": "[COLORffc9a227]Absolution Scrapers Module[/COLOR]",
+      "provider": "Chains",
+      "license": "GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007",
+      "zip": "repo/zips/script.module.absolutionscrapers/script.module.absolutionscrapers-4.0.5.zip",
+      "bytes": 588809
+    },
+    {
+      "id": "script.module.acctmgr",
+      "version": "1.1.6",
+      "name": "[COLOR FF32D3FE][B]Account Manager[/B][/COLOR] [COLOR gold][B]Lite[/B][/COLOR]",
+      "provider": "Zaxxon709",
+      "license": "GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007",
+      "zip": "repo/zips/script.module.acctmgr/script.module.acctmgr-1.1.6.zip",
+      "bytes": 4927598
+    },
+    {
+      "id": "script.module.acctvwr",
+      "version": "1.1.4",
+      "name": "[COLOR FF32D3FE][B]Account[/B][/COLOR][COLOR gold] [B]Viewer[/B][/COLOR]",
+      "provider": "Zaxxon709",
+      "license": "",
+      "zip": "repo/zips/script.module.acctvwr/script.module.acctvwr-1.1.4.zip",
+      "bytes": 2311703
+    },
+    {
+      "id": "script.module.backports.zoneinfo",
+      "version": "0.2.1",
+      "name": "zoneinfo",
+      "provider": "pganssle",
+      "license": "Apache-2.0",
+      "zip": "repo/zips/script.module.backports.zoneinfo/script.module.backports.zoneinfo-0.2.1.zip",
+      "bytes": 24349
+    },
+    {
+      "id": "script.module.beautifulsoup4",
+      "version": "4.12.2",
+      "name": "beautifulsoup4",
+      "provider": "Leonard Richardson",
+      "license": "MIT",
+      "zip": "repo/zips/script.module.beautifulsoup4/script.module.beautifulsoup4-4.12.2.zip",
+      "bytes": 80703
+    },
+    {
+      "id": "script.module.certifi",
+      "version": "2023.5.7",
+      "name": "certifi",
+      "provider": "Certifi",
+      "license": "MPL-2.0",
+      "zip": "repo/zips/script.module.certifi/script.module.certifi-2023.5.7.zip",
+      "bytes": 162689
+    },
+    {
+      "id": "script.module.chainscrapers",
+      "version": "1.0.8",
+      "name": "Chains Scrapers",
+      "provider": "Chains",
+      "license": "GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007",
+      "zip": "repo/zips/script.module.chainscrapers/script.module.chainscrapers-1.0.8.zip",
+      "bytes": 952495
+    },
+    {
+      "id": "script.module.chardet",
+      "version": "5.1.0",
+      "name": "chardet",
+      "provider": "Character Encoding Detector",
+      "license": "LGPL-2.1",
+      "zip": "repo/zips/script.module.chardet/script.module.chardet-5.1.0.zip",
+      "bytes": 204491
+    },
+    {
+      "id": "script.module.cocoscrapers",
+      "version": "1.0.39",
+      "name": "CocoScrapers Module",
+      "provider": "CocoJoe",
+      "license": "GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007",
+      "zip": "repo/zips/script.module.cocoscrapers/script.module.cocoscrapers-1.0.39.zip",
+      "bytes": 341753
+    },
+    {
+      "id": "script.module.dateutil",
+      "version": "2.8.2",
+      "name": "python-dateutil",
+      "provider": "Paul Ganssle, Gustavo Niemeyer, Tomi Pieviläinen, Yaron de Leeuw",
+      "license": "Apache-2.0, BSD-3-Clause",
+      "zip": "repo/zips/script.module.dateutil/script.module.dateutil-2.8.2.zip",
+      "bytes": 332201
+    },
+    {
+      "id": "script.module.defusedxml",
+      "version": "0.6.0+matrix.1",
+      "name": "defusedxml",
+      "provider": "Christian Heimes",
+      "license": "PSF",
+      "zip": "repo/zips/script.module.defusedxml/script.module.defusedxml-0.6.0+matrix.1.zip",
+      "bytes": 32993
+    },
+    {
+      "id": "script.module.dropbox",
+      "version": "10.3.1+matrix.1",
+      "name": "Dropbox API",
+      "provider": "Dropbox",
+      "license": "Apache2",
+      "zip": "repo/zips/script.module.dropbox/script.module.dropbox-10.3.1+matrix.1.zip",
+      "bytes": 667538
+    },
+    {
+      "id": "script.module.fenomscrapers",
+      "version": "1.5.4",
+      "name": "FenomScrapers Module",
+      "provider": "Mr-Kodi",
+      "license": "GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007",
+      "zip": "repo/zips/script.module.fenomscrapers/script.module.fenomscrapers-1.5.4.zip",
+      "bytes": 439388
+    },
+    {
+      "id": "script.module.future",
+      "version": "1.0.0+matrix.1",
+      "name": "future",
+      "provider": "Ed Schofield",
+      "license": "MIT",
+      "zip": "repo/zips/script.module.future/script.module.future-1.0.0+matrix.1.zip",
+      "bytes": 497703
+    },
+    {
+      "id": "script.module.gearsscrapers",
+      "version": "1.6.2",
+      "name": "Gears Scrapers",
+      "provider": "gearsscrapers",
+      "license": "GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007",
+      "zip": "repo/zips/script.module.gearsscrapers/script.module.gearsscrapers-1.6.2.zip",
+      "bytes": 2124260
+    },
+    {
+      "id": "script.module.homelanderscrapers",
+      "version": "2.0.4",
+      "name": "homelanderscrapers Module",
+      "provider": "Ghost",
+      "license": "GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007",
+      "zip": "repo/zips/script.module.homelanderscrapers/script.module.homelanderscrapers-2.0.4.zip",
+      "bytes": 1327755
+    },
+    {
+      "id": "script.module.idna",
+      "version": "3.10.0",
+      "name": "idna",
+      "provider": "Kim Davies",
+      "license": "BSD-3-Clause",
+      "zip": "repo/zips/script.module.idna/script.module.idna-3.10.0.zip",
+      "bytes": 73349
+    },
+    {
+      "id": "script.module.inputstreamhelper",
+      "version": "0.8.6",
+      "name": "InputStream Helper",
+      "provider": "emilsvennesson, dagwieers, mediaminister, horstle",
+      "license": "MIT",
+      "zip": "repo/zips/script.module.inputstreamhelper/script.module.inputstreamhelper-0.8.6.zip",
+      "bytes": 110321
+    },
+    {
+      "id": "script.module.jetextractors",
+      "version": "3.3.26",
+      "name": "JetExtractors",
+      "provider": "THE TEAM",
+      "license": "MIT",
+      "zip": "repo/zips/script.module.jetextractors/script.module.jetextractors-3.3.26.zip",
+      "bytes": 385548
+    },
+    {
+      "id": "script.module.kodi-six",
+      "version": "0.1.3.1",
+      "name": "Kodi Six",
+      "provider": "Roman V.M.",
+      "license": "GPL v.3",
+      "zip": "repo/zips/script.module.kodi-six/script.module.kodi-six-0.1.3.1.zip",
+      "bytes": 24186
+    },
+    {
+      "id": "script.module.microjenscrapers",
+      "version": "1.4",
+      "name": "MicroJen Scraper Module",
+      "provider": "MicroJen Community",
+      "license": "GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007",
+      "zip": "repo/zips/script.module.microjenscrapers/script.module.microjenscrapers-1.4.zip",
+      "bytes": 2099541
+    },
+    {
+      "id": "script.module.myaccounts",
+      "version": "1.1.3",
+      "name": "My Accounts",
+      "provider": "Venom, Fen",
+      "license": "GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007",
+      "zip": "repo/zips/script.module.myaccounts/script.module.myaccounts-1.1.3.zip",
+      "bytes": 211391
+    },
+    {
+      "id": "script.module.myconnpy",
+      "version": "8.0.33",
+      "name": "mysql-connector-python",
+      "provider": "Oracle and/or its affiliates",
+      "license": "GPLv2",
+      "zip": "repo/zips/script.module.myconnpy/script.module.myconnpy-8.0.33.zip",
+      "bytes": 396546
+    },
+    {
+      "id": "script.module.pyamf",
+      "version": "0.8.10+matrix.4",
+      "name": "PyAMF",
+      "provider": "The Py3AMF Project",
+      "license": "MIT",
+      "zip": "repo/zips/script.module.pyamf/script.module.pyamf-0.8.10+matrix.4.zip",
+      "bytes": 204097
+    },
+    {
+      "id": "script.module.pyjsparser",
+      "version": "3.0.0",
+      "name": "pyjsparser",
+      "provider": "Addons4Kodi",
+      "license": "MIT",
+      "zip": "repo/zips/script.module.pyjsparser/script.module.pyjsparser-3.0.0.zip",
+      "bytes": 39555
+    },
+    {
+      "id": "script.module.pyqrcode",
+      "version": "1.2.1+matrix.4",
+      "name": "pyQRcode",
+      "provider": "Michael Nooner",
+      "license": "BSD-3-Clause",
+      "zip": "repo/zips/script.module.pyqrcode/script.module.pyqrcode-1.2.1+matrix.4.zip",
+      "bytes": 66542
+    },
+    {
+      "id": "script.module.pytz",
+      "version": "2023.3.0+matrix.1",
+      "name": "pytz",
+      "provider": "Stuart Bishop",
+      "license": "MIT",
+      "zip": "repo/zips/script.module.pytz/script.module.pytz-2023.3.0+matrix.1.zip",
+      "bytes": 510726
+    },
+    {
+      "id": "script.module.requests",
+      "version": "2.31.0",
+      "name": "requests",
+      "provider": "Python Software Foundation",
+      "license": "Apache-2.0",
+      "zip": "repo/zips/script.module.requests/script.module.requests-2.31.0.zip",
+      "bytes": 67576
+    },
+    {
+      "id": "script.module.resolveurl",
+      "version": "5.1.210",
+      "name": "ResolveURL",
+      "provider": "gujal",
+      "license": "",
+      "zip": "repo/zips/script.module.resolveurl/script.module.resolveurl-5.1.210.zip",
+      "bytes": 1022154
+    },
+    {
+      "id": "script.module.routing",
+      "version": "0.2.3+matrix.1",
+      "name": "Plugin routing",
+      "provider": "takoi,Team Kodi",
+      "license": "GPL-3.0",
+      "zip": "repo/zips/script.module.routing/script.module.routing-0.2.3+matrix.1.zip",
+      "bytes": 25369
+    },
+    {
+      "id": "script.module.simplejson",
+      "version": "3.19.1+matrix.1",
+      "name": "simplejson",
+      "provider": "Bob Ippolito",
+      "license": "MIT",
+      "zip": "repo/zips/script.module.simplejson/script.module.simplejson-3.19.1+matrix.1.zip",
+      "bytes": 32709
+    },
+    {
+      "id": "script.module.simpleplugin3",
+      "version": "3.0.6+matrix.1",
+      "name": "SimplePlugin 3",
+      "provider": "Roman V.M.; vl.maksime",
+      "license": "GPL-3.0-only",
+      "zip": "repo/zips/script.module.simpleplugin3/script.module.simpleplugin3-3.0.6+matrix.1.zip",
+      "bytes": 25292
+    },
+    {
+      "id": "script.module.six",
+      "version": "1.16.0+matrix.1",
+      "name": "six",
+      "provider": "Benjamin Peterson",
+      "license": "MIT",
+      "zip": "repo/zips/script.module.six/script.module.six-1.16.0+matrix.1.zip",
+      "bytes": 16999
+    },
+    {
+      "id": "script.module.soupsieve",
+      "version": "2.4.1",
+      "name": "soupsieve",
+      "provider": "Isaac Muse",
+      "license": "MIT",
+      "zip": "repo/zips/script.module.soupsieve/script.module.soupsieve-2.4.1.zip",
+      "bytes": 41348
+    },
+    {
+      "id": "script.module.tabulate",
+      "version": "0.9.1.2",
+      "name": "Tabulate",
+      "provider": "",
+      "license": "MIT",
+      "zip": "repo/zips/script.module.tabulate/script.module.tabulate-0.9.1.2.zip",
+      "bytes": 31170
+    },
+    {
+      "id": "script.module.tzdata",
+      "version": "2023.3.0+matrix.1",
+      "name": "tzdata",
+      "provider": "Python Software Foundation",
+      "license": "Apache-2.0",
+      "zip": "repo/zips/script.module.tzdata/script.module.tzdata-2023.3.0+matrix.1.zip",
+      "bytes": 356151
+    },
+    {
+      "id": "script.module.tzlocal",
+      "version": "5.0.1",
+      "name": "tzlocal",
+      "provider": "Lennart Regebro",
+      "license": "MIT",
+      "zip": "repo/zips/script.module.tzlocal/script.module.tzlocal-5.0.1.zip",
+      "bytes": 21259
+    },
+    {
+      "id": "script.module.unidecode",
+      "version": "1.3.6",
+      "name": "Unidecode",
+      "provider": "Tomaz Solc",
+      "license": "GPL-2.0-or-later",
+      "zip": "repo/zips/script.module.unidecode/script.module.unidecode-1.3.6.zip",
+      "bytes": 238291
+    },
+    {
+      "id": "script.module.urllib3",
+      "version": "2.2.3",
+      "name": "urllib3",
+      "provider": "urllib3",
+      "license": "MIT",
+      "zip": "repo/zips/script.module.urllib3/script.module.urllib3-2.2.3.zip",
+      "bytes": 130842
+    },
+    {
+      "id": "script.xbmcbackup",
+      "version": "1.7.3",
+      "name": "Backup",
+      "provider": "robweber",
+      "license": "MIT",
+      "zip": "repo/zips/script.xbmcbackup/script.xbmcbackup-1.7.3.zip",
+      "bytes": 850485
+    },
+    {
+      "id": "service.xbmc.versioncheck",
+      "version": "0.5.30+matrix.1",
+      "name": "Version Check",
+      "provider": "Team Kodi",
+      "license": "GPL-2.0-or-later, GPL-3.0-or-later, Apache-2.0",
+      "zip": "repo/zips/service.xbmc.versioncheck/service.xbmc.versioncheck-0.5.30+matrix.1.zip",
+      "bytes": 216237
+    },
+    {
+      "id": "skin.xonfluence",
+      "version": "5.1",
+      "name": "Xonfluence",
+      "provider": "Helly, bsoriano, jdig4240",
+      "license": "GNU General Public License version 2",
+      "zip": "repo/zips/skin.xonfluence/skin.xonfluence-5.1.zip",
+      "bytes": 39777664
+    },
+    {
+      "id": "weather.gismeteo",
+      "version": "0.6.4+matrix.1",
+      "name": "Gismeteo",
+      "provider": "vl.maksime",
+      "license": "GPL-3.0-only",
+      "zip": "repo/zips/weather.gismeteo/weather.gismeteo-0.6.4+matrix.1.zip",
+      "bytes": 77280
+    },
+    {
+      "id": "repository.kingblap",
+      "version": "1.0.0",
+      "name": "KingBlap Kodi Repository",
+      "provider": "KingBlap",
+      "license": "",
+      "zip": "repository.kingblap-1.0.0.zip",
+      "bytes": 74984
+    }
+  ]
+}

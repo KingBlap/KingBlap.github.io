@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.loopguide" name="Loop Guide" version="3.8.2" provider-name="Munkee">
+  <requires>
+    <import addon="xbmc.python" version="3.0.0"/>
+    <import addon="script.module.requests"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="launcher.py">
+    <provides>all</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary lang="en_gb">The Loop Guide</summary>
+    <description lang="en_gb">The Loop Guide</description>
+    <disclaimer lang="en_gb"/>
+    <language/>
+    <platform>all</platform>
+    <license>GPL-3.0</license>
+    <assets>
+		<icon>icon.png</icon>
+		<fanart>fanart.jpg</fanart>
+    </assets>
+  </extension>
+</addon>

@@ -1,0 +1,502 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+    <addon id="plugin.video.cosmos" name="C.O.S.M.O.S" version="4.3.26" provider-name="Zeus768 and Enigma">
+    <requires>
+        <import addon="xbmc.python" version="3.0.0"/>
+        <import addon="script.module.resolveurl" version="5.1.0" optional="true"/>
+        <import addon="inputstream.adaptive" version="1.0.0"/>
+        <import addon="script.module.inputstreamhelper" version="0.7.0" optional="true"/>
+    </requires>
+    <extension point="xbmc.python.pluginsource" library="default.py" reuselanguageinvoker="true">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.service" library="service.py" start="login"/>
+    <extension point="xbmc.addon.metadata">
+        <summary lang="en">C.O.S.M.O.S - Cinema On-demand Streaming Multimedia Operating System</summary>
+        <description lang="en">C.O.S.M.O.S is a playlist-driven Kodi video addon that reads its menu and content from a remote base URL. It resolves file-host links via ResolveURL or Debrid and auto-plays torrent sources via Torrentio and The Pirate Bay for Search4k / Search1080 / Search720 tokens. Supports Real-Debrid, AllDebrid, Premiumize, TorBox, LinkSnappy and Offcloud using the same proven flow as Trakt Player (zeus768). Freebie TV includes Tubi TV, Pluto TV, and Plex regional catalogues and playback, plus Samsung TV Plus, BBC channels, and Rakuten TV regional live channels with current/next programme metadata, plus Trakt and Simkl tracking integrations. TMDB is used for metadata, with optional free anonymous AI Horde semantic expansion in Universal Search. Release Hub includes TorrentClaw browsing with TMDB season/episode menus and a dedicated source picker. TorrentClaw magnet playback requires a free TorrentClaw API key and a configured Debrid account.</description>
+        <disclaimer lang="en">This addon does not host any content.</disclaimer>
+        <language>en</language>
+        <platform>all</platform>
+        <license>GPL-2.0-only</license>
+        <assets>
+            <icon>icon.png</icon>
+            <fanart>fanart.jpg</fanart>
+            <screenshot>resources/screenshots/screenshot-01.jpg</screenshot>
+            <screenshot>resources/screenshots/screenshot-02.jpg</screenshot>
+            <screenshot>resources/screenshots/screenshot-03.jpg</screenshot>
+    </assets>
+    <news>
+    v4.3.26 (2026-10-04)
+    ====================
+    - Newly Added: Restore the cache-backed Enigma XML scanner from v4.3.23.
+      Scan the Movies and Shows menus and their immediate category feeds;
+      track films and shows by TMDB ID and episodes by TMDB ID, season and
+      episode. Preserve season-zero specials and existing first-seen dates.
+    - Loading: Render saved links, artwork and prepared metadata without feed
+      crawls or online metadata requests when opening Newly Added. Prepare
+      metadata separately in the background and use a local TMDB lookup table.
+    - Scanning: Retain hourly background scans and the first-run catalogue
+      baseline. Remove the forced-network retry crawl that caused long scans.
+      Newly discovered items remain in Newly Added for seven days.
+    - Tools: Add Scan Newly Added Now, with progress and completion/failure
+      notices, hourly-timer bypass and protection against overlapping scans.
+    - Validation: Pass syntax and simulated checks for the restored cached
+      fetch path, films/shows/episodes, specials, baseline and later additions,
+      saved navigation, hourly scheduling and local menu rendering.
+      Live scan completion in Kodi remains unverified.
+
+    v4.3.25 (2026-10-04)
+    ====================
+    - Newly Added: Scan for new films, shows and episodes hourly in Kodi's
+      background service, without requiring the main menu to be opened.
+      Fetch fresh feeds, prevent overlapping scans, baseline the existing
+      catalogue on the first scan and preserve season-zero episode identities.
+      Announce new arrivals using the existing notification setting.
+    - Pluto/Tubi/Plex: Fetch catalogues, searches, title details and live guides
+      afresh on every request; remove provider data caches and cache-refresh rows.
+      Clean up legacy cache files when opening each provider. Plex anonymous
+      sessions are kept in memory for the current invocation instead of on disk.
+    - Validation: Pass syntax and simulated checks for hourly scan gating,
+      fresh feeds, new film/show/episode detection, notification deduplication,
+      repeated provider requests, Plex pagination and anonymous authentication.
+      Live provider playback and Kodi background operation remain unverified.
+
+    v4.3.24 (2026-10-04)
+    ====================
+    - AIOStreams: Verify UUID/alias and password with the server before saving
+      credentials; report rejected logins and connection failures.
+    - Hosts: Automatically sync Rapidgator and Nitroflare premium credentials
+      to installed ResolveURL plugins on startup, settings changes and resolution.
+      Use plugin setting IDs and clear stale sessions when credentials change.
+    - 1337x: Parse titles and seed counts by table row, support varied HTML
+      classes and nested titles, deduplicate rows and decode magnet entities.
+    - Torrentio: Preserve episode file indexes and provider trackers in magnets;
+      reject invalid hashes and skip malformed responses and stream records.
+    - Settings: Group Trakt, Simkl and PunchPlay under Meta Accounts.
+      Remove internal account dividers while preserving authentication dependencies.
+    - Usenet: Play Easynews direct links through Link Zero and queue selected
+      results to configured SABnzbd/NZBGet clients; keep autoplay on direct links.
+      Validate SABnzbd's full API key with an authenticated queue request, correct
+      NZBGet append arguments, and reject unsuccessful download submissions.
+    - Playback: Start Link Zero next-episode continuation explicitly through
+      Kodi's player; preserve tracking IDs, return routes and season-zero specials.
+    - Validation: Pass 30 regression tests. Live Torrentio movie and episode
+      endpoints returned HTTP 200; their responses passed parsing checks.
+      Live 1337x access, account authentication, debrid playback and remote
+      scrobble acceptance and live downloader authorization remain unverified.
+
+    v4.3.23 (2026-10-03)
+    ====================
+    - Playback: Use Kodi's native FFmpeg HLS player for Rakuten, Tubi and
+      Pluto live TV; retain InputStream Adaptive for Tubi and Pluto on-demand.
+    - Rakuten: Avoid InputStream Adaptive losing advert discontinuity periods.
+      Retain the local relay for cookies, separate advert/programme encryption
+      keys, initialization files, buffered media and session recovery.
+    - Tubi/Pluto: Preserve HTTP request headers with native HLS playback,
+      including signed stream URLs, subtitles and existing playlist checks.
+    - UI: Clear watched checkmarks and resume indicators on Rakuten, Tubi and
+      Pluto live TV launchers and playback items; preserve on-demand metadata.
+    - Validation: Six Tubi live channels each passed 20-second FFmpeg video
+      and audio decoding probes with no reported errors, including AES-128.
+      Pass live/on-demand player selection, headers, subtitles, DRM exclusion,
+      empty-playlist rejection and simulated Rakuten advert-transition checks.
+      Real advert transitions and continued playback in Kodi need verification.
+
+    v4.3.20 (2026-10-03)
+    ====================
+    - Hosts: Add Vidara to SRStop discovery and the host picker, supporting
+      vidara.to, gbsagbo.com and vidara.so with fallback across listed links.
+    - Mirrors: Recognise byseraguci.com as a Byse mirror and preserve its
+      API origin, referer and playback headers during resolution.
+    - UI: Smooth the Vidcore source-search panel corners and replace stretched
+      counter badges with larger card textures while preserving the layout.
+    - Validation: Pass mirror detection, resolver header and fallback checks;
+      verify Lanterns S01E01 Vidara HLS playback and validate Python/skin XML.
+
+    v4.3.19 (2026-10-03)
+    ====================
+    - Playback: Refresh Rakuten Live TV sessions every two minutes in the
+      background so renewal requests do not block playlist and media delivery.
+    - Reliability: Validate replacement playlists before switching sessions,
+      preserve queued media URLs, and retry expired segments with fresh URLs.
+    - Validation: Pass four offline token renewal and recovery checks;
+      long-duration playback in Kodi remains to be verified.
+    - Sources: Check Vidcore playback links before opening the picker, hide
+      failed or timed-out sources, and reuse checked streams and playback headers.
+    - Browse: Hide unaired Vidcore seasons and episodes before pagination.
+      Keep undated seasons and Specials only when they contain aired episodes.
+    - Fix: Avoid a date-variable naming conflict that prevented Vidcore season
+      and episode listings from opening; verify both browsing routes execute.
+    - UI: Cancel Search opens the picker with working sources found so far;
+      use smooth rounded button textures for focused and unfocused states.
+    - Speed: Limit Vidcore source checks to 30 seconds and open the picker after
+      eight seconds without a new result once working sources have been found.
+      Use six background workers; stalled requests no longer delay shutdown.
+    - Validation: Pass stalled-source, deadline, cancellation and complete-scan
+      checks; keep SRStop's existing scan unchanged.
+    - Hosts: Filter Dulo and HDHub links; preserve SRStop's existing host scan,
+      picker and resolve-on-selection flow without adding extra checks.
+    - UI: Add a custom Cosmos source-search screen with Checked, Available and
+      Remaining counters, a bounded progress bar, and Cancel/Back support.
+    - Fix: Keep the custom search screen open while Kodi processes startup
+      callbacks; start its progress bar empty and fill within the panel.
+    - Validation: Pass offline source filtering, cancellation, playback option,
+      dialog startup and progress boundary checks, plus Python/XML validation.
+    - Fix: Keep Rakuten advert and programme encryption keys, initialization
+      files and queued media URLs distinct; preserve HLS discontinuity boundaries.
+    - Hosts: Support teresapoliticallearn.com as a VOE mirror for SRStop episode
+      links and player redirects, retaining fallback across listed host links.
+    - Validation: Verify Lanterns S01E01 playback checks for all seven SRStop
+      hosts and all five listed Byse links, including its mirror; verify Rakuten
+      live playlist, key and media delivery plus simulated advert transitions.
+      The next Rakuten advert transition in Kodi still requires verification.
+
+    v4.3.18 (2026-10-03)
+    ====================
+    - UI: Open Samsung TV Plus in the Cosmos custom live channel picker with
+      channel numbers, logos, Now/Next EPG, local times and channel descriptions.
+    - Refresh: Reload Samsung's channel guide while preserving selection and
+      use the refreshed catalogue and headers when playing the selected channel.
+    - Playback: Apply shared and channel-specific backend headers to HLS
+      manifests and segments; restore the route used by saved channel links.
+    - Availability: Continue excluding unsupported DRM channels. Regional CDN
+      restrictions can return HTTP 403 even with correct playback headers.
+    - Validation: Pass eight Samsung regression checks and Python/XML checks;
+      verify a UK channel's live playlists and video segment. Kodi visual
+      testing remains pending; channel availability varies by connection region.
+
+    v4.3.17 (2026-10-03)
+    ====================
+    - UI: Open Tubi Live TV in the Cosmos custom channel picker with channel
+      artwork, Now summaries, programme details and Refresh EPG.
+    - Guide: Load the complete regional live channel list with Now/Next titles,
+      episode names, descriptions, local times, ratings, genres and release years.
+    - Playback: Resolve a fresh live stream from Tubi's schedule endpoint and
+      preserve guide metadata; keep signed EPG stream URLs out of disk caches.
+    - Reliability: Fall back to channel descriptions when programme data is absent.
+    - Validation: Pass twelve shared and provider picker checks; verify all 36
+      returned regional Tubi channels have EPG. Kodi visual testing remains pending.
+
+    v4.3.16 (2026-10-03)
+    ====================
+    - UI: Open Pluto Live TV in the Cosmos custom channel picker with channel
+      numbers, logos, Now summaries and selected-channel programme details.
+    - Guide: Add regional Now/Next EPG, local times, descriptions, genres,
+      ratings, release years and cast where supplied by Pluto.
+    - Metadata: Preserve live programme information and channel artwork during
+      playback; retain channel descriptions when EPG is unavailable.
+    - Refresh: Reload the guide without cached responses while keeping selection.
+    - Validation: Pass eight Pluto/Rakuten picker checks; verify all 188 channels
+      in the returned regional guide have EPG. Kodi visual testing remains pending.
+
+    v4.3.15 (2026-10-03)
+    ====================
+    - UI: Open Rakuten live TV in a dedicated Cosmos source-style channel picker,
+      with channel logos, Now summaries, and a selected-channel EPG panel.
+    - Guide: Show current/next programmes, local times and descriptions, and add
+      Refresh EPG while preserving the selected channel.
+    - Playback: Watch the highlighted channel through the automatic renewal relay;
+      Back closes the picker without starting playback.
+    - Validation: Pass picker navigation, cancellation, EPG refresh and skin XML
+      checks. Visual layout and remote interaction in Kodi still require testing.
+
+    v4.3.14 (2026-10-03)
+    ====================
+    - Playback: Relay Rakuten live HLS through a stable local URL and retain
+      provider cookies and headers across playlist, segment and key requests.
+    - Recovery: Renew the upstream session every two minutes during playlist
+      reloads and retry expired or temporarily unavailable media requests.
+    - Reliability: Remap playlists and media after CDN/session URL changes,
+      bound retries and renewal calls, and close inactive playback relays.
+    - Validation: Pass five relay regression tests; verify real HLS media bytes
+      and live session renewal. Extended playback in Kodi still requires testing.
+
+    v4.3.13 (2026-10-03)
+    ====================
+    - Feature: Rakuten TV in Freebie TV with regional live channels and
+      HLS playback; open directly to live TV.
+    - Artwork: Add a dedicated Rakuten TV menu and channel-entry icon, retaining
+      individual channel logos for thumbnails where available.
+    - Metadata: Show current and next programmes, local broadcast times,
+      descriptions, genres and ratings where Rakuten supplies them.
+    - Reliability: Keep live channels available when EPG requests fail and carry
+      channel titles, programme details and thumbnails into playback.
+    - Validation: Verify live catalogue, HLS resolution and EPG API responses;
+      pass local programme selection, timezone and fallback checks.
+      Actual playback and information-panel display in Kodi still require testing.
+
+    v4.3.12 (2026-10-03)
+    ====================
+    - Feature: Add morencius.com to VidCore's SRStop TV episode host picker,
+      including plain and obfuscated links, quality sorting and duplicate filtering.
+    - Fix: Decode Morencius packed player HLS fields referenced by JW Player,
+      preserving signed stream URLs and playback headers.
+    - Validation: Pass local discovery, picker and player extraction checks;
+      confirm the supplied Kill Jackie S01E02 link resolves to HLS and passes
+      the live playlist sample check. Actual Kodi playback still requires testing.
+
+    v4.3.11 (2026-10-03)
+    ====================
+    - Fix: Request fresh MoviesAPI source responses to avoid cached signed CDN URLs.
+    - Sources: Remove unavailable Toffee, Vidlink and Videasy from Dulo movie
+      and TV server discovery; retain Vidy, Vidfast, MoviesAPI, Vidzee,
+      Vidcore.net, Vidsrc and Vidcore.io.
+    - Validation: Confirm all seven remaining sources return valid HLS media
+      for Fight Club and Game of Thrones S1E1, including required keys and
+      media samples. Actual Kodi playback and other titles still require testing.
+
+    v4.3.10 (2026-10-03)
+    ====================
+    - Fix: Detect audio and video muxed into Dulo fragmented MP4 HLS streams,
+      including Vidfast vRapid/vBlaze, and use Kodi's native HLS player to avoid
+      the missing embedded audio on InputStream Adaptive 21.
+    - Playback: Keep the Dulo header/cookie relay and expose recognizable playlist,
+      initialization and segment extensions for native FFmpeg playback.
+    - Validation: Pass four audio regression tests; confirm the affected movie
+      (TMDB 1101383) selects native playback and retains both tracks through
+      the live relay. Audible playback in Kodi still requires retesting.
+
+    v4.3.09 (2026-10-03)
+    ====================
+    - Feature: Add Dulo movie and TV discovery with the custom Cosmos server picker.
+    - Fix: Add dedicated player handling for all ten listed Dulo servers: Vidy,
+      Vidfast, MoviesAPI, Toffee, Vidzee, both Vidcore mirrors, Vidsrc, Vidlink
+      and Videasy. Resolve the exact selected movie or episode through each API.
+    - Fix: Decode Vidy source envelopes and Vidsrc ChaCha20 responses locally;
+      request Vidzee's plain stream API and preserve provider playback headers.
+    - Compatibility: Use the public EncDec protocol adapter for encrypted Vidfast,
+      Vidcore and Vidlink APIs, and as a Videasy decoding fallback.
+    - Playback: Relay Dulo HLS playlists, keys and segments with provider cookies,
+      byte ranges, CDN token refresh and image-prefixed MPEG-TS handling.
+    - Validation: Check nested playlists, AES keys and real media segments before
+      starting playback; reject HTML errors and invalid source signatures.
+    - Diagnostics: Report upstream failures without logging signed media URLs.
+    - Checks: Pass 24 offline regression tests and seven live movie HLS relay checks;
+      verify The Simpsons S38E01 on Vidy, Vidfast, Vidsrc and both Vidcore mirrors.
+      Toffee, Vidlink, Videasy and some TV APIs remain unavailable upstream.
+
+    v4.3.08 (2026-10-02)
+    ====================
+    - Fix: Show SRStop only when the matched TV episode has supported host links;
+      list only the hosts present on that episode's page.
+    - Fix: Accept SRStop episode-specific show slugs while checking the show,
+      season and episode to reject links for other shows or episodes.
+    - Coverage: Add bysekoze.com to Byse discovery and native resolver routing.
+    - Feature: Add VOE to the SRStop host picker, including the hidden mirror
+      jeremyparticipantanything.com, encoded player sources and playback headers.
+    - Validation: Pass local matching, mirror detection and VOE decoding checks;
+      verify live S38E01 host discovery and a VOE HLS stream validation sample.
+
+    v4.3.07 (2026-10-02)
+    ====================
+    - Feature: Add Byse to the SRStop host picker for VidCore TV episodes, with
+      native API/AES-GCM resolution, required playback headers and media validation.
+    - Fix: Support SRStop's bysesayeveum.com links alongside bysesukior.com.
+    - Fix: Retry shorter SRStop show searches while retaining strict identifier
+      or unique exact title/year matching across all supported episode hosts.
+    - Fix: Validate Streamtape media before playback, skip failed candidates and
+      report when all listed files have been removed or are unavailable.
+    - UI: Paginate VidCore seasons at 50 episodes per page with Next and Previous links.
+    - Validation: Verify Streamtape MP4 and Byse HLS media samples for S23E154;
+      confirm unavailable S23E150 Streamtape files and local discovery/navigation checks.
+
+    v4.3.06 (2026-10-02)
+    ====================
+    - Fix: Handle full 2Embed host URLs, escaped media links and UTF-8 playlist markers.
+    - Feature: Validate each title's 2Embed stream before adding it to the VidCore
+      picker; hide failed sources and reuse the verified stream when selected.
+    - Diagnostics: Report the failing 2Embed stage and HTTP status without exposing
+      media tokens; upstream HTTP 403/500 failures remain unavailable.
+    - Validation: Pass 10 resolver and availability regression tests, covering
+      working sources, failed links, provider exceptions and unsupported TV routes.
+
+    v4.3.05 (2026-10-02)
+    ====================
+    - Coverage: Extend Yuki SUB/DUB discovery for movies, specials, OVAs, ONAs,
+      TV and music titles in the 9Anime source picker.
+    - Fix: Support single-item players without an episode list or currentEp,
+      while preventing their player token from being reused for later episodes.
+    - Validation: Pass 14 local discovery and episode safety checks; live playback
+      remains unverified because the provider site was unreachable.
+
+    v4.3.04 (2026-10-01)
+    ====================
+    - Feature: Add DoodStream and Playmogo link discovery and a native media resolver
+      to the SRStop episode host picker, preserving VidCore playback tracking.
+    - Validation: Add eight DoodStream discovery, decoding and playback handoff checks;
+      verify a live S1E1 media stream; unavailable or challenged links fail safely.
+    - Feature: Add Aniwatch Yuki as an extra SUB/DUB source in the 9Anime picker,
+      matching English/Japanese titles and exact episodes with cached discovery.
+    - Coverage: Run Yuki discovery for every 9Anime episode without a title whitelist;
+      add only the languages available for the matched Aniwatch episode.
+    - Playback: Resolve Yuki to native HLS with provider headers and available
+      English subtitles, keeping SUB and DUB playback choices separate.
+    - Fix: Always open the 9Anime source picker, including single-source episodes;
+      follow exact Aniwatch episode pages and avoid reusing episode 1 provider URLs.
+    - Validation: Verify eight live streams across four titles, including video
+      segments and available subtitles; add ten discovery and playback regression checks.
+    - Validation: Verify episode discovery across eight titles, including One Piece
+      episode 1180, Naruto 220, Frieren 28 and Bleach 366.
+    - UI: Group SaveFiles, LuluStream and Streamtape under one SRStop provider
+      in VidCore, with a dedicated Cosmos host picker, posters and Via SRStop labels.
+    - Feature: Return to the provider list when backing out of SRStop host
+      selection, retaining each host's existing playback resolver.
+    - Maintenance: Retire the shut-down VidKing provider from VidCore and remove
+      its unused API resolver and playback special cases.
+    - UI: Replace VidCore's standard source popup with a cloned Cosmos picker,
+      including movie/show posters, provider previews and HLS/MP4/AUTO format badges.
+    - Feature: Keep VidCore provider selection and playback connected to the
+      existing resolvers, with selected-provider details following list navigation.
+
+    v4.3.03 (2026-10-01)
+    ====================
+    - Feature: Cache Enigma menus and linked XML submenus in the background,
+      refreshing every 30 minutes by default without dialogs or automatic page reloads.
+    - Performance: Open cached menu pages without network requests; preserve the
+      last good copy when a refresh fails, and fetch uncached pages on first use.
+    - Feature: Include saved Enigma XML and parsed menu data in manual and automatic
+      Clear Cache actions, preserving auto-clear and background-refresh settings.
+    - Fix: Filter known game and software releases from Link Zero results;
+      apply the filter directly in Comet before its per-quality source limits.
+    - Fix: Preserve season zero Specials in episode classification and Link Zero
+      playback tracking, including autoplay and next-episode handoffs.
+    - Validation: Add regression tests for Link Zero autoplay, episode transitions &amp;
+      manual-stop behavior.
+
+    v4.3.02 (2026-10-01)
+    ====================
+    - Fix: Keep up to 60 sources per quality from Comet and MediaFusion instead
+      of cutting off lower-resolution results after the first 60 sources.
+    - UI: Show Comet and MediaFusion file sizes in Link Zero source details.
+    - Feature: Add a configurable Comet instance or manifest URL, preserving
+      configured paths and protected API prefixes.
+    - Fix: Validate torrent hashes, file indexes and stream responses; ignore
+      malformed records and deduplicate repeated torrent sources.
+    - Fix: Exclude MediaFusion URL-only entries from the torrent scraper so
+      provider playback URLs and status messages are not sent to the magnet resolver.
+    - UI: Clarify MediaFusion URL settings and its use of Cosmos Debrid accounts.
+
+    v4.3.01 (2026-10-01)
+    ====================
+    - UI: Redesign both Link Zero picker screens with Cosmos navy, blue and
+      cyan colours, rounded cards, branded headers and clearer focus states.
+    - Feature: Show movie and show posters in both Link Zero picker screens,
+      preserving artwork proportions and retaining a layout for missing artwork.
+    - Fix: Keep selected-source details and the Play button in sync while browsing.
+    - UI: Add cache-status badges and readable quality labels; remove duplicate
+      cache text, improve button contrast and replace the selection font symbol.
+    - Fix: Pass Simkl catalogue artwork and Trakt show posters into Link Zero,
+      with a TMDB poster fallback when a playback payload has no artwork.
+
+    v4.3.00 (2026-10-01)
+    ====================
+    - UI: Organise root-menu shortcuts and browsing sections while preserving
+      Movies, TV Shows, Enigma Movies and Enigma TV Shows positions and routes.
+    - Feature: Add Watch Wrestling to Sports Hub with category menus, event
+      poster cards, video-server selection, and Dailymotion/MegaPlay playback.
+    - Fix: Paginate Watch Wrestling event listings at 20 cards per page using
+      the full latest-event and category archives; retain smaller final pages.
+    - Fix: Exclude repeated sidebar recommendations and unavailable genre/country
+      links that redirect to the homepage.
+    - UI: Add dedicated Watch Wrestling menu, submenu and video-server artwork.
+    - Fix: Validate Dailymotion HLS manifests and hand them to Kodi locally,
+      preserving audio, subtitles and quality variants for the HTTP 403 workaround.
+    - Fix: Resolve Watch Wrestling Blogger/JWPlayer MP4 sources, select the
+      highest available compatible quality, skip SABR links, and preserve playback headers.
+    - Feature: Add a built-in MegaVid (megavid.buzz) resolver for readable
+      JWPlayer MP4/HLS and HTML5 video sources, preserving playback headers.
+    - Fix: Report MegaVid HTTP 404/410 players as unavailable instead of a
+      generic resolver failure, and recognise MegaPlay as a native resolver.
+
+    v4.2.99 (2026-10-01)
+    ====================
+    - UI: Add a branded changelog browser with selectable release history,
+      release dates, installed version, and colour-coded release notes.
+    - Fix: Fall back to Kodi's standard dialogs if the custom changelog
+      browser cannot open.
+
+    v4.2.98 (2026-09-30)
+    ====================
+    - Fix: Mark Simkl movie results in Search and Discover as playable so they
+      start Link Zero playback, and preserve episode metadata through season views.
+    - Fix: Keep season zero intact for Specials when handing episodes to Link Zero.
+    - UI: Keep Disconnect Simkl visible in settings but disabled when the account
+      is not authenticated.
+
+    v4.2.97 (2026-09-30)
+    ====================
+    - Fix: Use Simkl's flat absolute anime episode numbers and native episode
+      details in Calendar, avoiding ambiguous parent TMDB series metadata.
+    - Fix: Build Simkl anime scrobbles with the documented native anime or
+      TMDB/TVDB show format according to the episode numbering and IDs.
+    - Fix: Preserve native anime IDs and episode numbering through playback
+      routes, including Simkl In Progress and Next Episodes, for scrobbling.
+    - Fix: Mark Simkl movie results in Search and Discover as playable so they
+      start Link Zero playback, and preserve episode metadata through season views.
+    - Fix: Keep season zero intact for Specials when handing episodes to Link Zero.
+
+    v4.2.96 (2026-09-30)
+    ====================
+    - Feature: Add Trakt Search and split Discover into Movies and TV Shows,
+      with trending, popular, anticipated, and weekly watched categories.
+    - Feature: Add Trakt Continue Watching with paused playback and Trakt's
+      watched-progress next episode suggestions.
+    - Feature: Add watched, unwatched, and watchlist context actions to Trakt
+      Search and Discover results using official sync endpoints.
+    - Fix: Order Trakt scrobble events, respect selected authorized provider,
+      and cache catalog and playback requests to reduce API traffic.
+
+    v4.2.95 (2026-09-30)
+    ====================
+    - Feature: Add official PunchPlay watched, unwatched, planning, rating,
+      favourite, and show-status actions to Search and Discover results.
+    - Fix: Build context menus locally, batch aired episode watches, confirm
+      history removal, and honor authenticated request-limit cooldowns.
+
+    v4.2.94 (2026-09-30)
+    ====================
+    - Feature: Add PunchPlay Search for movies, shows, and anime alongside
+      Discover in the content menu, using the public catalog API.
+    - Fix: Validate search text, cache repeated queries, and share catalog
+      request throttling and rate-limit cooldowns with Discover.
+
+    v4.2.93 (2026-09-30)
+    ====================
+    - Feature: Add public PunchPlay Discover menus for movies, shows, and
+      anime, with Popular, Now Playing, Upcoming, and Top Rated categories.
+    - Fix: Cache discovery results, honor rate-limit delays, and use returned
+      title metadata and artwork without extra per-title requests.
+
+    v4.2.92 (2026-09-30)
+    ====================
+    - Fix: Send the saved Simkl access token with AUTH V2 search requests
+      instead of prompting signed-in users to reconnect after an anonymous 401.
+    - Fix: Scope search caches by account, bypass old failed search entries,
+      and preserve failure messages while backing off repeated requests.
+
+    v4.2.91 (2026-09-30)
+    ====================
+    - Feature: Add Simkl watched, Plan to Watch, status, and rating context
+      actions to search and discovery results using direct Simkl IDs.
+    - Fix: Honor the full daily API cooldown and serialize catalog context
+      writes without fetching user state to build menus.
+    - Feature: Add Simkl search for movies, TV shows, and anime, plus
+      Simkl Trending and top-rated discovery menus.
+    - Fix: Cache catalog results, use Simkl's CDN for trending data, and
+      back off after API errors to reduce unnecessary requests.
+
+    v4.2.90 (2026-09-30)
+    ====================
+    - Feature: Add PunchPlay sign-in, authenticated playback scrobbling,
+      Now Playing, In Progress, Continue Watching, Collection, and My Lists.
+    - Feature: Add PunchPlay Partner Sync snapshots and change-feed mirroring,
+      idempotent bulk-write helpers, and a Sync PunchPlay action that refreshes
+      playback, collection, list, and watched-status menus from official APIs.
+    - Feature: Add PunchPlay main-menu and submenu artwork.
+    - Fix: Continue Watching uses PunchPlay's show TMDB ID and next-episode
+      pointers, opens ready episodes directly through Link Zero, and refreshes
+      the official feed after a completed playback stop is accepted.
+    - Fix: Keep PunchPlay playback events ordered, retry transient playback
+      server errors once, and update PunchPlay watched indicators on completion.
+    </news>
+    </extension>
+</addon>
