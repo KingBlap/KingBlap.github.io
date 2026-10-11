@@ -15,15 +15,16 @@ The repository installer and HTTPS catalog work in Kodi on Android, including ph
 
 ## Install the KingBlap Wizard build
 
-1. Install **KingBlap Wizard** from **Install from repository → KingBlap Kodi Repository → Program add-ons**.
-2. Open **KingBlap Wizard**, choose **KingBlap Kodi Build 1.0.6**, and confirm the install.
-3. Restart Kodi after the wizard reports completion. Open GIPTV and enter your own provider details.
+1. Install or update **KingBlap Wizard 1.0.5** from **Install from repository → KingBlap Kodi Repository → Program add-ons**.
+2. If an older Wizard is already installed and no update appears, choose **Add-ons → Check for updates**. You can also install the [Wizard 1.0.5 ZIP](https://kingblap.github.io/repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.5.zip).
+3. Open **KingBlap Wizard**, choose **KingBlap Kodi Build 1.0.7**, and confirm the install.
+4. Restart Kodi after the wizard reports completion. Open GIPTV and enter your own provider details.
 
-Build 1.0.6 reinstalls the repaired Xonfluence 5.1.1 package. It includes Skin Shortcuts 3.0.4, enables it in the saved skin settings, and includes a starter shortcuts file so Kodi can generate the customized menu include on first launch. Wizard 1.0.4 validates the whole archive before installation, switches to Kodi's default Estuary skin while replacing Xonfluence, then enables Skin Shortcuts and activates Xonfluence. It also keeps the portable add-on logo paths from version 1.0.4. It removes XStream Player and its saved settings when you confirm. The public build does not include account credentials, other add-on data, Kodi databases, personal libraries, media source paths, or the profile thumbnail cache. Show and channel artwork is supplied by each add-on after you configure it. Keep Kodi's official add-on repository enabled for Android versions of native binary dependencies. Skin usability and individual add-on compatibility can vary by device.
+Build 1.0.7 replaces Xonfluence with Estuary MOD V2 (version 22.0+piers), a Kodi 22 skin marked for all platforms. The skin includes 16:9, 18:9, and 19.5:9 screen layouts. Its Skin Shortcuts, Image Resource Select, PVR Artwork, Simple Cache, and Requests modules are included. Wizard 1.0.5 validates these packages, switches to Kodi's default Estuary while replacing the skin files, removes the installed Xonfluence add-on, and activates the new skin. It does not carry Xonfluence settings into the new skin. The build also replaces XStream Player and its saved settings when you confirm. The public build excludes account credentials, add-on profile data, Kodi databases, personal libraries, media source paths, and the profile thumbnail cache. Show and channel artwork is supplied by each add-on after you configure it. Keep Kodi's official repository enabled for Android-specific native binary dependencies; device and add-on compatibility can vary.
 
 Build list: https://kingblap.github.io/builds.txt
 
-Build archive: https://github.com/KingBlap/KingBlap.github.io/releases/download/kingblap-build-v1.0.6/KingBlapKodiBuild-1.0.6.zip
+Build archive: https://github.com/KingBlap/KingBlap.github.io/releases/download/kingblap-build-v1.0.7/KingBlapKodiBuild-1.0.7.zip
 
 This repository was assembled from a Windows Kodi 22 snapshot. Its four native binary add-ons (`inputstream.adaptive`, `inputstream.ffmpegdirect`, `inputstream.rtmp`, and `pvr.iptvsimple`) are tagged `windows-x86_64`, so Kodi filters those Windows packages out on Android. Leave Kodi's official add-on repository enabled: it provides Android ARM builds of those binary dependencies where available. The other add-ons retain their original Kodi compatibility metadata, so individual add-on availability and service behavior can still vary by device and Kodi version.
 
@@ -33,7 +34,7 @@ Kodi catalog: https://kingblap.github.io/repo/zips/addons.xml
 
 ## Contents
 
-This repository contains 118 add-on packages from the supplied addons folder, GIPTV 3.1.0 from the [GIPTV developer's Kodi repository](https://github.com/G00380316/GIPTV/tree/main/repo/zips/plugin.video.giptv), Kodi's Up Next dependency, Skin Shortcuts 3.0.4 from its [upstream Kodi add-on](https://github.com/MikeSiLVO/script.skinshortcuts), KingBlap Wizard 1.0.4, and this repository add-on. GIPTV is marked for all platforms and requires `script.module.requests` and `service.upnext`. The Up Next package is from [Kodi's official Omega add-on repository](https://kodi.tv/addons/omega/service.upnext/). Keep Kodi's official add-on repository enabled so Kodi can resolve other platform-specific dependencies. XStream Player was removed. The repository's add-on packages do not include Kodi profile databases, account data, settings, or the Kodi profile thumbnail cache. Individual packages retain their own add-on metadata and licensing information.
+This repository contains 120 add-on packages, including GIPTV 3.1.0 from the [GIPTV developer's Kodi repository](https://github.com/G00380316/GIPTV/tree/main/repo/zips/plugin.video.giptv), Kodi's Up Next dependency, Skin Shortcuts 3.0.4 from its [upstream Kodi add-on](https://github.com/MikeSiLVO/script.skinshortcuts), Estuary MOD V2 for Kodi 22 from its [Piers branch](https://github.com/b-jesch/skin.estuary.modv2/tree/Piers), its PVR Artwork module and Simple Cache dependency, KingBlap Wizard 1.0.5, and this repository add-on. GIPTV is marked for all platforms and requires `script.module.requests` and `service.upnext`. The Up Next package is from [Kodi's official Omega add-on repository](https://kodi.tv/addons/omega/service.upnext/); Simple Cache 2.0.2 is from [Kodi's Omega add-on repository](https://kodi.tv/addons/omega/script.module.simplecache/). Keep Kodi's official add-on repository enabled so Kodi can resolve other platform-specific dependencies. Xonfluence and XStream Player were removed. The repository packages do not include Kodi profile databases, personal account data, settings, or the profile thumbnail cache. Individual packages retain their metadata and licensing information.
 
 - context.otaku — 1.0.35
 - context.prism — 4.0.2
@@ -45,6 +46,7 @@ This repository contains 118 add-on packages from the supplied addons folder, GI
 - metadata.generic.artists — 1.0.20
 - metadata.tvshows.themoviedb.org.python — 2.0.9
 - One.repo — 1.16
+- plugin.program.kingblapwizard — 1.0.5
 - plugin.video.absolution — 4.4.1
 - plugin.video.cosmos — 4.3.26
 - plugin.video.dailymotion_com — 2.4.5
@@ -63,7 +65,6 @@ This repository contains 118 add-on packages from the supplied addons folder, GI
 - plugin.video.thechains — 6.0.1
 - plugin.video.watchnixtoons2 — 0.14.23
 - plugin.video.zoro — 1.1.9
-- plugin.program.kingblapwizard — 1.0.4
 - program.easyplayerswitch — 1.1.0
 - program.optiklean — 2.0.7
 - pvr.iptvsimple — 22.6.4
@@ -107,7 +108,6 @@ This repository contains 118 add-on packages from the supplied addons folder, GI
 - script.ezmaintenanceplus — 2026.04.05.0
 - script.favourites — 8.1.2
 - script.homelander.artwork — 1.0.4
-- script.skinshortcuts — 3.0.4
 - script.image.resource.select — 3.0.2
 - script.module.absolutionscrapers — 4.0.5
 - script.module.acctmgr — 1.1.6
@@ -132,6 +132,7 @@ This repository contains 118 add-on packages from the supplied addons folder, GI
 - script.module.microjenscrapers — 1.4
 - script.module.myaccounts — 1.1.3
 - script.module.myconnpy — 8.0.33
+- script.module.pvr.artwork — 2.2.10
 - script.module.pyamf — 0.8.10+matrix.4
 - script.module.pyjsparser — 3.0.0
 - script.module.pyqrcode — 1.2.1+matrix.4
@@ -139,6 +140,7 @@ This repository contains 118 add-on packages from the supplied addons folder, GI
 - script.module.requests — 2.31.0
 - script.module.resolveurl — 5.1.210
 - script.module.routing — 0.2.3+matrix.1
+- script.module.simplecache — 2.0.2
 - script.module.simplejson — 3.19.1+matrix.1
 - script.module.simpleplugin3 — 3.0.6+matrix.1
 - script.module.six — 1.16.0+matrix.1
@@ -148,10 +150,11 @@ This repository contains 118 add-on packages from the supplied addons folder, GI
 - script.module.tzlocal — 5.0.1
 - script.module.unidecode — 1.3.6
 - script.module.urllib3 — 2.2.3
+- script.skinshortcuts — 3.0.4
 - script.xbmcbackup — 1.7.3
 - service.upnext — 1.1.9+matrix.1
 - service.xbmc.versioncheck — 0.5.30+matrix.1
-- skin.xonfluence — 5.1.1
+- skin.estuary.modv2 — 22.0+piers
 - weather.gismeteo — 0.6.4+matrix.1
 
 ## Updating the catalog

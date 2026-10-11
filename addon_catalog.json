@@ -1,5 +1,5 @@
 {
-  "generated_from": "Kodi backup snapshot 2026-10-04 plus GIPTV 3.1.0, Kodi Up Next, Skin Shortcuts 3.0.4, KingBlap Wizard 1.0.4, and repaired Xonfluence 5.1",
+  "generated_from": "Kodi 22 backup snapshot 2026-10-04 plus GIPTV 3.1.0, Kodi Up Next, Skin Shortcuts 3.0.4, Estuary MOD V2 22.0+piers, PVR Artwork 2.2.10, Simple Cache 2.0.2, and KingBlap Wizard 1.0.5",
   "addons": [
     {
       "id": "context.otaku",
@@ -93,12 +93,12 @@
     },
     {
       "id": "plugin.program.kingblapwizard",
-      "version": "1.0.4",
+      "version": "1.0.5",
       "name": "KingBlap Wizard",
       "provider": "KingBlap",
       "license": "GPL-2.0-or-later",
-      "zip": "repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.4.zip",
-      "bytes": 81444
+      "zip": "repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.5.zip",
+      "bytes": 81319
     },
     {
       "id": "plugin.video.absolution",
@@ -866,6 +866,15 @@
       "bytes": 396546
     },
     {
+      "id": "script.module.pvr.artwork",
+      "version": "2.2.10",
+      "name": "PVR Artwork Module",
+      "provider": "PvD",
+      "license": "GNU GPL Version 3, 29 June 2007",
+      "zip": "repo/zips/script.module.pvr.artwork/script.module.pvr.artwork-2.2.10.zip",
+      "bytes": 132496
+    },
+    {
       "id": "script.module.pyamf",
       "version": "0.8.10+matrix.4",
       "name": "PyAMF",
@@ -927,6 +936,15 @@
       "license": "GPL-3.0",
       "zip": "repo/zips/script.module.routing/script.module.routing-0.2.3+matrix.1.zip",
       "bytes": 25369
+    },
+    {
+      "id": "script.module.simplecache",
+      "version": "2.0.2",
+      "name": "Simple Cache Module",
+      "provider": "sualfred",
+      "license": "Apache 2.0",
+      "zip": "repo/zips/script.module.simplecache/script.module.simplecache-2.0.2.zip",
+      "bytes": 17388
     },
     {
       "id": "script.module.simplejson",
@@ -1046,13 +1064,13 @@
       "bytes": 216237
     },
     {
-      "id": "skin.xonfluence",
-      "version": "5.1",
-      "name": "Xonfluence",
-      "provider": "Helly, bsoriano, jdig4240",
-      "license": "GNU General Public License version 2",
-      "zip": "repo/zips/skin.xonfluence/skin.xonfluence-5.1.zip",
-      "bytes": 39777903
+      "id": "skin.estuary.modv2",
+      "version": "22.0+piers",
+      "name": "Estuary MOD V2 Piers",
+      "provider": "Guilouz, K22 branch by PvD",
+      "license": "CC BY-SA 4.0, GNU GENERAL PUBLIC LICENSE Version 2.0",
+      "zip": "repo/zips/skin.estuary.modv2/skin.estuary.modv2-22.0+piers.zip",
+      "bytes": 97210566
     },
     {
       "id": "weather.gismeteo",

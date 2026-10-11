@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.program.kingblapwizard" name="KingBlap Wizard" version="1.0.4" provider-name="KingBlap">
+<addon id="plugin.program.kingblapwizard" name="KingBlap Wizard" version="1.0.5" provider-name="KingBlap">
   <requires>
     <import addon="xbmc.python" version="3.0.0" />
   </requires>
@@ -8,7 +8,7 @@
   </extension>
   <extension point="xbmc.addon.metadata">
     <summary lang="en_GB">Install the KingBlap Kodi build.</summary>
-    <description lang="en_GB">Downloads and installs the portable KingBlap Kodi build, including the Xonfluence skin and compatible add-ons.</description>
+    <description lang="en_GB">Downloads and installs the portable KingBlap Kodi build, including the Kodi 22 compatible Estuary MOD V2 skin and add-ons.</description>
     <disclaimer lang="en_GB">The public build excludes personal accounts, provider credentials, media libraries, databases, and caches. Enter your own service credentials after installation.</disclaimer>
     <platform>all</platform>
     <license>GPL-2.0-or-later</license>

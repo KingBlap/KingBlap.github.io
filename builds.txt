@@ -1,2 +1,2 @@
 # Name | direct HTTPS download URL
-KingBlap Kodi Build 1.0.6 | https://github.com/KingBlap/KingBlap.github.io/releases/download/kingblap-build-v1.0.6/KingBlapKodiBuild-1.0.6.zip
+KingBlap Kodi Build 1.0.7 | https://github.com/KingBlap/KingBlap.github.io/releases/download/kingblap-build-v1.0.7/KingBlapKodiBuild-1.0.7.zip

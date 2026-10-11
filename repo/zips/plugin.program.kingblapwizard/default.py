@@ -22,6 +22,8 @@ import xbmcvfs
 ADDON = xbmcaddon.Addon()
 ADDON_ID = ADDON.getAddonInfo("id")
 BUILDS_URL = "https://kingblap.github.io/builds.txt"
+SKIN_ID = "skin.estuary.modv2"
+LEGACY_SKIN_ID = "skin.xonfluence"
 BUILD_LIMIT = 1024 * 1024 * 1024
 DOWNLOAD_LIMIT = 512 * 1024 * 1024
 CHUNK_SIZE = 1024 * 1024
@@ -38,7 +40,7 @@ def _path(special):
 def _fetch(url, max_bytes):
     request = urllib.request.Request(
         url,
-        headers={"User-Agent": "KingBlap-Wizard/1.0.4 Kodi"},
+        headers={"User-Agent": "KingBlap-Wizard/1.0.5 Kodi"},
     )
     with urllib.request.urlopen(request, timeout=45) as response:
         length = response.headers.get("Content-Length")
@@ -78,12 +80,6 @@ def _safe_target(root, relative):
     if os.path.commonpath((root, target)) != root or target == root:
         raise ValueError("The build archive contains an invalid path.")
     return target
-
-
-def _backup_file(source, rollback_dir, name):
-    if os.path.isfile(source):
-        os.makedirs(rollback_dir, exist_ok=True)
-        shutil.copy2(source, os.path.join(rollback_dir, name))
 
 
 def _remove_path(path):
@@ -143,16 +139,11 @@ def _write_member(archive, info, destination):
 def _validate_archive(archive):
     total = 0
     packages = {}
-    allowed_userdata = {
-        "userdata/addon_data/skin.xonfluence/settings.xml",
-    }
     for info in archive.infolist():
         if info.is_dir():
             continue
         name = info.filename
         if name == "build_info.json":
-            pass
-        elif name in allowed_userdata:
             pass
         elif name.startswith("addons/"):
             relative = name[len("addons/"):]
@@ -178,12 +169,24 @@ def _validate_archive(archive):
             raise ValueError("Symbolic links are not accepted in the build archive.")
     if packages.get("plugin.video.giptv") != "3.1.0":
         raise ValueError("The build archive does not contain the expected GIPTV package.")
-    if packages.get("skin.xonfluence") is None:
-        raise ValueError("The build archive does not contain the Xonfluence skin.")
-    if "userdata/addon_data/skin.xonfluence/settings.xml" not in archive.namelist():
-        raise ValueError("The build archive is missing its skin settings.")
-    if "addons/skin.xonfluence/xml/script-skinshortcuts-includes.xml" not in archive.namelist():
-        raise ValueError("The Xonfluence package is missing its skin-shortcuts include file.")
+    if packages.get(SKIN_ID) is None:
+        raise ValueError("The build archive does not contain the Estuary MOD V2 skin.")
+    if LEGACY_SKIN_ID in packages:
+        raise ValueError("The build archive still contains the Xonfluence skin.")
+    for addon_id in (
+        "script.skinshortcuts",
+        "script.image.resource.select",
+        "script.module.pvr.artwork",
+        "script.module.simplecache",
+        "script.module.requests",
+    ):
+        if addon_id not in packages:
+            raise ValueError("The build archive is missing a skin dependency: {}.".format(addon_id))
+    skin_manifest = ET.fromstring(archive.read("addons/{}/addon.xml".format(SKIN_ID)))
+    for dependency in skin_manifest.findall("requires/import"):
+        dependency_id = dependency.get("addon", "")
+        if dependency_id and not dependency_id.startswith("xbmc.") and dependency_id not in packages:
+            raise ValueError("The build archive is missing the skin dependency: {}.".format(dependency_id))
     if "build_info.json" not in archive.namelist():
         raise ValueError("The build archive is missing its build information.")
     return total, packages
@@ -192,7 +195,7 @@ def _validate_archive(archive):
 def _download_archive(url, destination, progress):
     request = urllib.request.Request(
         url,
-        headers={"User-Agent": "KingBlap-Wizard/1.0.4 Kodi"},
+        headers={"User-Agent": "KingBlap-Wizard/1.0.5 Kodi"},
     )
     with urllib.request.urlopen(request, timeout=60) as response:
         length = response.headers.get("Content-Length")
@@ -342,22 +345,20 @@ def _refresh_addon_art_cache(addon_root, addon_ids):
 
 
 def _apply_skin_settings():
-    # Set the skin first: Kodi derives theme and color choices from the active skin.
+    # Keep the build's display defaults independent of the previously active skin.
     values = (
         ("lookandfeel.skinzoom", 0),
         ("lookandfeel.enablerssfeeds", False),
     )
     for setting, value in values:
         _set_setting(setting, value)
-    _activate_skin("skin.xonfluence")
-    _set_setting("lookandfeel.skincolors", "Fire")
-    xbmc.executebuiltin("ReloadSkin", True)
+    _activate_skin(SKIN_ID)
 
 
 def _install(name, url):
     if not xbmcgui.Dialog().yesno(
         "Install {}?".format(name),
-        "This replaces matching add-on files and installs the Xonfluence skin.\n\n"
+        "This replaces matching add-on files and installs the Estuary MOD V2 skin.\n\n"
         "It removes XStream Player and its saved settings from this Kodi profile.\n\n"
         "Your provider accounts, other add-on data, libraries, and databases are not in the build.",
         yeslabel="Install build",
@@ -368,7 +369,6 @@ def _install(name, url):
     home = _path("special://home")
     addon_root = _path("special://home/addons")
     data_root = _path("special://profile/addon_data")
-    skin_settings = _path("special://profile/addon_data/skin.xonfluence/settings.xml")
     wizard_data = _path("special://profile/addon_data/{}".format(ADDON_ID))
     downloads = os.path.join(wizard_data, "downloads")
     archive_path = os.path.join(downloads, "KingBlapKodiBuild.zip")
@@ -378,11 +378,7 @@ def _install(name, url):
         "{}-{}".format(time.strftime("%Y%m%d-%H%M%S"), uuid.uuid4().hex[:8]),
     )
     staged_addons = os.path.join(transaction, "staged", "addons")
-    staged_settings = os.path.join(
-        transaction, "staged", "userdata", "addon_data", "skin.xonfluence", "settings.xml"
-    )
     rollback_root = os.path.join(transaction, "rollback")
-    settings_backup = os.path.join(rollback_root, "skin-settings.xml")
     os.makedirs(downloads, exist_ok=True)
     os.makedirs(addon_root, exist_ok=True)
 
@@ -390,8 +386,6 @@ def _install(name, url):
     progress.create("KingBlap Wizard", "Downloading build…")
     changes = []
     original_settings = {}
-    settings_existed = os.path.isfile(skin_settings)
-    settings_replaced = False
     original_skin = None
     committed = False
     rollback_complete = True
@@ -414,8 +408,6 @@ def _install(name, url):
                 if info.filename.startswith("addons/"):
                     relative = info.filename[len("addons/"):]
                     destination = _safe_target(staged_addons, relative)
-                elif info.filename == "userdata/addon_data/skin.xonfluence/settings.xml":
-                    destination = staged_settings
                 elif info.filename == "build_info.json":
                     continue
                 else:
@@ -436,27 +428,20 @@ def _install(name, url):
                 manifest = ET.parse(manifest_file).getroot()
             if manifest.get("id") != addon_id or manifest.get("version") != version:
                 raise ValueError("The staged {} add-on failed its manifest check.".format(addon_id))
-        if not os.path.isfile(staged_settings):
-            raise ValueError("The build skin settings could not be staged.")
-        with open(staged_settings, "rb") as settings_file:
-            ET.parse(settings_file)
-
         for setting in (
             "lookandfeel.skin",
-            "lookandfeel.skincolors",
             "lookandfeel.skinzoom",
             "lookandfeel.enablerssfeeds",
         ):
             original_settings[setting] = _get_setting(setting)
         original_skin = original_settings["lookandfeel.skin"]
-        _backup_file(skin_settings, rollback_root, "skin-settings.xml")
 
-        if original_skin == "skin.xonfluence":
-            # Unload the active skin before replacing its files, especially on Windows.
+        if original_skin in (SKIN_ID, LEGACY_SKIN_ID):
+            # Unload either skin before replacing or removing its files.
             _activate_skin("skin.estuary")
 
         progress.update(92, "KingBlap Wizard", "Replacing add-ons safely…")
-        for addon_id in sorted(set(packages) | {"plugin.video.xstream-player"}):
+        for addon_id in sorted(set(packages) | {"plugin.video.xstream-player", LEGACY_SKIN_ID}):
             staged = os.path.join(staged_addons, addon_id) if addon_id in packages else None
             backup = os.path.join(rollback_root, "addons", addon_id)
             _swap_child(addon_root, addon_id, staged, backup, changes)
@@ -467,27 +452,24 @@ def _install(name, url):
             os.path.join(rollback_root, "addon-data", "plugin.video.xstream-player"),
             changes,
         )
-        os.makedirs(os.path.dirname(skin_settings), exist_ok=True)
-        os.replace(staged_settings, skin_settings)
-        settings_replaced = True
-
         xbmc.executebuiltin("UpdateLocalAddons", True)
         xbmc.sleep(1500)
         _enable_addon("script.skinshortcuts")
+        _enable_addon(SKIN_ID)
         skin_details = _jsonrpc(
             "Addons.GetAddonDetails",
-            {"addonid": "skin.xonfluence", "properties": ["version"]},
+            {"addonid": SKIN_ID, "properties": ["version"]},
         )
         skin_addon = skin_details.get("addon") if isinstance(skin_details, dict) else None
-        if not isinstance(skin_addon, dict) or skin_addon.get("version") != packages["skin.xonfluence"]:
-            raise RuntimeError("Kodi did not register the installed Xonfluence skin.")
+        if not isinstance(skin_addon, dict) or skin_addon.get("version") != packages[SKIN_ID]:
+            raise RuntimeError("Kodi did not register the installed Estuary MOD V2 skin.")
 
-        progress.update(97, "KingBlap Wizard", "Loading the Xonfluence skin…")
+        progress.update(97, "KingBlap Wizard", "Loading Estuary MOD V2…")
         _apply_skin_settings()
         committed = True
         try:
             refreshed_art = _refresh_addon_art_cache(
-                addon_root, set(packages) | {"plugin.video.xstream-player"}
+                addon_root, set(packages) | {"plugin.video.xstream-player", LEGACY_SKIN_ID}
             )
         except Exception as cache_exc:
             refreshed_art = 0
@@ -518,17 +500,6 @@ def _install(name, url):
                 except Exception:
                     pass
             rollback_complete = _restore_children(changes) and rollback_complete
-            if settings_replaced:
-                try:
-                    if settings_existed and os.path.isfile(settings_backup):
-                        shutil.copy2(settings_backup, skin_settings)
-                    else:
-                        _remove_path(skin_settings)
-                except OSError as restore_exc:
-                    rollback_complete = False
-                    _log("Could not restore the previous skin settings: {}".format(
-                        restore_exc
-                    ), xbmc.LOGERROR)
             try:
                 xbmc.executebuiltin("UpdateLocalAddons", True)
             except Exception as restore_exc:
@@ -545,7 +516,6 @@ def _install(name, url):
                         restore_exc
                     ), xbmc.LOGERROR)
             for setting in (
-                "lookandfeel.skincolors",
                 "lookandfeel.skinzoom",
                 "lookandfeel.enablerssfeeds",
             ):
