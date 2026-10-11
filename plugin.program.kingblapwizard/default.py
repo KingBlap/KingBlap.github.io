@@ -57,7 +57,7 @@ def _path(special):
 def _fetch(url, max_bytes):
     request = urllib.request.Request(
         url,
-        headers={"User-Agent": "KingBlap-Wizard/1.0.23 Kodi"},
+        headers={"User-Agent": "KingBlap-Wizard/1.0.24 Kodi"},
     )
     with urllib.request.urlopen(request, timeout=45) as response:
         length = response.headers.get("Content-Length")
@@ -363,7 +363,7 @@ def _validate_archive(archive):
 def _download_archive(url, destination, progress):
     request = urllib.request.Request(
         url,
-        headers={"User-Agent": "KingBlap-Wizard/1.0.23 Kodi"},
+        headers={"User-Agent": "KingBlap-Wizard/1.0.24 Kodi"},
     )
     with urllib.request.urlopen(request, timeout=60) as response:
         length = response.headers.get("Content-Length")
@@ -875,6 +875,15 @@ def _install(name, url):
         _write_weather_addon_settings(WEATHER_ADDON_SETTINGS)
         _set_setting("weather.addon", WEATHER_ID)
         _set_setting("weather.currentlocation", 1)
+        # Select the configured first location through Kodi's weather manager
+        # and refresh its cached forecast. Otherwise an earlier IP-based
+        # location can remain active even after Gismeteo's settings change.
+        xbmc.executebuiltin("Weather.LocationSet(1)", True)
+        xbmc.executebuiltin("Weather.Refresh", True)
+        if _get_setting("weather.currentlocation") != 1:
+            raise RuntimeError("Kodi did not select Thomasville as its current weather location.")
+        _write_weather_addon_settings(WEATHER_ADDON_SETTINGS)
+        _log("Selected Gismeteo location 1 (Thomasville, North Carolina) and refreshed weather.")
         try:
             installed_skin_version = xbmcaddon.Addon(SKIN_ID).getAddonInfo("version")
         except RuntimeError:

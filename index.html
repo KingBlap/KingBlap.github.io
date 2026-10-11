@@ -42,7 +42,7 @@
     </nav>
     <article>
 <h1 id="kingblap-kodi-repository">KingBlap Kodi Repository</h1>
-<p>This project provides two ways to install its Kodi add-ons: the <strong>KingBlap Kodi Repository</strong> lets you choose add-ons individually, while <strong>KingBlap Wizard</strong> installs the complete portable build. The repository catalog currently lists <strong>121 packages</strong>. Build <strong>1.0.15</strong> installs and enables <strong>77 add-ons</strong>, selects Xonfluence 6.0.7, and configures Gismeteo for Thomasville, North Carolina.</p>
+<p>This project provides two ways to install its Kodi add-ons: the <strong>KingBlap Kodi Repository</strong> lets you choose add-ons individually, while <strong>KingBlap Wizard</strong> installs the complete portable build. The repository catalog currently lists <strong>121 packages</strong>. Build <strong>1.0.16</strong> installs and enables <strong>77 add-ons</strong>, selects Xonfluence 6.0.7, and configures and refreshes Gismeteo for Thomasville, North Carolina.</p>
 <p>The build was assembled from a Kodi 22 backup snapshot dated October 4, 2026. It targets Kodi 22. Compatibility and available features vary by Kodi version, device, add-on, and service provider.</p>
 <h2 id="install-in-kodi">Install in Kodi</h2>
 <ol>
@@ -55,20 +55,20 @@
 <p>This File Manager method also works on Android phones, Android TV, and Fire TV Stick; Kodi fetches the repository ZIP over HTTPS from the source. If the source appears empty or Kodi says it cannot connect, check that the path is exactly <code>https://kingblap.github.io/</code> and open that address in a browser on the same device. As a fallback, download the <a href="https://kingblap.github.io/repository.kingblap-1.0.0.zip">repository installer ZIP</a>, then use <strong>File Manager → Add source → Browse</strong> to add the folder containing the downloaded ZIP. Choose that source in <strong>Install from zip file</strong>.</p>
 <h2 id="install-the-complete-wizard-build">Install the complete wizard build</h2>
 <ol>
-<li>Install or update <strong>KingBlap Wizard 1.0.23</strong> from <strong>Install from repository → KingBlap Kodi Repository → Program add-ons</strong>. If the update is not listed, select <strong>Add-ons → Check for updates</strong> or install the <a href="https://kingblap.github.io/repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.23.zip">Wizard 1.0.23 ZIP</a>.</li>
-<li>Open <strong>KingBlap Wizard</strong>, choose <strong>KingBlap Kodi Build 1.0.15</strong>, and confirm.</li>
+<li>Install or update <strong>KingBlap Wizard 1.0.24</strong> from <strong>Install from repository → KingBlap Kodi Repository → Program add-ons</strong>. If the update is not listed, select <strong>Add-ons → Check for updates</strong> or install the <a href="https://kingblap.github.io/repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.24.zip">Wizard 1.0.24 ZIP</a>.</li>
+<li>Open <strong>KingBlap Wizard</strong>, choose <strong>KingBlap Kodi Build 1.0.16</strong>, and confirm.</li>
 <li>Let the download and installation finish. Close the completion notice, allow Kodi to finish loading add-ons and Xonfluence, then restart Kodi once.</li>
-<li>Gismeteo is enabled and set to Thomasville, North Carolina. Open GIPTV and enter your own provider details. Sign in to any other services you use.</li>
+<li>Gismeteo is enabled and set to Thomasville, North Carolina. The wizard selects it as the active location and forces a weather refresh, replacing any prior IP-detected city. Open GIPTV and enter your own provider details. Sign in to any other services you use.</li>
 </ol>
 <p>Make a Kodi backup before installing over an existing setup. The wizard replaces the add-on files included in the build, removes XStream Player, the prior Estuary MOD V2 skin, and the OnePlay repository from the build target, and enables the 77 packaged add-ons. It also replaces the Gismeteo location settings with Thomasville, North Carolina. It does not wipe unrelated add-ons or Kodi libraries. Existing add-on settings outside the build archive may remain on the device.</p>
-<h2 id="what-build-1015-includes">What Build 1.0.15 includes</h2>
+<h2 id="what-build-1016-includes">What Build 1.0.16 includes</h2>
 <ul>
 <li><strong>77 pre-enabled add-ons</strong>, including 18 video add-ons, supporting modules, artwork tools, Up Next, Gismeteo, and the KingBlap repository. The full 121-package repository catalog and versions are listed below; the build archive&#x27;s <code>build_info.json</code> records the exact 77 add-on IDs in the build.</li>
 <li><strong>GIPTV 3.1.0</strong> in place of XStream Player. GIPTV needs your own provider details and any provider-required account or playlist setup.</li>
 <li><strong>Xonfluence 6.0.7</strong> for Kodi 22, based on <a href="https://github.com/BadIDMan/skin.xonfluence">BadIDMan/skin.xonfluence</a> at <a href="https://github.com/BadIDMan/skin.xonfluence/commit/827ace3b3de32f28682fca7cf1c48ac4cd19a76b">commit 827ace3</a>. Estuary MOD V2 is still available as an optional repository add-on, but is not the build&#x27;s selected skin.</li>
 <li>Eight supplied Demon Women pictures, packaged with Xonfluence as a randomized, crossfading background slideshow. The images use a skin-relative location for portability across Windows, Android phones, Android TV, and Fire TV Stick; Xonfluence scales portrait images to fill the display.</li>
 <li>Sanitized Xonfluence skin settings from the supplied snapshot. The archive keeps portable presentation settings and removes local paths, web addresses, and secret-like values.</li>
-<li>Gismeteo weather add-on enabled and selected for Thomasville, North Carolina (location ID <code>8771</code>). The build disables Gismeteo&#x27;s automatic IP location so Thomasville is the first and current forecast location.</li>
+<li>Gismeteo weather add-on enabled and selected for Thomasville, North Carolina (location ID <code>8771</code>). The build disables Gismeteo&#x27;s automatic IP location, selects location 1 in Kodi, and forces a weather refresh so an older IP-detected city such as Dallas is replaced.</li>
 <li>The OnePlay repository (<code>One.repo</code>) is excluded from the build and removed by the wizard, including its saved add-on data. It remains available as an optional package in the repository catalog.</li>
 <li>Wizard fixes for Kodi add-on registration delays, install dialogs, the skin confirmation prompt, and applying Xonfluence after Kodi starts. The wizard also asks Kodi&#x27;s add-on manager to obtain compatible platform-specific components when available.</li>
 </ul>
@@ -77,13 +77,14 @@
 <h2 id="current-downloads">Current downloads</h2>
 <ul>
 <li>Build list: <a href="https://kingblap.github.io/builds.txt">builds.txt</a></li>
-<li>Build 1.0.15: <a href="https://github.com/KingBlap/KingBlap.github.io/releases/download/kingblap-build-v1.0.15/KingBlapKodiBuild-1.0.15.zip">download the ZIP</a></li>
+<li>Build 1.0.16: <a href="https://github.com/KingBlap/KingBlap.github.io/releases/download/kingblap-build-v1.0.16/KingBlapKodiBuild-1.0.16.zip">download the ZIP</a></li>
 <li>KingBlap repository installer: <a href="https://kingblap.github.io/repository.kingblap-1.0.0.zip">download the ZIP</a></li>
 <li>Kodi add-on catalog: <a href="https://kingblap.github.io/repo/zips/addons.xml">addons.xml</a></li>
 <li>Package inventory and versions: <a href="addon_catalog.json">addon_catalog.json</a></li>
 </ul>
 <h2 id="wizard-build-release-history">Wizard build release history</h2>
 <div class="table-scroll"><table><thead><tr><th>Build</th><th>Changes</th></tr></thead><tbody>
+<tr><td><strong>1.0.16</strong></td><td>Selects Gismeteo location 1 and forces a weather refresh so Thomasville replaces a previously active IP-detected city such as Dallas.</td></tr>
 <tr><td><strong>1.0.15</strong></td><td>Enabled and selected Gismeteo for Thomasville, North Carolina; excluded and removed the OnePlay repository from the build; configured weather location during installation.</td></tr>
 <tr><td><strong>1.0.14</strong></td><td>Updated the wizard&#x27;s Xonfluence version check to match the packaged Kodi 22 skin, version 6.0.7.</td></tr>
 <tr><td><strong>1.0.13</strong></td><td>Added the eight-image Demon Women Xonfluence slideshow.</td></tr>
@@ -103,39 +104,39 @@
 </tbody></table></div>
 <p>The main add-on change was replacing XStream Player with GIPTV. The repository contains GIPTV 3.1.0; the build does not include the user&#x27;s provider playlist or login. Individual packages retain their upstream metadata and licenses.</p>
 <h2 id="repository-package-inventory">Repository package inventory</h2>
-<p>The list below describes all <strong>121 packages available in the repository</strong>. Only 77 are bundled and enabled by Wizard Build 1.0.15; the rest can be installed individually from the repository. It includes add-ons, dependencies, skins, and upstream add-on repositories. Package versions are shown alongside their add-on IDs.</p>
+<p>The list below describes all <strong>121 packages available in the repository</strong>. Only 77 are bundled and enabled by Wizard Build 1.0.16; the rest can be installed individually from the repository. It includes add-ons, dependencies, skins, and upstream add-on repositories. Package versions are shown alongside their add-on IDs.</p>
 <ul>
-<li><strong>In Build 1.0.15</strong> — context.otaku — 1.0.35</li>
-<li><strong>In Build 1.0.15</strong> — context.prism — 4.0.2</li>
-<li><strong>In Build 1.0.15</strong> — context.seren — 3.0.2</li>
+<li><strong>In Build 1.0.16</strong> — context.otaku — 1.0.35</li>
+<li><strong>In Build 1.0.16</strong> — context.prism — 4.0.2</li>
+<li><strong>In Build 1.0.16</strong> — context.seren — 3.0.2</li>
 <li><strong>Repository only</strong> — inputstream.adaptive — 22.3.22</li>
 <li><strong>Repository only</strong> — inputstream.ffmpegdirect — 22.2.7</li>
 <li><strong>Repository only</strong> — inputstream.rtmp — 22.1.3</li>
-<li><strong>In Build 1.0.15</strong> — metadata.generic.albums — 1.0.20</li>
-<li><strong>In Build 1.0.15</strong> — metadata.generic.artists — 1.0.20</li>
-<li><strong>In Build 1.0.15</strong> — metadata.tvshows.themoviedb.org.python — 2.0.9</li>
+<li><strong>In Build 1.0.16</strong> — metadata.generic.albums — 1.0.20</li>
+<li><strong>In Build 1.0.16</strong> — metadata.generic.artists — 1.0.20</li>
+<li><strong>In Build 1.0.16</strong> — metadata.tvshows.themoviedb.org.python — 2.0.9</li>
 <li><strong>Repository only</strong> — One.repo — 1.16</li>
-<li><strong>Repository only</strong> — plugin.program.kingblapwizard — 1.0.23</li>
-<li><strong>In Build 1.0.15</strong> — plugin.video.absolution — 4.4.1</li>
-<li><strong>In Build 1.0.15</strong> — plugin.video.cosmos — 4.3.26</li>
-<li><strong>In Build 1.0.15</strong> — plugin.video.dailymotion_com — 2.4.5</li>
-<li><strong>In Build 1.0.15</strong> — plugin.video.forge — 0.2.13</li>
-<li><strong>In Build 1.0.15</strong> — plugin.video.gears — 2.4.3</li>
-<li><strong>In Build 1.0.15</strong> — plugin.video.genocide — 6.9.9</li>
-<li><strong>In Build 1.0.15</strong> — plugin.video.giptv — 3.1.0</li>
-<li><strong>In Build 1.0.15</strong> — plugin.video.homelander — 1.3.1</li>
-<li><strong>In Build 1.0.15</strong> — plugin.video.jet_guide — 0.0.21</li>
-<li><strong>In Build 1.0.15</strong> — plugin.video.loopguide — 3.8.2</li>
-<li><strong>In Build 1.0.15</strong> — plugin.video.looptv — 26+matrix.2</li>
-<li><strong>In Build 1.0.15</strong> — plugin.video.madtitansports — 2.0.44</li>
-<li><strong>In Build 1.0.15</strong> — plugin.video.otaku — 5.3.3</li>
-<li><strong>In Build 1.0.15</strong> — plugin.video.prism — 5.0.56</li>
-<li><strong>In Build 1.0.15</strong> — plugin.video.tatv2 — 1.0.3</li>
-<li><strong>In Build 1.0.15</strong> — plugin.video.thechains — 6.0.1</li>
-<li><strong>In Build 1.0.15</strong> — plugin.video.watchnixtoons2 — 0.14.23</li>
-<li><strong>In Build 1.0.15</strong> — plugin.video.zoro — 1.1.9</li>
-<li><strong>In Build 1.0.15</strong> — program.easyplayerswitch — 1.1.0</li>
-<li><strong>In Build 1.0.15</strong> — program.optiklean — 2.0.7</li>
+<li><strong>Repository only</strong> — plugin.program.kingblapwizard — 1.0.24</li>
+<li><strong>In Build 1.0.16</strong> — plugin.video.absolution — 4.4.1</li>
+<li><strong>In Build 1.0.16</strong> — plugin.video.cosmos — 4.3.26</li>
+<li><strong>In Build 1.0.16</strong> — plugin.video.dailymotion_com — 2.4.5</li>
+<li><strong>In Build 1.0.16</strong> — plugin.video.forge — 0.2.13</li>
+<li><strong>In Build 1.0.16</strong> — plugin.video.gears — 2.4.3</li>
+<li><strong>In Build 1.0.16</strong> — plugin.video.genocide — 6.9.9</li>
+<li><strong>In Build 1.0.16</strong> — plugin.video.giptv — 3.1.0</li>
+<li><strong>In Build 1.0.16</strong> — plugin.video.homelander — 1.3.1</li>
+<li><strong>In Build 1.0.16</strong> — plugin.video.jet_guide — 0.0.21</li>
+<li><strong>In Build 1.0.16</strong> — plugin.video.loopguide — 3.8.2</li>
+<li><strong>In Build 1.0.16</strong> — plugin.video.looptv — 26+matrix.2</li>
+<li><strong>In Build 1.0.16</strong> — plugin.video.madtitansports — 2.0.44</li>
+<li><strong>In Build 1.0.16</strong> — plugin.video.otaku — 5.3.3</li>
+<li><strong>In Build 1.0.16</strong> — plugin.video.prism — 5.0.56</li>
+<li><strong>In Build 1.0.16</strong> — plugin.video.tatv2 — 1.0.3</li>
+<li><strong>In Build 1.0.16</strong> — plugin.video.thechains — 6.0.1</li>
+<li><strong>In Build 1.0.16</strong> — plugin.video.watchnixtoons2 — 0.14.23</li>
+<li><strong>In Build 1.0.16</strong> — plugin.video.zoro — 1.1.9</li>
+<li><strong>In Build 1.0.16</strong> — program.easyplayerswitch — 1.1.0</li>
+<li><strong>In Build 1.0.16</strong> — program.optiklean — 2.0.7</li>
 <li><strong>Repository only</strong> — pvr.iptvsimple — 22.6.4</li>
 <li><strong>Repository only</strong> — repository.709 — 1.0.2</li>
 <li><strong>Repository only</strong> — repository.aliunde — 1.9.5</li>
@@ -155,7 +156,7 @@
 <li><strong>Repository only</strong> — repository.hooty — 1.0</li>
 <li><strong>Repository only</strong> — repository.jewrepo — 1.6.0</li>
 <li><strong>Repository only</strong> — repository.jmooremcc — 1.1.0</li>
-<li><strong>In Build 1.0.15</strong> — repository.kingblap — 1.0.0</li>
+<li><strong>In Build 1.0.16</strong> — repository.kingblap — 1.0.0</li>
 <li><strong>Repository only</strong> — repository.kodifitzwell — 0.0.1</li>
 <li><strong>Repository only</strong> — repository.loop — 3.0.4</li>
 <li><strong>Repository only</strong> — repository.madforit — 1.6</li>
@@ -172,60 +173,60 @@
 <li><strong>Repository only</strong> — repository.thelab — 25.3.27</li>
 <li><strong>Repository only</strong> — repository.vanilla21 — 1.0.0</li>
 <li><strong>Repository only</strong> — repository.zachmorris — 1.0.4</li>
-<li><strong>In Build 1.0.15</strong> — resource.uisounds.appletv — 0.0.2</li>
-<li><strong>In Build 1.0.15</strong> — script.absolution.artwork — 4.1.7</li>
-<li><strong>In Build 1.0.15</strong> — script.ezmaintenanceplus — 2026.04.05.0</li>
-<li><strong>In Build 1.0.15</strong> — script.favourites — 8.1.2</li>
-<li><strong>In Build 1.0.15</strong> — script.homelander.artwork — 1.0.4</li>
-<li><strong>In Build 1.0.15</strong> — script.image.resource.select — 3.0.2</li>
-<li><strong>In Build 1.0.15</strong> — script.module.absolutionscrapers — 4.0.5</li>
-<li><strong>In Build 1.0.15</strong> — script.module.acctmgr — 1.1.6</li>
-<li><strong>In Build 1.0.15</strong> — script.module.acctvwr — 1.1.4</li>
-<li><strong>In Build 1.0.15</strong> — script.module.backports.zoneinfo — 0.2.1</li>
-<li><strong>In Build 1.0.15</strong> — script.module.beautifulsoup4 — 4.12.2</li>
-<li><strong>In Build 1.0.15</strong> — script.module.certifi — 2023.5.7</li>
-<li><strong>In Build 1.0.15</strong> — script.module.chainscrapers — 1.0.8</li>
-<li><strong>In Build 1.0.15</strong> — script.module.chardet — 5.1.0</li>
-<li><strong>In Build 1.0.15</strong> — script.module.cocoscrapers — 1.0.39</li>
-<li><strong>In Build 1.0.15</strong> — script.module.dateutil — 2.8.2</li>
-<li><strong>In Build 1.0.15</strong> — script.module.defusedxml — 0.6.0+matrix.1</li>
-<li><strong>In Build 1.0.15</strong> — script.module.dropbox — 10.3.1+matrix.1</li>
-<li><strong>In Build 1.0.15</strong> — script.module.fenomscrapers — 1.5.4</li>
-<li><strong>In Build 1.0.15</strong> — script.module.future — 1.0.0+matrix.1</li>
-<li><strong>In Build 1.0.15</strong> — script.module.gearsscrapers — 1.6.2</li>
-<li><strong>In Build 1.0.15</strong> — script.module.homelanderscrapers — 2.0.4</li>
-<li><strong>In Build 1.0.15</strong> — script.module.idna — 3.10.0</li>
-<li><strong>In Build 1.0.15</strong> — script.module.inputstreamhelper — 0.8.6</li>
-<li><strong>In Build 1.0.15</strong> — script.module.jetextractors — 3.3.26</li>
-<li><strong>In Build 1.0.15</strong> — script.module.kodi-six — 0.1.3.1</li>
-<li><strong>In Build 1.0.15</strong> — script.module.microjenscrapers — 1.4</li>
-<li><strong>In Build 1.0.15</strong> — script.module.myaccounts — 1.1.3</li>
-<li><strong>In Build 1.0.15</strong> — script.module.myconnpy — 8.0.33</li>
+<li><strong>In Build 1.0.16</strong> — resource.uisounds.appletv — 0.0.2</li>
+<li><strong>In Build 1.0.16</strong> — script.absolution.artwork — 4.1.7</li>
+<li><strong>In Build 1.0.16</strong> — script.ezmaintenanceplus — 2026.04.05.0</li>
+<li><strong>In Build 1.0.16</strong> — script.favourites — 8.1.2</li>
+<li><strong>In Build 1.0.16</strong> — script.homelander.artwork — 1.0.4</li>
+<li><strong>In Build 1.0.16</strong> — script.image.resource.select — 3.0.2</li>
+<li><strong>In Build 1.0.16</strong> — script.module.absolutionscrapers — 4.0.5</li>
+<li><strong>In Build 1.0.16</strong> — script.module.acctmgr — 1.1.6</li>
+<li><strong>In Build 1.0.16</strong> — script.module.acctvwr — 1.1.4</li>
+<li><strong>In Build 1.0.16</strong> — script.module.backports.zoneinfo — 0.2.1</li>
+<li><strong>In Build 1.0.16</strong> — script.module.beautifulsoup4 — 4.12.2</li>
+<li><strong>In Build 1.0.16</strong> — script.module.certifi — 2023.5.7</li>
+<li><strong>In Build 1.0.16</strong> — script.module.chainscrapers — 1.0.8</li>
+<li><strong>In Build 1.0.16</strong> — script.module.chardet — 5.1.0</li>
+<li><strong>In Build 1.0.16</strong> — script.module.cocoscrapers — 1.0.39</li>
+<li><strong>In Build 1.0.16</strong> — script.module.dateutil — 2.8.2</li>
+<li><strong>In Build 1.0.16</strong> — script.module.defusedxml — 0.6.0+matrix.1</li>
+<li><strong>In Build 1.0.16</strong> — script.module.dropbox — 10.3.1+matrix.1</li>
+<li><strong>In Build 1.0.16</strong> — script.module.fenomscrapers — 1.5.4</li>
+<li><strong>In Build 1.0.16</strong> — script.module.future — 1.0.0+matrix.1</li>
+<li><strong>In Build 1.0.16</strong> — script.module.gearsscrapers — 1.6.2</li>
+<li><strong>In Build 1.0.16</strong> — script.module.homelanderscrapers — 2.0.4</li>
+<li><strong>In Build 1.0.16</strong> — script.module.idna — 3.10.0</li>
+<li><strong>In Build 1.0.16</strong> — script.module.inputstreamhelper — 0.8.6</li>
+<li><strong>In Build 1.0.16</strong> — script.module.jetextractors — 3.3.26</li>
+<li><strong>In Build 1.0.16</strong> — script.module.kodi-six — 0.1.3.1</li>
+<li><strong>In Build 1.0.16</strong> — script.module.microjenscrapers — 1.4</li>
+<li><strong>In Build 1.0.16</strong> — script.module.myaccounts — 1.1.3</li>
+<li><strong>In Build 1.0.16</strong> — script.module.myconnpy — 8.0.33</li>
 <li><strong>Repository only</strong> — script.module.pvr.artwork — 2.2.10</li>
-<li><strong>In Build 1.0.15</strong> — script.module.pyamf — 0.8.10+matrix.4</li>
-<li><strong>In Build 1.0.15</strong> — script.module.pyjsparser — 3.0.0</li>
-<li><strong>In Build 1.0.15</strong> — script.module.pyqrcode — 1.2.1+matrix.4</li>
-<li><strong>In Build 1.0.15</strong> — script.module.pytz — 2023.3.0+matrix.1</li>
-<li><strong>In Build 1.0.15</strong> — script.module.requests — 2.31.0</li>
-<li><strong>In Build 1.0.15</strong> — script.module.resolveurl — 5.1.210</li>
-<li><strong>In Build 1.0.15</strong> — script.module.routing — 0.2.3+matrix.1</li>
+<li><strong>In Build 1.0.16</strong> — script.module.pyamf — 0.8.10+matrix.4</li>
+<li><strong>In Build 1.0.16</strong> — script.module.pyjsparser — 3.0.0</li>
+<li><strong>In Build 1.0.16</strong> — script.module.pyqrcode — 1.2.1+matrix.4</li>
+<li><strong>In Build 1.0.16</strong> — script.module.pytz — 2023.3.0+matrix.1</li>
+<li><strong>In Build 1.0.16</strong> — script.module.requests — 2.31.0</li>
+<li><strong>In Build 1.0.16</strong> — script.module.resolveurl — 5.1.210</li>
+<li><strong>In Build 1.0.16</strong> — script.module.routing — 0.2.3+matrix.1</li>
 <li><strong>Repository only</strong> — script.module.simplecache — 2.0.2</li>
-<li><strong>In Build 1.0.15</strong> — script.module.simplejson — 3.19.1+matrix.1</li>
-<li><strong>In Build 1.0.15</strong> — script.module.simpleplugin3 — 3.0.6+matrix.1</li>
-<li><strong>In Build 1.0.15</strong> — script.module.six — 1.16.0+matrix.1</li>
-<li><strong>In Build 1.0.15</strong> — script.module.soupsieve — 2.4.1</li>
-<li><strong>In Build 1.0.15</strong> — script.module.tabulate — 0.9.1.2</li>
-<li><strong>In Build 1.0.15</strong> — script.module.tzdata — 2023.3.0+matrix.1</li>
-<li><strong>In Build 1.0.15</strong> — script.module.tzlocal — 5.0.1</li>
-<li><strong>In Build 1.0.15</strong> — script.module.unidecode — 1.3.6</li>
-<li><strong>In Build 1.0.15</strong> — script.module.urllib3 — 2.2.3</li>
+<li><strong>In Build 1.0.16</strong> — script.module.simplejson — 3.19.1+matrix.1</li>
+<li><strong>In Build 1.0.16</strong> — script.module.simpleplugin3 — 3.0.6+matrix.1</li>
+<li><strong>In Build 1.0.16</strong> — script.module.six — 1.16.0+matrix.1</li>
+<li><strong>In Build 1.0.16</strong> — script.module.soupsieve — 2.4.1</li>
+<li><strong>In Build 1.0.16</strong> — script.module.tabulate — 0.9.1.2</li>
+<li><strong>In Build 1.0.16</strong> — script.module.tzdata — 2023.3.0+matrix.1</li>
+<li><strong>In Build 1.0.16</strong> — script.module.tzlocal — 5.0.1</li>
+<li><strong>In Build 1.0.16</strong> — script.module.unidecode — 1.3.6</li>
+<li><strong>In Build 1.0.16</strong> — script.module.urllib3 — 2.2.3</li>
 <li><strong>Repository only</strong> — script.skinshortcuts — 3.0.4</li>
-<li><strong>In Build 1.0.15</strong> — script.xbmcbackup — 1.7.3</li>
-<li><strong>In Build 1.0.15</strong> — service.upnext — 1.1.9+matrix.1</li>
-<li><strong>In Build 1.0.15</strong> — service.xbmc.versioncheck — 0.5.30+matrix.1</li>
+<li><strong>In Build 1.0.16</strong> — script.xbmcbackup — 1.7.3</li>
+<li><strong>In Build 1.0.16</strong> — service.upnext — 1.1.9+matrix.1</li>
+<li><strong>In Build 1.0.16</strong> — service.xbmc.versioncheck — 0.5.30+matrix.1</li>
 <li><strong>Repository only</strong> — skin.estuary.modv2 — 22.0+piers</li>
-<li><strong>In Build 1.0.15</strong> — skin.xonfluence — 6.0.7</li>
-<li><strong>In Build 1.0.15</strong> — weather.gismeteo — 0.6.4+matrix.1</li>
+<li><strong>In Build 1.0.16</strong> — skin.xonfluence — 6.0.7</li>
+<li><strong>In Build 1.0.16</strong> — weather.gismeteo — 0.6.4+matrix.1</li>
 </ul>
 <h2 id="updating-the-catalog">Updating the catalog</h2>
 <p>Add or replace an add-on ZIP under repo/zips/&lt;addon-id&gt;/&lt;addon-id&gt;-&lt;version&gt;.zip, then run the following in the repository root:</p>
