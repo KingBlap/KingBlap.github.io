@@ -19,10 +19,16 @@ ZIP_ROOT = ROOT / "repo" / "zips"
 SKIN_ID = "skin.xonfluence"
 SKIN_VERSION = "6.0.7"
 LEGACY_SKIN_ID = "skin.estuary.modv2"
+ONEPLAY_REPO_ID = "One.repo"
 REPLACED_ADDON = "plugin.video.xstream-player"
 GIPTV_ID = "plugin.video.giptv"
 GIPTV_VERSION = "3.1.0"
-BUILD_VERSION = "1.0.14"
+WEATHER_ID = "weather.gismeteo"
+WEATHER_VERSION = "0.6.4+matrix.1"
+WEATHER_LOCATION = "Thomasville"
+WEATHER_LOCATION_ID = "8771"
+WEATHER_SETTINGS_ARCHIVE_PATH = "userdata/addon_data/{}/settings.xml".format(WEATHER_ID)
+BUILD_VERSION = "1.0.15"
 REPO_ID = "repository.kingblap"
 NATIVE_SUFFIXES = {".dll", ".so", ".dylib", ".pyd"}
 SECRET_SETTING = re.compile(
@@ -97,7 +103,7 @@ def installed_ids(snapshot):
 
 def portable_addon(addon_id, record):
     version, platform, path = record
-    if addon_id in (REPLACED_ADDON, LEGACY_SKIN_ID):
+    if addon_id in (REPLACED_ADDON, LEGACY_SKIN_ID, ONEPLAY_REPO_ID):
         return False
     if addon_id.startswith("repository.") and addon_id != REPO_ID:
         return False
@@ -206,6 +212,18 @@ def make_skin_settings(snapshot, packages, chosen):
     return ET.tostring(sanitized, encoding="utf-8", xml_declaration=True), kept
 
 
+def make_weather_settings():
+    """Package the requested Gismeteo location without unrelated profile data."""
+    settings = ET.Element("settings", {"version": "4"})
+    for setting_id, value in (
+        ("CurrentLocation", "false"),
+        ("Location1", WEATHER_LOCATION),
+        ("Location1ID", WEATHER_LOCATION_ID),
+    ):
+        ET.SubElement(settings, "setting", {"id": setting_id}).text = value
+    return ET.tostring(settings, encoding="utf-8", xml_declaration=True)
+
+
 def build(snapshot, output):
     if not (snapshot / "xbmcbackup.val").is_file():
         raise ValueError("The selected folder is not a Kodi backup snapshot (xbmcbackup.val is missing).")
@@ -213,11 +231,11 @@ def build(snapshot, output):
     installed = installed_ids(snapshot)
     chosen = set()
     excluded_platform = set()
-    pending = list(installed | {REPO_ID, GIPTV_ID, SKIN_ID})
+    pending = list(installed | {REPO_ID, GIPTV_ID, SKIN_ID, WEATHER_ID})
 
     while pending:
         addon_id = pending.pop()
-        if addon_id in chosen or addon_id in (REPLACED_ADDON, LEGACY_SKIN_ID):
+        if addon_id in chosen or addon_id in (REPLACED_ADDON, LEGACY_SKIN_ID, ONEPLAY_REPO_ID):
             continue
         record = packages.get(addon_id)
         if record is None:
@@ -237,6 +255,8 @@ def build(snapshot, output):
         raise ValueError("GIPTV 3.1.0 must be present in the public Kodi repository first.")
     if SKIN_ID not in chosen or packages.get(SKIN_ID, (None,))[0] != SKIN_VERSION:
         raise ValueError("The fresh Kodi 22 Xonfluence 6.0.7 skin package is missing from the repository.")
+    if WEATHER_ID not in chosen or packages.get(WEATHER_ID, (None,))[0] != WEATHER_VERSION:
+        raise ValueError("The Gismeteo weather package is missing from the repository.")
     for addon_id in (
         "script.favourites",
         "script.image.resource.select",
@@ -245,6 +265,7 @@ def build(snapshot, output):
             raise ValueError("The Xonfluence dependency {} is missing.".format(addon_id))
 
     skin_settings, skin_setting_count = make_skin_settings(snapshot, packages, chosen)
+    weather_settings = make_weather_settings()
 
     info = {
         "name": "KingBlap Kodi Build",
@@ -253,7 +274,10 @@ def build(snapshot, output):
         "skin": SKIN_ID,
         "addons": sorted(chosen),
         "replaced_addon": REPLACED_ADDON,
-        "removed_addons": [LEGACY_SKIN_ID],
+        "removed_addons": [LEGACY_SKIN_ID, ONEPLAY_REPO_ID],
+        "weather_addon": WEATHER_ID,
+        "weather_location": "Thomasville, North Carolina",
+        "weather_location_id": WEATHER_LOCATION_ID,
         "excluded_platform_addons": sorted(excluded_platform),
         "excluded_user_data": [
             "add-on accounts and credentials",
@@ -264,6 +288,7 @@ def build(snapshot, output):
         ],
         "included_user_data": [
             "sanitized Xonfluence skin settings ({} portable settings)".format(skin_setting_count),
+            "Gismeteo weather configuration for Thomasville, North Carolina",
         ],
     }
 
@@ -274,6 +299,7 @@ def build(snapshot, output):
             "userdata/addon_data/{}/settings.xml".format(SKIN_ID),
             skin_settings,
         )
+        build_zip.writestr(WEATHER_SETTINGS_ARCHIVE_PATH, weather_settings)
         for addon_id in sorted(chosen):
             record = packages[addon_id]
             with zipfile.ZipFile(record[2]) as addon_zip:

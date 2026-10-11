@@ -25,8 +25,19 @@ ADDON_ID = ADDON.getAddonInfo("id")
 BUILDS_URL = "https://kingblap.github.io/builds.txt"
 SKIN_ID = "skin.xonfluence"
 SKIN_VERSION = "6.0.7"
+WEATHER_VERSION = "0.6.4+matrix.1"
 SKIN_SETTINGS_ARCHIVE_PATH = "userdata/addon_data/{}/settings.xml".format(SKIN_ID)
 LEGACY_SKIN_ID = "skin.estuary.modv2"
+ONEPLAY_REPO_ID = "One.repo"
+WEATHER_ID = "weather.gismeteo"
+WEATHER_LOCATION = "Thomasville"
+WEATHER_LOCATION_ID = "8771"
+WEATHER_ADDON_SETTINGS = {
+    "CurrentLocation": "false",
+    "Location1": WEATHER_LOCATION,
+    "Location1ID": WEATHER_LOCATION_ID,
+}
+WEATHER_SETTINGS_ARCHIVE_PATH = "userdata/addon_data/{}/settings.xml".format(WEATHER_ID)
 BUILD_LIMIT = 1024 * 1024 * 1024
 DOWNLOAD_LIMIT = 512 * 1024 * 1024
 CHUNK_SIZE = 1024 * 1024
@@ -46,7 +57,7 @@ def _path(special):
 def _fetch(url, max_bytes):
     request = urllib.request.Request(
         url,
-        headers={"User-Agent": "KingBlap-Wizard/1.0.22 Kodi"},
+        headers={"User-Agent": "KingBlap-Wizard/1.0.23 Kodi"},
     )
     with urllib.request.urlopen(request, timeout=45) as response:
         length = response.headers.get("Content-Length")
@@ -204,6 +215,7 @@ def _validate_archive(archive):
     packages = {}
     build_info = None
     skin_settings_found = False
+    weather_settings_found = False
     seen_names = set()
     folded_paths = set()
     file_paths = set()
@@ -244,13 +256,29 @@ def _validate_archive(archive):
             if settings.tag != "settings" or not settings.findall("setting"):
                 raise ValueError("The build archive's Xonfluence skin settings are empty or invalid.")
             skin_settings_found = True
+        elif name == WEATHER_SETTINGS_ARCHIVE_PATH:
+            try:
+                settings = ET.fromstring(archive.read(info))
+            except ET.ParseError:
+                raise ValueError("The build archive's Gismeteo settings are not valid XML.")
+            values = {
+                setting.get("id"): setting.text or ""
+                for setting in settings.findall("setting")
+            } if settings.tag == "settings" else {}
+            if (
+                values.get("CurrentLocation", "").casefold() != "false"
+                or values.get("Location1") != WEATHER_LOCATION
+                or values.get("Location1ID") != WEATHER_LOCATION_ID
+            ):
+                raise ValueError("The build archive does not select Thomasville, North Carolina in Gismeteo.")
+            weather_settings_found = True
         elif name.startswith("addons/"):
             relative = name[len("addons/"):]
             parts = relative.split("/")
             if len(parts) < 2 or not re.fullmatch(r"[A-Za-z0-9_.-]+", parts[0]):
                 raise ValueError("The build archive contains an invalid add-on path.")
-            if parts[0] == "plugin.video.xstream-player":
-                raise ValueError("The build archive still contains XStream Player.")
+            if parts[0] in ("plugin.video.xstream-player", ONEPLAY_REPO_ID):
+                raise ValueError("The build archive contains an add-on that should be removed.")
             _safe_target("/build/addons", relative)
             if parts[-1] == "addon.xml" and len(parts) == 2:
                 root = ET.fromstring(archive.read(info))
@@ -274,6 +302,8 @@ def _validate_archive(archive):
         raise ValueError("The build archive does not contain the expected GIPTV package.")
     if packages.get(SKIN_ID) != SKIN_VERSION:
         raise ValueError("The build archive does not contain Xonfluence {} for Kodi 22.".format(SKIN_VERSION))
+    if packages.get(WEATHER_ID) != WEATHER_VERSION:
+        raise ValueError("The build archive is missing the Gismeteo weather add-on.")
     if LEGACY_SKIN_ID in packages:
         raise ValueError("The build archive still contains Estuary MOD V2.")
     for addon_id in (
@@ -308,15 +338,32 @@ def _validate_archive(archive):
         for addon_id in platform_addons
     ):
         raise ValueError("The build information contains an invalid platform-specific add-on ID.")
+    removed_addons = build_info.get("removed_addons", [])
+    if not isinstance(removed_addons, list) or any(
+        not isinstance(addon_id, str)
+        or not re.fullmatch(r"[A-Za-z0-9_.-]+", addon_id)
+        for addon_id in removed_addons
+    ):
+        raise ValueError("The build information contains an invalid removed add-on ID.")
+    if ONEPLAY_REPO_ID not in removed_addons or set(removed_addons) & set(packages):
+        raise ValueError("The build must remove the OnePlay repository and cannot package removed add-ons.")
     if not skin_settings_found:
         raise ValueError("The build archive is missing its Xonfluence skin settings file.")
-    return total, packages, sorted(set(platform_addons))
+    if not weather_settings_found:
+        raise ValueError("The build archive is missing its Thomasville Gismeteo settings.")
+    if (
+        build_info.get("weather_addon") != WEATHER_ID
+        or build_info.get("weather_location") != "Thomasville, North Carolina"
+        or build_info.get("weather_location_id") != WEATHER_LOCATION_ID
+    ):
+        raise ValueError("The build information does not identify the Thomasville, North Carolina weather setup.")
+    return total, packages, sorted(set(platform_addons)), sorted(set(removed_addons))
 
 
 def _download_archive(url, destination, progress):
     request = urllib.request.Request(
         url,
-        headers={"User-Agent": "KingBlap-Wizard/1.0.22 Kodi"},
+        headers={"User-Agent": "KingBlap-Wizard/1.0.23 Kodi"},
     )
     with urllib.request.urlopen(request, timeout=60) as response:
         length = response.headers.get("Content-Length")
@@ -379,6 +426,26 @@ def _set_setting(setting, value):
     result = _jsonrpc("Settings.SetSettingValue", {"setting": setting, "value": value})
     if result is not True:
         raise RuntimeError("Kodi could not apply the {} setting.".format(setting))
+
+
+def _read_weather_addon_settings():
+    try:
+        addon = xbmcaddon.Addon(WEATHER_ID)
+    except RuntimeError:
+        return None
+    return {
+        setting: addon.getSetting(setting)
+        for setting in WEATHER_ADDON_SETTINGS
+    }
+
+
+def _write_weather_addon_settings(values):
+    addon = xbmcaddon.Addon(WEATHER_ID)
+    for setting, value in values.items():
+        addon.setSetting(setting, value)
+    for setting, value in values.items():
+        if addon.getSetting(setting) != value:
+            raise RuntimeError("Kodi could not apply the {} Gismeteo setting.".format(setting))
 
 
 def _enable_addon(addon_id):
@@ -621,7 +688,7 @@ def _install(name, url):
         "Install {}?".format(name),
         "This installs and enables all packaged add-ons, fetches Android-compatible "
         "native components through Kodi, replaces matching add-on files, and installs Xonfluence {} for Kodi 22. ".format(SKIN_VERSION) +
-        "It also installs the build's sanitized Xonfluence skin settings and removes the previous Estuary MOD V2 skin.\n\n"
+        "It also sets Gismeteo to Thomasville, North Carolina, installs the Xonfluence skin settings, and removes Estuary MOD V2 and the OnePlay repository.\n\n"
         "It also removes XStream Player and its saved settings from this Kodi profile.\n\n"
         "Your provider accounts, other add-on data, libraries, and databases are not in the build.",
         yeslabel="Install build",
@@ -650,13 +717,15 @@ def _install(name, url):
     progress.create("KingBlap Wizard", "Downloading build…")
     changes = []
     original_skin = None
+    original_weather_settings = None
+    original_weather_addon_settings = None
     committed = False
     rollback_complete = True
     preserve_transaction = False
     try:
         _download_archive(url, archive_path, progress)
         with zipfile.ZipFile(archive_path, "r") as archive:
-            expanded_size, packages, platform_addons = _validate_archive(archive)
+            expanded_size, packages, platform_addons, removed_addons = _validate_archive(archive)
             required_dependencies = _required_external_dependencies(archive, packages)
             free_space = shutil.disk_usage(home).free
             if free_space < expanded_size + os.path.getsize(archive_path) + 64 * 1024 * 1024:
@@ -733,6 +802,14 @@ def _install(name, url):
             raise ValueError("The staged Xonfluence skin settings are not valid XML.")
         if staged_settings.tag != "settings" or not staged_settings.findall("setting"):
             raise ValueError("The staged Xonfluence skin settings are empty or invalid.")
+        staged_weather_settings = os.path.join(
+            staged_userdata,
+            "addon_data",
+            WEATHER_ID,
+            "settings.xml",
+        )
+        if not os.path.isfile(staged_weather_settings):
+            raise ValueError("The staged build is missing its Gismeteo settings file.")
 
         for addon_id, version in packages.items():
             manifest_path = _safe_target(staged_addons, "{}/addon.xml".format(addon_id))
@@ -743,13 +820,19 @@ def _install(name, url):
             if manifest.get("id") != addon_id or manifest.get("version") != version:
                 raise ValueError("The staged {} add-on failed its manifest check.".format(addon_id))
         original_skin = _get_setting("lookandfeel.skin")
+        original_weather_settings = {
+            "weather.addon": _get_setting("weather.addon"),
+            "weather.currentlocation": _get_setting("weather.currentlocation"),
+        }
+        original_weather_addon_settings = _read_weather_addon_settings()
 
         if original_skin in (SKIN_ID, LEGACY_SKIN_ID):
             # Unload either skin before replacing or removing its files.
             _activate_skin("skin.estuary")
 
         progress.update(92, "KingBlap Wizard", "Replacing add-ons safely…")
-        for addon_id in sorted(set(packages) | {"plugin.video.xstream-player", LEGACY_SKIN_ID}):
+        removed_addons = set(removed_addons) | {"plugin.video.xstream-player", LEGACY_SKIN_ID}
+        for addon_id in sorted(set(packages) | removed_addons):
             staged = os.path.join(staged_addons, addon_id) if addon_id in packages else None
             backup = os.path.join(rollback_root, "addons", addon_id)
             _swap_child(addon_root, addon_id, staged, backup, changes)
@@ -767,6 +850,20 @@ def _install(name, url):
             os.path.join(rollback_root, "addon-data", "plugin.video.xstream-player"),
             changes,
         )
+        _swap_child(
+            data_root,
+            ONEPLAY_REPO_ID,
+            None,
+            os.path.join(rollback_root, "addon-data", ONEPLAY_REPO_ID),
+            changes,
+        )
+        _swap_child(
+            os.path.join(data_root, WEATHER_ID),
+            "settings.xml",
+            staged_weather_settings,
+            os.path.join(rollback_root, "addon-data", WEATHER_ID, "settings.xml"),
+            changes,
+        )
         xbmc.executebuiltin("UpdateLocalAddons", True)
         xbmc.executebuiltin("UpdateAddonRepos", True)
         kodi_managed_addons = sorted(set(required_dependencies) | set(platform_addons))
@@ -775,6 +872,9 @@ def _install(name, url):
         xbmc.executebuiltin("UpdateLocalAddons", True)
         _wait_for_addon_registration(packages.keys(), progress)
         _enable_build_addons(packages.keys(), progress)
+        _write_weather_addon_settings(WEATHER_ADDON_SETTINGS)
+        _set_setting("weather.addon", WEATHER_ID)
+        _set_setting("weather.currentlocation", 1)
         try:
             installed_skin_version = xbmcaddon.Addon(SKIN_ID).getAddonInfo("version")
         except RuntimeError:
@@ -787,7 +887,7 @@ def _install(name, url):
         committed = True
         try:
             refreshed_art = _refresh_addon_art_cache(
-                addon_root, set(packages) | {"plugin.video.xstream-player", LEGACY_SKIN_ID}
+                addon_root, set(packages) | removed_addons
             )
         except Exception as cache_exc:
             refreshed_art = 0
@@ -801,6 +901,7 @@ def _install(name, url):
             "Kodi will recreate add-on logos and skin artwork when it displays them.\n"
             "Show and channel thumbnails need each add-on's own data and account settings.\n"
             "Keep Kodi's official repository enabled for Android-specific binary dependencies.\n"
+            "Gismeteo is set to Thomasville, North Carolina. The OnePlay repository was removed.\n"
             "Open GIPTV and enter your own provider details."
         ).format(len(packages), len(platform_addons), refreshed_art)
         xbmcgui.Dialog().ok(
@@ -824,6 +925,13 @@ def _install(name, url):
                 except Exception:
                     pass
             rollback_complete = _restore_children(changes) and rollback_complete
+            if original_weather_settings is not None:
+                for setting, value in original_weather_settings.items():
+                    try:
+                        _set_setting(setting, value)
+                    except Exception as restore_exc:
+                        rollback_complete = False
+                        _log("Could not restore {}: {}".format(setting, restore_exc), xbmc.LOGERROR)
             try:
                 xbmc.executebuiltin("UpdateLocalAddons", True)
             except Exception as restore_exc:
@@ -831,6 +939,12 @@ def _install(name, url):
                 _log("Could not refresh Kodi's add-on list during rollback: {}".format(
                     restore_exc
                 ), xbmc.LOGERROR)
+            if original_weather_addon_settings is not None:
+                try:
+                    _write_weather_addon_settings(original_weather_addon_settings)
+                except Exception as restore_exc:
+                    rollback_complete = False
+                    _log("Could not restore Gismeteo settings: {}".format(restore_exc), xbmc.LOGERROR)
             if original_skin:
                 try:
                     _activate_skin(original_skin)
