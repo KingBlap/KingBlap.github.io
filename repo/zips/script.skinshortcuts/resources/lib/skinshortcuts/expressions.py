@@ -1,0 +1,253 @@
+"""Expression parsing for $MATH and $IF template features."""
+
+from __future__ import annotations
+
+import re
+
+from .conditions import evaluate_condition, lookup
+from .log import get_logger, notify
+
+log = get_logger("Expressions")
+
+
+class MathEvaluator:
+    """Arithmetic expression evaluator over property variables, read as numbers."""
+
+    def __init__(self, variables: dict[str, str]):
+        self.variables = variables
+        self.pos = 0
+        self.expr = ""
+
+    def evaluate(self, expr: str) -> str:
+        """Evaluate a math expression and return result as string."""
+        self.expr = expr.strip()
+        self.pos = 0
+
+        try:
+            result = self._parse_expression()
+            self._skip_whitespace()
+            if self.pos < len(self.expr):
+                raise ValueError(f"Unexpected character: {self.expr[self.pos]}")
+            if isinstance(result, float) and result.is_integer():
+                return str(int(result))
+            return str(result)
+        except (ValueError, ZeroDivisionError) as e:
+            log.debug(f"Math eval failed for '{expr}': {e}")
+            notify("Expression Error", f"$MATH failed: {expr}")
+            return expr
+
+    def _skip_whitespace(self) -> None:
+        """Advance to the next non-space character."""
+        while self.pos < len(self.expr) and self.expr[self.pos].isspace():
+            self.pos += 1
+
+    def _parse_expression(self) -> float:
+        """Parse addition and subtraction (lowest precedence)."""
+        left = self._parse_term()
+
+        while self.pos < len(self.expr):
+            self._skip_whitespace()
+            if self.pos >= len(self.expr):
+                break
+
+            op = self.expr[self.pos]
+            if op == "+":
+                self.pos += 1
+                left = left + self._parse_term()
+            elif op == "-":
+                self.pos += 1
+                left = left - self._parse_term()
+            else:
+                break
+
+        return left
+
+    def _parse_term(self) -> float:
+        """Parse multiplication, division, modulo (higher precedence)."""
+        left = self._parse_unary()
+
+        while self.pos < len(self.expr):
+            self._skip_whitespace()
+            if self.pos >= len(self.expr):
+                break
+
+            # Check for // (floor division) first
+            if self.expr[self.pos : self.pos + 2] == "//":
+                self.pos += 2
+                right = self._parse_unary()
+                left = float(int(left) // int(right))
+            elif self.expr[self.pos] == "*":
+                self.pos += 1
+                left = left * self._parse_unary()
+            elif self.expr[self.pos] == "/":
+                self.pos += 1
+                right = self._parse_unary()
+                if right == 0:
+                    raise ZeroDivisionError("Division by zero")
+                left = left / right
+            elif self.expr[self.pos] == "%":
+                self.pos += 1
+                right = self._parse_unary()
+                if right == 0:
+                    raise ZeroDivisionError("Modulo by zero")
+                left = left % right
+            else:
+                break
+
+        return left
+
+    def _parse_unary(self) -> float:
+        """Parse unary minus."""
+        self._skip_whitespace()
+
+        if self.pos < len(self.expr) and self.expr[self.pos] == "-":
+            self.pos += 1
+            return -self._parse_unary()
+        if self.pos < len(self.expr) and self.expr[self.pos] == "+":
+            self.pos += 1
+            return self._parse_unary()
+
+        return self._parse_primary()
+
+    def _parse_primary(self) -> float:
+        """Parse numbers, variables, and parenthesized expressions."""
+        self._skip_whitespace()
+
+        if self.pos >= len(self.expr):
+            raise ValueError("Unexpected end of expression")
+
+        if self.expr[self.pos] == "(":
+            self.pos += 1
+            result = self._parse_expression()
+            self._skip_whitespace()
+            if self.pos >= len(self.expr) or self.expr[self.pos] != ")":
+                raise ValueError("Missing closing parenthesis")
+            self.pos += 1
+            return result
+
+        if self.expr[self.pos].isdigit() or self.expr[self.pos] == ".":
+            return self._parse_number()
+
+        if self.expr[self.pos].isalpha() or self.expr[self.pos] == "_":
+            return self._parse_variable()
+
+        raise ValueError(f"Unexpected character: {self.expr[self.pos]}")
+
+    def _parse_number(self) -> float:
+        """Parse a numeric literal."""
+        start = self.pos
+        has_dot = False
+
+        while self.pos < len(self.expr):
+            c = self.expr[self.pos]
+            if c.isdigit():
+                self.pos += 1
+            elif c == "." and not has_dot:
+                has_dot = True
+                self.pos += 1
+            else:
+                break
+
+        return float(self.expr[start : self.pos])
+
+    def _parse_variable(self) -> float:
+        """Parse a variable name and return its numeric value."""
+        start = self.pos
+
+        while self.pos < len(self.expr):
+            c = self.expr[self.pos]
+            if c.isalnum() or c == "_" or c == ".":
+                self.pos += 1
+            else:
+                break
+
+        name = self.expr[start : self.pos]
+        value = lookup(name, self.variables) or "0"
+
+        try:
+            return float(value) if value else 0.0
+        except ValueError:
+            return 0.0
+
+
+def evaluate_math(expr: str, properties: dict[str, str]) -> str:
+    """Evaluate a $MATH expression."""
+    evaluator = MathEvaluator(properties)
+    return evaluator.evaluate(expr)
+
+
+def evaluate_if(expr: str, properties: dict[str, str]) -> str:
+    """Evaluate a $IF expression to the first matching clause's value."""
+    expr = expr.strip()
+
+    clauses: list[tuple[str, str]] = []
+    else_value: str | None = None
+
+    remaining = expr
+    while remaining:
+        remaining = remaining.strip()
+
+        then_match = re.search(r"\bTHEN\b", remaining, re.IGNORECASE)
+        if not then_match:
+            if clauses and remaining:
+                else_value = remaining
+            break
+
+        condition = remaining[: then_match.start()].strip()
+        after_then = remaining[then_match.end() :].strip()
+
+        elif_match = re.search(r"\bELIF\b", after_then, re.IGNORECASE)
+        else_match = re.search(r"\bELSE\b", after_then, re.IGNORECASE)
+
+        end_pos = len(after_then)
+        next_keyword = None
+
+        if elif_match and (not else_match or elif_match.start() < else_match.start()):
+            end_pos = elif_match.start()
+            next_keyword = "ELIF"
+        elif else_match:
+            end_pos = else_match.start()
+            next_keyword = "ELSE"
+
+        value = after_then[:end_pos].strip()
+        clauses.append((condition, value))
+
+        if next_keyword == "ELIF" and elif_match:
+            remaining = after_then[elif_match.end() :]
+        elif next_keyword == "ELSE" and else_match:
+            else_value = after_then[else_match.end() :].strip()
+            break
+        else:
+            break
+
+    for condition, value in clauses:
+        if evaluate_condition(condition, properties):
+            return value
+
+    return else_value if else_value is not None else ""
+
+
+def process_math_expressions(
+    text: str,
+    properties: dict[str, str],
+) -> str:
+    """Process all $MATH[...] expressions in text."""
+    pattern = re.compile(r"\$MATH\[([^\]]+)\]")
+
+    def replace(match: re.Match) -> str:
+        return evaluate_math(match.group(1), properties)
+
+    return pattern.sub(replace, text)
+
+
+def process_if_expressions(
+    text: str,
+    properties: dict[str, str],
+) -> str:
+    """Process all $IF[...] expressions in text."""
+    pattern = re.compile(r"\$IF\[([^\]]+)\]")
+
+    def replace(match: re.Match) -> str:
+        return evaluate_if(match.group(1), properties)
+
+    return pattern.sub(replace, text)

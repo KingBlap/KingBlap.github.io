@@ -1,5 +1,5 @@
 {
-  "generated_from": "Kodi backup snapshot 2026-10-04 plus GIPTV 3.1.0, Kodi Up Next dependency, KingBlap Wizard 1.0.3, and Kodi 22 Xonfluence 6.0.3",
+  "generated_from": "Kodi backup snapshot 2026-10-04 plus GIPTV 3.1.0, Kodi Up Next, Skin Shortcuts 3.0.4, KingBlap Wizard 1.0.4, and repaired Xonfluence 5.1",
   "addons": [
     {
       "id": "context.otaku",
@@ -90,6 +90,15 @@
       "license": "",
       "zip": "repo/zips/One.repo/One.repo-1.16.zip",
       "bytes": 1535548
+    },
+    {
+      "id": "plugin.program.kingblapwizard",
+      "version": "1.0.4",
+      "name": "KingBlap Wizard",
+      "provider": "KingBlap",
+      "license": "GPL-2.0-or-later",
+      "zip": "repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.4.zip",
+      "bytes": 81444
     },
     {
       "id": "plugin.video.absolution",
@@ -252,15 +261,6 @@
       "license": "GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007",
       "zip": "repo/zips/plugin.video.zoro/plugin.video.zoro-1.1.9.zip",
       "bytes": 8339362
-    },
-    {
-      "id": "plugin.program.kingblapwizard",
-      "version": "1.0.3",
-      "name": "KingBlap Wizard",
-      "provider": "KingBlap",
-      "license": "GPL-2.0-or-later",
-      "zip": "repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.3.zip",
-      "bytes": 81367
     },
     {
       "id": "program.easyplayerswitch",
@@ -450,6 +450,15 @@
       "license": "",
       "zip": "repo/zips/repository.jmooremcc/repository.jmooremcc-1.1.0.zip",
       "bytes": 50944
+    },
+    {
+      "id": "repository.kingblap",
+      "version": "1.0.0",
+      "name": "KingBlap Kodi Repository",
+      "provider": "KingBlap",
+      "license": "",
+      "zip": "repo/zips/repository.kingblap/repository.kingblap-1.0.0.zip",
+      "bytes": 74984
     },
     {
       "id": "repository.kodifitzwell",
@@ -1001,6 +1010,15 @@
       "bytes": 130842
     },
     {
+      "id": "script.skinshortcuts",
+      "version": "3.0.4",
+      "name": "Skin Shortcuts",
+      "provider": "MikeSiLVO",
+      "license": "GPL-2.0-only",
+      "zip": "repo/zips/script.skinshortcuts/script.skinshortcuts-3.0.4.zip",
+      "bytes": 626101
+    },
+    {
       "id": "script.xbmcbackup",
       "version": "1.7.3",
       "name": "Backup",
@@ -1029,12 +1047,12 @@
     },
     {
       "id": "skin.xonfluence",
-      "version": "6.0.3",
+      "version": "5.1",
       "name": "Xonfluence",
-      "provider": "Helly, bsoriano, jdig4240, rafikW",
+      "provider": "Helly, bsoriano, jdig4240",
       "license": "GNU General Public License version 2",
-      "zip": "repo/zips/skin.xonfluence/skin.xonfluence-6.0.3.zip",
-      "bytes": 24986395
+      "zip": "repo/zips/skin.xonfluence/skin.xonfluence-5.1.zip",
+      "bytes": 39777903
     },
     {
       "id": "weather.gismeteo",
@@ -1044,15 +1062,6 @@
       "license": "GPL-3.0-only",
       "zip": "repo/zips/weather.gismeteo/weather.gismeteo-0.6.4+matrix.1.zip",
       "bytes": 77280
-    },
-    {
-      "id": "repository.kingblap",
-      "version": "1.0.0",
-      "name": "KingBlap Kodi Repository",
-      "provider": "KingBlap",
-      "license": "",
-      "zip": "repository.kingblap-1.0.0.zip",
-      "bytes": 74984
     }
   ]
 }

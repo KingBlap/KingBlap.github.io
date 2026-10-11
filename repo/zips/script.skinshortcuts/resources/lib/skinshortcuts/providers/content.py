@@ -1,0 +1,944 @@
+"""Content provider, resolving <content> elements to shortcuts through JSON-RPC."""
+
+from __future__ import annotations
+
+import json
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
+import xbmc
+import xbmcvfs
+
+from ..log import get_logger
+from ..playlists import parse_smart_playlist, playlists_base_path, unpack_multipath
+from .browse import normalize_image
+
+if TYPE_CHECKING:
+    from ..models.menu import IconOverrides, Content
+
+log = get_logger("ContentProvider")
+
+
+PLAYLIST_EXTENSIONS = (".xsp", ".m3u", ".m3u8", ".pls")
+
+
+# skinner-facing target values mapped to the form each JSON-RPC endpoint expects
+
+# Files.Media accepts: video, music, pictures, files, programs.
+_SOURCES_TARGET_ALIASES: dict[str, str] = {
+    "video": "video",
+    "videos": "video",
+    "music": "music",
+    "pictures": "pictures",
+    "picture": "pictures",
+    "files": "files",
+    "file": "files",
+    "programs": "programs",
+    "program": "programs",
+}
+
+# Addons.GetAddons content accepts: video, audio, image, executable, game
+_ADDONS_TARGET_ALIASES: dict[str, str] = {
+    "video": "video",
+    "videos": "video",
+    "audio": "audio",
+    "music": "audio",
+    "image": "image",
+    "images": "image",
+    "picture": "image",
+    "pictures": "image",
+    "executable": "executable",
+    "program": "executable",
+    "programs": "executable",
+    "game": "game",
+    "games": "game",
+}
+
+# Smart-playlist directory scan filter: video or music only.
+_PLAYLIST_TARGET_ALIASES: dict[str, str] = {
+    "video": "video",
+    "videos": "video",
+    "music": "music",
+}
+
+
+@dataclass
+class ResolvedShortcut:
+    """A shortcut resolved from dynamic content."""
+
+    label: str
+    action: str
+    icon: str = "DefaultShortcut.png"
+    label2: str = ""
+    action_play: str = ""
+    action_party: str = ""
+    content_type: str = ""
+    # browsable items; picker offers browse-into and builds ActivateWindow from these
+    browse_path: str = ""
+    browse_window: str = ""
+    # marks a source shortcut; the playlist flow acts on video/music, the rest get Files view
+    source_media: str = ""
+    # picker filter, not the picked item's runtime visibility
+    visible: str = ""
+
+
+def _expand_playlist_dirs(directory: str) -> list[str]:
+    """Expand a multipath alias to component dirs, since a filename appended to it won't open."""
+    translated = xbmcvfs.translatePath(directory)
+    if not translated.startswith("multipath://"):
+        return [directory]
+    return [d if d.endswith("/") else d + "/" for d in unpack_multipath(translated)]
+
+
+def scan_playlist_files(directory: str) -> list[tuple[str, str]]:
+    """Scan directory for playlist files."""
+    playlists = []
+
+    for scan_dir in _expand_playlist_dirs(directory):
+        try:
+            _, files = xbmcvfs.listdir(scan_dir)
+        except Exception:
+            continue
+
+        for filename in files:
+            if filename.endswith(PLAYLIST_EXTENSIONS):
+                label = filename.rsplit(".", 1)[0]
+                playlists.append((label, scan_dir + filename))
+
+    return playlists
+
+
+def library_node_type(path: str) -> str:
+    """Widget type a library:// node declares; empty when there is none."""
+    if not path.startswith("library://"):
+        return ""
+
+    rest = path[len("library://") :].strip("/")
+    host, _, remainder = rest.partition("/")
+    if not host or not remainder:
+        return ""
+
+    base = ""
+    for candidate in (
+        f"special://profile/library/{host}/",
+        # a profile without its own databases reads master's library folder
+        f"special://masterprofile/library/{host}/",
+        f"special://xbmc/system/library/{host}/",
+    ):
+        if xbmcvfs.exists(candidate):
+            base = candidate
+            break
+    if not base:
+        return ""
+
+    node = base + remainder
+    # a folder of nodes, no type of its own
+    if xbmcvfs.exists(node + "/"):
+        return ""
+
+    try:
+        f = xbmcvfs.File(node)
+        try:
+            content = f.read()
+        finally:
+            f.close()
+
+        import xml.etree.ElementTree as ET
+
+        root = ET.fromstring(content)
+    except Exception:
+        return ""
+
+    if root.tag != "node":
+        return ""
+
+    node_type = root.get("type", "")
+    if node_type == "filter":
+        # <group> rows are genres, actors and the like; <content> is only their domain
+        return (root.findtext("group") or root.findtext("content") or "").strip()
+    if node_type == "folder" and (root.findtext("path") or "").startswith("addons://"):
+        return "addons"
+    return ""
+
+
+def _collection(result: dict | None, key: str) -> list:
+    """Return result[key] as a list, whether Kodi sent null, nothing or an empty one."""
+    if not result:
+        return []
+    return result.get(key) or []
+
+
+class ContentProvider:
+    """Resolves dynamic content references to shortcuts."""
+
+    def __init__(self, icon_overrides: IconOverrides | None = None) -> None:
+        """Take the icon overrides; resolved content is cached per instance."""
+        self._cache: dict[str, list[ResolvedShortcut]] = {}
+        self._icon_overrides = icon_overrides or {}
+
+    def resolve(self, content: Content) -> list[ResolvedShortcut]:
+        """Resolve a content reference to a list of shortcuts."""
+        source = content.source.lower()
+        target = content.target.lower() if content.target else ""
+
+        if source == "sources":
+            result = self._resolve_sources(target)
+        elif source == "playlists":
+            result = self._resolve_playlists(target, content.path)
+        elif source == "addons":
+            result = self._resolve_addons(target)
+        elif source == "favourites":
+            result = self._resolve_favourites()
+        elif source == "pvr":
+            result = self._resolve_pvr(target)
+        elif source == "commands":
+            result = self._resolve_commands()
+        elif source == "settings":
+            result = self._resolve_settings()
+        elif source == "library":
+            result = self._resolve_library(target)
+        elif source == "nodes":
+            result = self._resolve_nodes(target)
+        else:
+            return []
+
+        if self._icon_overrides:
+            for r in result:
+                r.icon = self._icon_overrides.get(r.icon, r.icon)
+        return result
+
+    def _resolve_sources(self, target: str) -> list[ResolvedShortcut]:
+        """Resolve media sources; an empty target defaults to video."""
+        cache_key = f"sources_{target}"
+        if cache_key in self._cache:
+            return self._cache[cache_key]
+
+        if not target:
+            media = "video"
+        else:
+            media = _SOURCES_TARGET_ALIASES.get(target)
+            if media is None:
+                log.warning(
+                    f"sources: unknown target '{target}'. Valid: "
+                    "video/videos, music, pictures/picture, files/file, programs/program"
+                )
+                return []
+
+        result = self._jsonrpc("Files.GetSources", {"media": media})
+        sources = _collection(result, "sources")
+        if not sources:
+            return []
+
+        window_map = {
+            "video": "videos",
+            "music": "music",
+            "pictures": "pictures",
+            "files": "files",
+            "programs": "programs",
+        }
+        window = window_map[media]
+
+        shortcuts = []
+        for source in sources:
+            path = source.get("file", "")
+            label = source.get("label", "")
+            # Kodi computes an addons:// row per media type, never stored as a source
+            if path.startswith("addons://"):
+                continue
+            if path and label:
+                shortcuts.append(
+                    ResolvedShortcut(
+                        label=label,
+                        action=f"ActivateWindow({window},{path},return)",
+                        icon="DefaultFolder.png",
+                        browse_path=path,
+                        browse_window=window,
+                        source_media=media,
+                    )
+                )
+
+        self._cache[cache_key] = shortcuts
+        return shortcuts
+
+    def _resolve_playlists(
+        self, target: str, custom_path: str = ""
+    ) -> list[ResolvedShortcut]:
+        """Resolve playlists from standard or custom paths."""
+        cache_key = f"playlists_{target}_{custom_path}"
+        if cache_key in self._cache:
+            return self._cache[cache_key]
+
+        if target:
+            normalized = _PLAYLIST_TARGET_ALIASES.get(target)
+            if normalized is None:
+                log.warning(
+                    f"playlists: unknown target '{target}'. Valid: video/videos, music"
+                )
+                return []
+        else:
+            normalized = ""
+
+        if custom_path:
+            paths = [custom_path]
+        else:
+            base = playlists_base_path()
+            if normalized == "video":
+                paths = [f"{base}video/", f"{base}mixed/"]
+            elif normalized == "music":
+                paths = [f"{base}music/", f"{base}mixed/"]
+            else:
+                paths = [f"{base}video/", f"{base}music/", f"{base}mixed/"]
+
+        default_window = "music" if normalized == "music" else "videos"
+
+        shortcuts = []
+        for path in paths:
+            shortcuts.extend(self._scan_playlist_directory(path, default_window, normalized))
+
+        self._cache[cache_key] = shortcuts
+        return shortcuts
+
+    def _scan_playlist_directory(
+        self, directory: str, default_window: str, target: str = ""
+    ) -> list[ResolvedShortcut]:
+        """Scan a directory for playlist files and convert them to shortcuts."""
+        shortcuts = []
+        filter_video = target == "video"
+        filter_music = target == "music"
+
+        video_types = ("movies", "tvshows", "episodes", "musicvideos")
+        music_types = ("songs", "albums", "artists")
+
+        for label, filepath in scan_playlist_files(directory):
+            window = default_window
+            display_label = label
+            playlist_type = ""
+
+            if filepath.endswith(".xsp"):
+                playlist_name, playlist_type = parse_smart_playlist(filepath)
+                playlist_type = playlist_type or "unknown"
+                if playlist_name:
+                    display_label = playlist_name
+                if playlist_type in music_types:
+                    window = "music"
+                elif playlist_type in video_types:
+                    window = "videos"
+
+            if filter_video and playlist_type and playlist_type not in video_types:
+                continue
+            if filter_music and playlist_type and playlist_type not in music_types:
+                continue
+
+            action_party = ""
+            if window == "music":
+                action_party = f"PlayerControl(PartyMode({filepath}))"
+
+            shortcuts.append(
+                ResolvedShortcut(
+                    label=display_label,
+                    action=f"ActivateWindow({window},{filepath},return)",
+                    icon="DefaultPlaylist.png",
+                    action_play=f"PlayMedia({filepath})",
+                    action_party=action_party,
+                    content_type=playlist_type,
+                )
+            )
+
+        return shortcuts
+
+    def _resolve_addons(self, target: str) -> list[ResolvedShortcut]:
+        """Resolve installed addons by content type. Empty target defaults to video."""
+        cache_key = f"addons_{target}"
+        if cache_key in self._cache:
+            return self._cache[cache_key]
+
+        if not target:
+            content = "video"
+        else:
+            content = _ADDONS_TARGET_ALIASES.get(target)
+            if content is None:
+                log.warning(
+                    f"addons: unknown target '{target}'. Valid: "
+                    "video/videos, audio/music, image/pictures, executable/programs, game/games"
+                )
+                return []
+
+        window_map = {
+            "video": "videos",
+            "audio": "music",
+            "image": "pictures",
+            "executable": "programs",
+            "game": "games",
+        }
+
+        # content ignored without type; type = first extension point, so query both
+        addons: dict[str, dict] = {}
+        for addon_type in ("xbmc.python.pluginsource", "xbmc.python.script"):
+            result = self._jsonrpc(
+                "Addons.GetAddons",
+                {
+                    "type": addon_type,
+                    "content": content,
+                    "enabled": True,
+                    "properties": ["name", "thumbnail"],
+                },
+            )
+            for addon in _collection(result, "addons"):
+                addon_id = addon.get("addonid", "")
+                if addon_id:
+                    addons.setdefault(addon_id, addon)
+
+        if not addons:
+            return []
+
+        shortcuts = []
+        for addon_id in sorted(addons):
+            addon = addons[addon_id]
+            name = addon.get("name", addon_id)
+            thumb = addon.get("thumbnail", "")
+
+            if addon.get("type") == "xbmc.python.pluginsource":
+                window = window_map.get(content, "videos")
+                shortcuts.append(
+                    ResolvedShortcut(
+                        label=name,
+                        action="",
+                        icon=thumb or "DefaultAddon.png",
+                        browse_path=f"plugin://{addon_id}/",
+                        browse_window=window,
+                    )
+                )
+            else:
+                shortcuts.append(
+                    ResolvedShortcut(
+                        label=name,
+                        action=f"RunAddon({addon_id})",
+                        icon=thumb or "DefaultAddon.png",
+                    )
+                )
+
+        self._cache[cache_key] = shortcuts
+        return shortcuts
+
+    def _resolve_favourites(self) -> list[ResolvedShortcut]:
+        """Resolve user favourites."""
+        cache_key = "favourites"
+        if cache_key in self._cache:
+            return self._cache[cache_key]
+
+        result = self._jsonrpc(
+            "Favourites.GetFavourites",
+            {"properties": ["thumbnail", "window", "windowparameter", "path"]},
+        )
+        favourites = _collection(result, "favourites")
+        if not favourites:
+            return []
+
+        shortcuts = []
+        for fav in favourites:
+            title = fav.get("title", "")
+            fav_type = fav.get("type", "")
+            thumb = fav.get("thumbnail", "")
+
+            action = ""
+            if fav_type == "media":
+                path = fav.get("path", "")
+                if path:
+                    action = f"PlayMedia({path})"
+            elif fav_type == "window":
+                window = fav.get("window", "")
+                param = fav.get("windowparameter", "")
+                if window:
+                    if param:
+                        action = f"ActivateWindow({window},{param},return)"
+                    else:
+                        action = f"ActivateWindow({window})"
+            elif fav_type == "script":
+                path = fav.get("path", "")
+                if path:
+                    action = f"RunScript({path})"
+            elif fav_type == "androidapp":
+                path = fav.get("path", "")
+                if path:
+                    action = f"StartAndroidActivity({path})"
+
+            if title and action:
+                shortcuts.append(
+                    ResolvedShortcut(
+                        label=title,
+                        action=action,
+                        icon=thumb or "DefaultFavourites.png",
+                    )
+                )
+
+        self._cache[cache_key] = shortcuts
+        return shortcuts
+
+    def _resolve_pvr(self, target: str) -> list[ResolvedShortcut]:
+        """Resolve PVR channels."""
+        cache_key = f"pvr_{target}"
+        if cache_key in self._cache:
+            return self._cache[cache_key]
+
+        if target in ("tv", "television"):
+            if not xbmc.getCondVisibility("Pvr.HasTVChannels"):
+                return []
+            channel_group = "alltv"
+        elif target == "radio":
+            if not xbmc.getCondVisibility("Pvr.HasRadioChannels"):
+                return []
+            channel_group = "allradio"
+        else:
+            return []
+
+        result = self._jsonrpc(
+            "PVR.GetChannels",
+            {
+                "channelgroupid": channel_group,
+                "properties": ["thumbnail", "channelnumber"],
+            },
+        )
+        channels = _collection(result, "channels")
+        if not channels:
+            return []
+
+        shortcuts = []
+        for channel in channels:
+            channel_id = channel.get("channelid", 0)
+            label = channel.get("label", "")
+            thumb = channel.get("thumbnail", "")
+            number = channel.get("channelnumber", 0)
+
+            if channel_id and label:
+                display_label = f"{number}. {label}" if number else label
+                shortcuts.append(
+                    ResolvedShortcut(
+                        label=display_label,
+                        action=f"PlayPvrChannel({channel_id})",
+                        icon=thumb or "DefaultTVShows.png",
+                    )
+                )
+
+        self._cache[cache_key] = shortcuts
+        return shortcuts
+
+    def _resolve_commands(self) -> list[ResolvedShortcut]:
+        """Resolve system commands."""
+        commands = [
+            ("$LOCALIZE[13012]", "Quit()", "System.ShowExitButton"),
+            ("$LOCALIZE[13013]", "Reboot()", "System.CanReboot"),
+            ("$LOCALIZE[13016]", "Powerdown()", "System.CanPowerDown"),
+            ("$LOCALIZE[13011]", "Suspend()", "System.CanSuspend"),
+            ("$LOCALIZE[13010]", "Hibernate()", "System.CanHibernate"),
+            ("$LOCALIZE[13313]", "RestartApp()", "System.Platform.Windows | System.Platform.Linux"),
+            ("$LOCALIZE[20183]", "ReloadSkin()", ""),
+            (
+                "$LOCALIZE[20126]",
+                "System.LogOff",
+                "System.HasLoginScreen | Integer.IsGreater(System.ProfileCount,1)",
+            ),
+            ("$ADDON[script.skinshortcuts 32046]", "UpdateLibrary(video)", ""),
+            ("$ADDON[script.skinshortcuts 32047]", "UpdateLibrary(music)", ""),
+            ("$ADDON[script.skinshortcuts 32055]", "CleanLibrary(video)", ""),
+            ("$ADDON[script.skinshortcuts 32056]", "CleanLibrary(music)", ""),
+            ("$LOCALIZE[360]", "ActivateScreensaver", ""),
+        ]
+
+        return [
+            ResolvedShortcut(label=label, action=action, icon="DefaultProgram.png", visible=visible)
+            for label, action, visible in commands
+        ]
+
+    def _resolve_settings(self) -> list[ResolvedShortcut]:
+        """Resolve settings shortcuts."""
+        settings = [
+            ("$LOCALIZE[10004]", "ActivateWindow(Settings)", "DefaultAddonService.png"),
+            ("$LOCALIZE[10035]", "ActivateWindow(SkinSettings)", "DefaultAddonService.png"),
+            ("$LOCALIZE[14201]", "ActivateWindow(PlayerSettings)", "DefaultAddonService.png"),
+            ("$LOCALIZE[14212]", "ActivateWindow(MediaSettings)", "DefaultAddonVideo.png"),
+            ("$LOCALIZE[14205]", "ActivateWindow(PVRSettings)", "DefaultAddonPVRClient.png"),
+            ("$LOCALIZE[14208]", "ActivateWindow(ServiceSettings)", "DefaultAddonService.png"),
+            ("$LOCALIZE[10022]", "ActivateWindow(GameSettings)", "DefaultAddonGame.png"),
+            ("$LOCALIZE[14207]", "ActivateWindow(InterfaceSettings)", "DefaultAddonService.png"),
+            ("$LOCALIZE[14210]", "ActivateWindow(Profiles)", "DefaultUser.png"),
+            ("$LOCALIZE[14209]", "ActivateWindow(SystemSettings)", "DefaultAddonService.png"),
+            ("$LOCALIZE[10040]", "ActivateWindow(AddonBrowser)", "DefaultAddon.png"),
+            ("$LOCALIZE[10003]", "ActivateWindow(FileManager)", "DefaultFolder.png"),
+        ]
+
+        return [
+            ResolvedShortcut(label=label, action=action, icon=icon)
+            for label, action, icon in settings
+        ]
+
+    def _resolve_library(self, target: str) -> list[ResolvedShortcut]:
+        """Resolve a library field target into one shortcut per value."""
+        cache_key = f"library_{target}"
+        if cache_key in self._cache:
+            return self._cache[cache_key]
+
+        shortcuts: list[ResolvedShortcut] = []
+        target_lower = target.lower()
+
+        if target_lower in ("genres", "moviegenres"):
+            shortcuts = self._get_video_genres("movie")
+        elif target_lower == "tvgenres":
+            shortcuts = self._get_video_genres("tvshow")
+        elif target_lower == "musicgenres":
+            shortcuts = self._get_music_genres()
+        elif target_lower in ("years", "movieyears"):
+            shortcuts = self._get_video_years("movie")
+        elif target_lower == "tvyears":
+            shortcuts = self._get_video_years("tvshow")
+        elif target_lower in ("studios", "moviestudios"):
+            shortcuts = self._get_video_property("movie", "studio", "Studios")
+        elif target_lower == "tvstudios":
+            shortcuts = self._get_video_property("tvshow", "studio", "Studios")
+        elif target_lower in ("tags", "movietags"):
+            shortcuts = self._get_video_property("movie", "tag", "Tags")
+        elif target_lower == "tvtags":
+            shortcuts = self._get_video_property("tvshow", "tag", "Tags")
+        elif target_lower in ("actors", "movieactors"):
+            shortcuts = self._get_video_actors("movie")
+        elif target_lower == "tvactors":
+            shortcuts = self._get_video_actors("tvshow")
+        elif target_lower in ("directors", "moviedirectors"):
+            shortcuts = self._get_video_directors("movie")
+        elif target_lower == "tvdirectors":
+            shortcuts = self._get_video_directors("tvshow")
+        elif target_lower == "artists":
+            shortcuts = self._get_music_artists()
+        elif target_lower == "albums":
+            shortcuts = self._get_music_albums()
+
+        self._cache[cache_key] = shortcuts
+        return shortcuts
+
+    def _resolve_nodes(self, target: str) -> list[ResolvedShortcut]:
+        """Resolve library nodes (navigation structure from XML files)."""
+        cache_key = f"nodes_{target}"
+        if cache_key in self._cache:
+            return self._cache[cache_key]
+
+        target_lower = target.lower()
+        if target_lower in ("library", "all", ""):
+            shortcuts = [
+                ResolvedShortcut(
+                    label=xbmc.getLocalizedString(3),  # "Videos"
+                    action="ActivateWindow(videos,library://video/,return)",
+                    icon="DefaultVideo.png",
+                    browse_path="library://video/",
+                    browse_window="videos",
+                ),
+                ResolvedShortcut(
+                    label=xbmc.getLocalizedString(2),  # "Music"
+                    action="ActivateWindow(music,library://music/,return)",
+                    icon="DefaultMusicAlbums.png",
+                    browse_path="library://music/",
+                    browse_window="music",
+                ),
+            ]
+            self._cache[cache_key] = shortcuts
+            return shortcuts
+
+        lib_type = "video" if target_lower == "videos" else target_lower
+        shortcuts = self._collect_nodes_for_type(lib_type)
+        self._cache[cache_key] = shortcuts
+        return shortcuts
+
+    def _collect_nodes_for_type(self, lib_type: str) -> list[ResolvedShortcut]:
+        """Collect top-level library nodes for one library type, as the user has customized them."""
+        is_music = lib_type == "music"
+        media = "music" if is_music else "video"
+        window = "music" if is_music else "videos"
+        directory = f"library://{lib_type}/"
+
+        result = self._jsonrpc(
+            "Files.GetDirectory",
+            {
+                "directory": directory,
+                "media": media,
+                "properties": ["title", "thumbnail", "art"],
+            },
+        )
+        files = _collection(result, "files")
+        if not files:
+            return []
+
+        shortcuts: list[ResolvedShortcut] = []
+        for entry in files:
+            path = entry.get("file", "")
+            label = entry.get("label") or entry.get("title") or ""
+            if not label or not path:
+                continue
+            icon = normalize_image(entry.get("art", {}).get("icon", ""))
+            thumb = entry.get("thumbnail", "")
+            shortcuts.append(
+                ResolvedShortcut(
+                    label=label,
+                    action=f"ActivateWindow({window},{path},return)",
+                    icon=icon or thumb or "DefaultFolder.png",
+                    browse_path=path,
+                    browse_window=window,
+                )
+            )
+        return shortcuts
+
+    def _get_video_genres(self, media_type: str) -> list[ResolvedShortcut]:
+        """Get video genres (movies or TV shows)."""
+        result = self._jsonrpc(
+            "VideoLibrary.GetGenres", {"type": media_type, "properties": ["thumbnail"]}
+        )
+        genres = _collection(result, "genres")
+        if not genres:
+            return []
+
+        window = "videos"
+        db_type = "movies" if media_type == "movie" else "tvshows"
+
+        shortcuts = []
+        for genre in genres:
+            label = genre.get("label", "")
+            thumb = genre.get("thumbnail", "")
+            genre_id = genre.get("genreid", 0)
+            if label:
+                path = f"videodb://{db_type}/genres/{genre_id}/"
+                shortcuts.append(
+                    ResolvedShortcut(
+                        label=label,
+                        action=f"ActivateWindow({window},{path},return)",
+                        icon=thumb or "DefaultGenre.png",
+                    )
+                )
+        return shortcuts
+
+    def _get_music_genres(self) -> list[ResolvedShortcut]:
+        """Get music genres."""
+        result = self._jsonrpc("AudioLibrary.GetGenres", {"properties": ["thumbnail"]})
+        genres = _collection(result, "genres")
+        if not genres:
+            return []
+
+        shortcuts = []
+        for genre in genres:
+            label = genre.get("label", "")
+            thumb = genre.get("thumbnail", "")
+            genre_id = genre.get("genreid", 0)
+            if label:
+                path = f"musicdb://genres/{genre_id}/"
+                shortcuts.append(
+                    ResolvedShortcut(
+                        label=label,
+                        action=f"ActivateWindow(Music,{path},return)",
+                        icon=thumb or "DefaultMusicGenres.png",
+                    )
+                )
+        return shortcuts
+
+    def _get_video_years(self, media_type: str) -> list[ResolvedShortcut]:
+        """Get years from video library."""
+        if media_type == "movie":
+            result = self._jsonrpc("VideoLibrary.GetMovies", {"properties": ["year"]})
+            items = _collection(result, "movies")
+            db_type = "movies"
+        else:
+            result = self._jsonrpc("VideoLibrary.GetTVShows", {"properties": ["year"]})
+            items = _collection(result, "tvshows")
+            db_type = "tvshows"
+
+        years = sorted(
+            {item.get("year", 0) for item in items if item.get("year", 0) > 0},
+            reverse=True,
+        )
+
+        shortcuts = []
+        for year in years:
+            path = f"videodb://{db_type}/years/{year}/"
+            shortcuts.append(
+                ResolvedShortcut(
+                    label=str(year),
+                    action=f"ActivateWindow(Videos,{path},return)",
+                    icon="DefaultYear.png",
+                )
+            )
+        return shortcuts
+
+    def _get_video_property(
+        self, media_type: str, prop: str, icon_suffix: str
+    ) -> list[ResolvedShortcut]:
+        """Get video library property values (studios, tags)."""
+        if media_type == "movie":
+            result = self._jsonrpc("VideoLibrary.GetMovies", {"properties": [prop]})
+            items = _collection(result, "movies")
+            db_type = "movies"
+        else:
+            result = self._jsonrpc("VideoLibrary.GetTVShows", {"properties": [prop]})
+            items = _collection(result, "tvshows")
+            db_type = "tvshows"
+
+        values: set[str] = set()
+        for item in items:
+            prop_value = item.get(prop, [])
+            if isinstance(prop_value, list):
+                values.update(prop_value)
+            elif prop_value:
+                values.add(prop_value)
+
+        shortcuts = []
+        for value in sorted(values):
+            path = f"videodb://{db_type}/{prop}s/{value}/"
+            shortcuts.append(
+                ResolvedShortcut(
+                    label=value,
+                    action=f"ActivateWindow(Videos,{path},return)",
+                    icon=f"Default{icon_suffix}.png",
+                )
+            )
+        return shortcuts
+
+    def _get_video_actors(self, media_type: str) -> list[ResolvedShortcut]:
+        """Get actors from video library."""
+        if media_type == "movie":
+            result = self._jsonrpc(
+                "VideoLibrary.GetMovies", {"properties": ["cast"], "limits": {"end": 100}}
+            )
+            items = _collection(result, "movies")
+            db_type = "movies"
+        else:
+            result = self._jsonrpc(
+                "VideoLibrary.GetTVShows", {"properties": ["cast"], "limits": {"end": 100}}
+            )
+            items = _collection(result, "tvshows")
+            db_type = "tvshows"
+
+        actors: dict[str, str] = {}
+        for item in items:
+            for actor in _collection(item, "cast"):
+                name = actor.get("name", "")
+                if name and name not in actors:
+                    actors[name] = actor.get("thumbnail", "")
+
+        shortcuts = []
+        for name in sorted(actors.keys()):
+            path = f"videodb://{db_type}/actors/{name}/"
+            shortcuts.append(
+                ResolvedShortcut(
+                    label=name,
+                    action=f"ActivateWindow(Videos,{path},return)",
+                    icon=actors[name] or "DefaultActor.png",
+                )
+            )
+        return shortcuts
+
+    def _get_video_directors(self, media_type: str) -> list[ResolvedShortcut]:
+        """Get directors from the video library; episodes carry them, so tvshows query those."""
+        if media_type == "movie":
+            result = self._jsonrpc(
+                "VideoLibrary.GetMovies", {"properties": ["director"]}
+            )
+            items = _collection(result, "movies")
+            db_type = "movies"
+        else:
+            result = self._jsonrpc(
+                "VideoLibrary.GetEpisodes",
+                {"properties": ["director"], "limits": {"end": 500}},
+            )
+            items = _collection(result, "episodes")
+            db_type = "tvshows"
+
+        directors: set[str] = set()
+        for item in items:
+            for director in _collection(item, "director"):
+                if director:
+                    directors.add(director)
+
+        shortcuts = []
+        for name in sorted(directors):
+            path = f"videodb://{db_type}/directors/{name}/"
+            shortcuts.append(
+                ResolvedShortcut(
+                    label=name,
+                    action=f"ActivateWindow(Videos,{path},return)",
+                    icon="DefaultDirector.png",
+                )
+            )
+        return shortcuts
+
+    def _get_music_artists(self) -> list[ResolvedShortcut]:
+        """Get music artists."""
+        result = self._jsonrpc(
+            "AudioLibrary.GetArtists", {"properties": ["thumbnail"], "limits": {"end": 100}}
+        )
+        artists = _collection(result, "artists")
+        if not artists:
+            return []
+
+        shortcuts = []
+        for artist in artists:
+            label = artist.get("label", "")
+            artist_id = artist.get("artistid", 0)
+            thumb = artist.get("thumbnail", "")
+            if label and artist_id:
+                path = f"musicdb://artists/{artist_id}/"
+                shortcuts.append(
+                    ResolvedShortcut(
+                        label=label,
+                        action=f"ActivateWindow(Music,{path},return)",
+                        icon=thumb or "DefaultMusicArtists.png",
+                        content_type="artists",
+                    )
+                )
+        return shortcuts
+
+    def _get_music_albums(self) -> list[ResolvedShortcut]:
+        """Get music albums."""
+        result = self._jsonrpc(
+            "AudioLibrary.GetAlbums",
+            {"properties": ["thumbnail", "artist"], "limits": {"end": 100}},
+        )
+        albums = _collection(result, "albums")
+        if not albums:
+            return []
+
+        shortcuts = []
+        for album in albums:
+            label = album.get("label", "")
+            album_id = album.get("albumid", 0)
+            thumb = album.get("thumbnail", "")
+            artists = _collection(album, "artist")
+            artist_str = ", ".join(artists) if artists else ""
+            if label and album_id:
+                path = f"musicdb://albums/{album_id}/"
+                shortcuts.append(
+                    ResolvedShortcut(
+                        label=label,
+                        action=f"ActivateWindow(Music,{path},return)",
+                        icon=thumb or "DefaultMusicAlbums.png",
+                        label2=artist_str,
+                        content_type="albums",
+                    )
+                )
+        return shortcuts
+
+    def _jsonrpc(self, method: str, params: dict | None = None) -> dict | None:
+        """Execute a JSON-RPC request."""
+        request = {
+            "jsonrpc": "2.0",
+            "method": method,
+            "params": params or {},
+            "id": 1,
+        }
+
+        try:
+            response_str = xbmc.executeJSONRPC(json.dumps(request))
+            response = json.loads(response_str)
+
+            if "result" in response:
+                return response["result"]
+            if "error" in response:
+                log.warning(f"JSON-RPC error for {method}: {response['error']}")
+        except Exception as e:
+            log.error(f"JSON-RPC exception for {method}: {e}")
+
+        return None
+

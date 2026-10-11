@@ -1,0 +1,838 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: translations@kodi.tv\n"
+"POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"PO-Revision-Date: 2026-08-13 08:20+0000\n"
+"Last-Translator: Marek Adamski <fevbew@wp.pl>\n"
+"Language-Team: Polish <https://kodi.weblate.cloud/projects/kodi-add-ons-scripts/script-skinshortcuts/pl_pl/>\n"
+"Language: pl_pl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"X-Generator: Weblate 2026.8.1\n"
+
+msgctxt "Addon Summary"
+msgid "Custom menus, properties, and artwork for skins"
+msgstr "Niestandardowe menu, właściwości i grafika dla skórek"
+
+msgctxt "Addon Description"
+msgid "Add-on for skins to provide simple managing and listing of user shortcuts (requires skin support)"
+msgstr "Wtyczka dla skór, która umożliwia proste zarządzanie i tworzenie list skrótów użytkownika (wymaga wsparcia skóry)"
+
+msgctxt "#32000"
+msgid "Add"
+msgstr "Dodaj"
+
+msgctxt "#32001"
+msgid "Delete"
+msgstr "Usuń"
+
+msgctxt "#32002"
+msgid "Move Up"
+msgstr "Przesuń w górę"
+
+msgctxt "#32003"
+msgid "Move Down"
+msgstr "Przesuń w dół"
+
+msgctxt "#32004"
+msgid "Video Playlist"
+msgstr "Lista odtwarzania wideo"
+
+msgctxt "#32005"
+msgid "Music Playlist"
+msgstr "Lista odtwarzania muzyki"
+
+msgctxt "#32006"
+msgid "Favourite"
+msgstr "Ulubiony"
+
+msgctxt "#32007"
+msgid "Add-On"
+msgstr "Dodatek"
+
+msgctxt "#32008"
+msgid "Mixed Playlist"
+msgstr "Lista odtwarzania mieszana"
+
+msgctxt "#32009"
+msgid "Program"
+msgstr "Program"
+
+msgctxt "#32010"
+msgid "Video Add-On"
+msgstr "Dodatek wideo"
+
+msgctxt "#32011"
+msgid "Music Add-On"
+msgstr "Dodatek muzyki"
+
+msgctxt "#32012"
+msgid "Picture Add-On"
+msgstr "Dodatek obrazów"
+
+msgctxt "#32013"
+msgid "<None>"
+msgstr "<Brak>"
+
+msgctxt "#32014"
+msgid "Videos"
+msgstr "Wideo"
+
+msgctxt "#32015"
+msgid "Movies"
+msgstr "Filmy"
+
+msgctxt "#32016"
+msgid "TV Shows"
+msgstr "Seriale"
+
+msgctxt "#32017"
+msgid "Live TV"
+msgstr "Telewizja"
+
+msgctxt "#32018"
+msgid "Music Videos"
+msgstr "Teledyski"
+
+msgctxt "#32019"
+msgid "Music"
+msgstr "Muzyka"
+
+msgctxt "#32020"
+msgid "Pictures"
+msgstr "Obrazy"
+
+msgctxt "#32021"
+msgid "Programs"
+msgstr "Programy"
+
+msgctxt "#32022"
+msgid "Live TV"
+msgstr "Telewizja"
+
+msgctxt "#32023"
+msgid "Timers"
+msgstr "Harmonogram"
+
+msgctxt "#32024"
+msgid "Custom item"
+msgstr "Pozycja niestandardowa"
+
+msgctxt "#32025"
+msgid "Set label"
+msgstr "Ustaw etykietę"
+
+msgctxt "#32026"
+msgid "Set thumbnail"
+msgstr "Ustaw miniaturę"
+
+msgctxt "#32027"
+msgid "Change action"
+msgstr "Zmień czynność"
+
+msgctxt "#32028"
+msgid "Restore menu items"
+msgstr "Przywróć domyślne pozycje"
+
+msgctxt "#32029"
+msgid "Common"
+msgstr "Standardowe"
+
+msgctxt "#32030"
+msgid "Video Library"
+msgstr "Biblioteka wideo"
+
+msgctxt "#32031"
+msgid "Music Library"
+msgstr "Biblioteka muzyki"
+
+msgctxt "#32032"
+msgid "Play DVD"
+msgstr "Odtwarzaj DVD"
+
+msgctxt "#32033"
+msgid "Eject tray"
+msgstr "Wysuń tackę"
+
+msgctxt "#32034"
+msgid "Common menu item"
+msgstr "Standardowa pozycja menu"
+
+msgctxt "#32035"
+msgid "Choose which items to display on the Main Menu"
+msgstr "Wybierz pozycje wyświetlane w menu głównym"
+
+msgctxt "#32036"
+msgid "Choose shortcuts for %s"
+msgstr "Wybierz skróty dla %s"
+
+msgctxt "#32037"
+msgid "Reset all menu items"
+msgstr "Przywróć wszystkie pozycje menu"
+
+msgctxt "#32038"
+msgid "Are you sure you want to reset all menu items back to default?"
+msgstr "Czy jesteś pewien, że chcesz przywrócić wszystkie domyślne pozycje menu?"
+
+msgctxt "#32039"
+msgid "Pick widget for %s"
+msgstr "Wybór widżetu dla %s"
+
+msgctxt "#32040"
+msgid "Playlist"
+msgstr "Lista odtwarzania"
+
+msgctxt "#32041"
+msgid "Action"
+msgstr "Czynność"
+
+msgctxt "#32042"
+msgid "Unknown video node"
+msgstr "Nieznany węzeł wideo"
+
+msgctxt "#32043"
+msgid "Choose shortcut category"
+msgstr "Wybierz kategorię skrótu"
+
+msgctxt "#32044"
+msgid "Select widget"
+msgstr "Wybierz widżet"
+
+msgctxt "#32045"
+msgid "Select background"
+msgstr "Wybierz tło"
+
+msgctxt "#32046"
+msgid "Update video library"
+msgstr "Aktualizuj bibliotekę wideo"
+
+msgctxt "#32047"
+msgid "Update audio library"
+msgstr "Aktualizuj bibliotekę muzyki"
+
+msgctxt "#32048"
+msgid "Choose item for menu"
+msgstr "Wybierz pozycję dla menu"
+
+msgctxt "#32049"
+msgid "Building menu..."
+msgstr "Tworzenie menu..."
+
+msgctxt "#32050"
+msgid "Default"
+msgstr "Domyślne"
+
+msgctxt "#32051"
+msgid "Single image"
+msgstr "Pojedynczy obraz"
+
+msgctxt "#32052"
+msgid "Multi-image"
+msgstr "Wiele obrazów"
+
+msgctxt "#32053"
+msgid "None"
+msgstr "Brak"
+
+msgctxt "#32054"
+msgid "Kodi Command"
+msgstr "Polecenie Kodi"
+
+msgctxt "#32055"
+msgid "Clean video library"
+msgstr "Wyczyść bibliotekę wideo"
+
+msgctxt "#32056"
+msgid "Clean audio library"
+msgstr "Wyczyść bibliotekę muzyki"
+
+msgctxt "#32057"
+msgid "Kodi Commands"
+msgstr "Polecenia Kodi"
+
+msgctxt "#32058"
+msgid "Create menu item to here"
+msgstr "Utwórz pozycję menu tutaj"
+
+msgctxt "#32059"
+msgid "Skin Playlist"
+msgstr "Lista odtwarzania skóry"
+
+msgctxt "#32060"
+msgid "What do you want to do with the playlist?"
+msgstr "Co chcesz zrobić z tą listą odtwarzania?"
+
+msgctxt "#32061"
+msgid "Display"
+msgstr "Wyświetl"
+
+msgctxt "#32062"
+msgid "Play"
+msgstr "Odtwórz"
+
+msgctxt "#32063"
+msgid "Getting directory listing..."
+msgstr "Pobieram listę folderów..."
+
+msgctxt "#32064"
+msgid "No available items"
+msgstr "Brak dostępnych pozycji"
+
+msgctxt "#32065"
+msgid "There are no available items to choose from for the category that you choose."
+msgstr "Brak dostępnych pozycji z wybranej kategorii."
+
+msgctxt "#32066"
+msgid "Last TV channel"
+msgstr "Ostatni kanał telewizyjny"
+
+msgctxt "#32067"
+msgid "Last radio channel"
+msgstr "Ostatni kanał radiowy"
+
+msgctxt "#32068"
+msgid "Last channel"
+msgstr "Ostatni kanał"
+
+msgctxt "#32069"
+msgid "Video Source"
+msgstr "Źródło wideo"
+
+msgctxt "#32070"
+msgid "UPnP"
+msgstr "UPnP"
+
+msgctxt "#32071"
+msgid "Customize Main Menu"
+msgstr "Personalizacja menu głównego"
+
+msgctxt "#32072"
+msgid "Customize Submenu"
+msgstr "Personalizacja podmenu"
+
+msgctxt "#32073"
+msgid "Music Source"
+msgstr "Źródło muzyki"
+
+msgctxt "#32074"
+msgid "Library Sources"
+msgstr "Źródła biblioteki"
+
+msgctxt "#32075"
+msgid "Sources"
+msgstr "Źródła"
+
+msgctxt "#32076"
+msgid "TV Channel"
+msgstr "Kanał telewizyjny"
+
+msgctxt "#32077"
+msgid "Radio Channel"
+msgstr "Kanał radiowy"
+
+msgctxt "#32078"
+msgid "Display..."
+msgstr "Wyświetlaj..."
+
+msgctxt "#32079"
+msgid "Files view"
+msgstr "Widok plików"
+
+msgctxt "#32080"
+msgid "Edit %s Submenu"
+msgstr "Edytuj podmenu %s"
+
+msgctxt "#32081"
+msgid "Movies not in this source"
+msgstr "Filmy spoza tego źródła"
+
+msgctxt "#32082"
+msgid "TV Shows not in this source"
+msgstr "Seriale spoza tego źródła"
+
+msgctxt "#32083"
+msgid "Music Videos not in this source"
+msgstr "Teledyski spoza tego źródła"
+
+msgctxt "#32084"
+msgid "Songs not in this source"
+msgstr "Utwory spoza tego źródła"
+
+msgctxt "#32085"
+msgid "Albums not in this source"
+msgstr "Albumy spoza tego źródła"
+
+msgctxt "#32086"
+msgid "Mixed content not in this source"
+msgstr "Mieszana zawartość spoza tego źródła"
+
+msgctxt "#32087"
+msgid "Radio"
+msgstr "Radio"
+
+msgctxt "#32088"
+msgid "Channels"
+msgstr "Kanały"
+
+msgctxt "#32089"
+msgid "Picture Source"
+msgstr "Źródło obrazów"
+
+msgctxt "#32090"
+msgid "The item has been added to the menu"
+msgstr "Dodano pozycję do menu"
+
+msgctxt "#32091"
+msgid "Unable to add item to the menu. Please check log for errors."
+msgstr "Nieudane dodawanie pozycji do menu. Sprawdź szczegóły w pliku dziennika diagnostycznego."
+
+msgctxt "#32092"
+msgid "Unable to build menu."
+msgstr "Nieudane tworzenie menu."
+
+msgctxt "#32093"
+msgid "Upload debug log?"
+msgstr "Wysłać plik dziennika diagnostycznego?"
+
+msgctxt "#32094"
+msgid "Install Kodi Log Uploader add-on to easily provide a debug log."
+msgstr "Zainstaluj dodatek Kodi Log Uploader, aby łatwo dostarczać plik dziennika."
+
+msgctxt "#32095"
+msgid "Choose default action for menu item"
+msgstr "Wybierz domyślną czynność dla pozycji menu"
+
+msgctxt "#32096"
+msgid "Browse..."
+msgstr "Wybierz..."
+
+msgctxt "#32097"
+msgid "Unable to save menu"
+msgstr "Nieudane zapisywanie menu"
+
+msgctxt "#32098"
+msgid "Writing menu..."
+msgstr "Zapisywanie menu..."
+
+msgctxt "#32099"
+msgid "Widget"
+msgstr "Widżet"
+
+msgctxt "#32100"
+msgid "Use as widget"
+msgstr "Używaj w roli widżetu"
+
+msgctxt "#32101"
+msgid "Choose property"
+msgstr "Wybierz właściwość"
+
+msgctxt "#32102"
+msgid "Restore or reset?"
+msgstr "Przywrócić z kopii czy domyślne?"
+
+msgctxt "#32103"
+msgid "Restore an original menu item"
+msgstr "Przywróć oryginalną pozycję menu"
+
+msgctxt "#32104"
+msgid "Reset to skin defaults"
+msgstr "Przywróć domyślne dla skóry"
+
+msgctxt "#32105"
+msgid "There are no menu items to restore for this menu"
+msgstr "Brak dostępnych do przywrócenia pozycji dla tego menu"
+
+msgctxt "#32106"
+msgid "Install widget provider"
+msgstr "Zainstaluj dostawcę widżetów"
+
+msgctxt "#32107"
+msgid "Enable default widgets"
+msgstr "Aktywuj domyślne widżety"
+
+msgctxt "#32108"
+msgid "Party mode (music videos)"
+msgstr "Tryb imprezy (Teledyski)"
+
+msgctxt "#32109"
+msgid "No menus from compatible skins found to import"
+msgstr "Brak kompatybilnych skór, z których można zaimportować menu"
+
+msgctxt "#32110"
+msgid "Import menu from skin"
+msgstr "Importuj menu skóry"
+
+msgctxt "#32111"
+msgid "Shared menu"
+msgstr "Menu współdzielone"
+
+msgctxt "#32112"
+msgid "New item on the main menu"
+msgstr "Nowa pozycja menu głównego"
+
+msgctxt "#32113"
+msgid "New item on the main menu (autofill submenu items)"
+msgstr "Nowa pozycja menu głównego (razem z domyślnym podmenu)"
+
+msgctxt "#32114"
+msgid "Where should menu item be created"
+msgstr "Gdzie pozycja menu powinna być utworzona"
+
+msgctxt "#32115"
+msgid "Unable to get directory listings[CR][CR]See log for details"
+msgstr "Nieudane pobieranie listy folderów[CR][CR]Sprawdź szczegóły w pliku dziennika diagnostycznego"
+
+msgctxt "#32116"
+msgid "The skin you are using does not support adding items directly to the main menu"
+msgstr "Skóra, której używasz nie obsługuje dodawania pozycji do menu głównego"
+
+msgctxt "#32117"
+msgid "Disable shortcut"
+msgstr "Wyłącz skrót"
+
+msgctxt "#32118"
+msgid "Smart shortcuts"
+msgstr "Inteligentne skróty"
+
+msgctxt "#32119"
+msgid "Default widgets"
+msgstr "Domyślne widżety"
+
+msgctxt "#32120"
+msgid "Never hide PVR shortcuts"
+msgstr "Nigdy nie ukrywaj skrótów PVR"
+
+msgctxt "#32121"
+msgid "Share menu between compatible skins"
+msgstr "Udostępniaj menu między kompatybilnymi skórami"
+
+msgctxt "#32122"
+msgid "Enable debug logging"
+msgstr "Rejestruj komunikaty diagnostyczne"
+
+msgctxt "#32123"
+msgid "Games"
+msgstr "Gry"
+
+msgctxt "#32124"
+msgid "This addon is for skin developers, and requires skin support"
+msgstr "Ten dodatek jest przeznaczony dla twórców skór i wymaga wspomagania przez skórę"
+
+msgctxt "#32125"
+msgid "Delete item?"
+msgstr "Usunąć pozycję?"
+
+msgctxt "#32126"
+msgid "Are you sure you want to delete this item?"
+msgstr "Czy na pewno chcesz usunąć tę pozycję?"
+
+msgctxt "#32127"
+msgid "Modify item?"
+msgstr "Zmodyfikować pozycję?"
+
+msgctxt "#32128"
+msgid "Are you sure you want to modify this item?"
+msgstr "Czy na pewno chcesz zmodyfikować tę pozycję?"
+
+msgctxt "#32129"
+msgid "New Item"
+msgstr "Nowa pozycja"
+
+msgctxt "#32130"
+msgid "Cannot Delete"
+msgstr "Nie można usunąć"
+
+msgctxt "#32131"
+msgid "Delete Item"
+msgstr "Usuń pozycję"
+
+msgctxt "#32132"
+msgid "Modify Action"
+msgstr "Modyfikuj czynność"
+
+msgctxt "#32133"
+msgid "Cannot Disable"
+msgstr "Nie można wyłączyć"
+
+msgctxt "#32134"
+msgid "Disable Item"
+msgstr "Wyłącz pozycję"
+
+msgctxt "#32135"
+msgid "No Deleted Items"
+msgstr "Brak usuniętych pozycji"
+
+msgctxt "#32136"
+msgid "No items to restore"
+msgstr "Brak pozycji do przywrócenia"
+
+msgctxt "#32137"
+msgid "Restore Deleted Item"
+msgstr "Przywróć usuniętą pozycję"
+
+msgctxt "#32138"
+msgid "Reset Item"
+msgstr "Zresetuj pozycję"
+
+msgctxt "#32139"
+msgid "Edit Submenu"
+msgstr "Edytuj podmenu"
+
+msgctxt "#32140"
+msgid "Select Widget Type"
+msgstr "Wybierz typ widżetu"
+
+msgctxt "#32141"
+msgid "No Items"
+msgstr "Brak pozycji"
+
+msgctxt "#32142"
+msgid "No items available in this group"
+msgstr "Brak dostępnych pozycji w tej grupie"
+
+msgctxt "#32143"
+msgid "Not Allowed"
+msgstr "Niedozwolone"
+
+msgctxt "#32144"
+msgid "Widgets not enabled for this menu"
+msgstr "Widżety nie są włączone dla tego menu"
+
+msgctxt "#32145"
+msgid "Submenus not enabled for this menu"
+msgstr "Podmenu nie są włączone dla tego menu"
+
+msgctxt "#32146"
+msgid "Backgrounds not enabled for this menu"
+msgstr "Tła nie są włączone dla tego menu"
+
+msgctxt "#32147"
+msgid "No Widgets"
+msgstr "Brak widżetów"
+
+msgctxt "#32148"
+msgid "No widgets defined in skin"
+msgstr "Brak zdefiniowanych widżetów w skórce"
+
+msgctxt "#32149"
+msgid "Cannot Browse"
+msgstr "Nie można przeglądać"
+
+msgctxt "#32150"
+msgid "Unable to list directory contents"
+msgstr "Nie można wyświetlić zawartości katalogu"
+
+msgctxt "#32151"
+msgid "Browse"
+msgstr "Przeglądaj"
+
+msgctxt "#32152"
+msgid "No Backgrounds"
+msgstr "Brak teł"
+
+msgctxt "#32153"
+msgid "No backgrounds defined"
+msgstr "Brak zdefiniowanych teł"
+
+msgctxt "#32154"
+msgid "No Playlists"
+msgstr "Brak list odtwarzania"
+
+msgctxt "#32155"
+msgid "No playlist locations found"
+msgstr "Nie znaleziono lokalizacji list odtwarzania"
+
+msgctxt "#32156"
+msgid "No playlists found in this location"
+msgstr "Nie znaleziono żadnych list odtwarzania w tej lokalizacji"
+
+msgctxt "#32157"
+msgid "Select Playlist"
+msgstr "Wybierz listę odtwarzania"
+
+msgctxt "#32158"
+msgid "Mixed Playlists"
+msgstr "Mieszane listy odtwarzania"
+
+msgctxt "#32159"
+msgid "No Options"
+msgstr "Brak opcji"
+
+msgctxt "#32160"
+msgid "No options available"
+msgstr "Brak dostępnych opcji"
+
+msgctxt "#32164"
+msgid "Reset Library Views"
+msgstr "Resetuj widoki biblioteki"
+
+msgctxt "#32165"
+msgid "Reset Add-on Views"
+msgstr "Resetuj widoki dodatków"
+
+msgctxt "#32166"
+msgid "Add Override"
+msgstr "Dodaj obejście"
+
+msgctxt "#32167"
+msgid "No Add-ons"
+msgstr "Brak dodatków"
+
+msgctxt "#32168"
+msgid "No video add-ons installed"
+msgstr "Brak zainstalowanych dodatków wideo"
+
+msgctxt "#32169"
+msgid "Select Add-on"
+msgstr "Wybierz dodatek"
+
+msgctxt "#32170"
+msgid "Confirm"
+msgstr "Potwierdź"
+
+msgctxt "#32171"
+msgid "Edit Label"
+msgstr "Edytuj etykietę"
+
+msgctxt "#32172"
+msgid "Edit Action"
+msgstr "Edytuj czynność"
+
+msgctxt "#32173"
+msgid "Change Icon"
+msgstr "Zmień ikonę"
+
+msgctxt "#32174"
+msgid "'%s' is required."
+msgstr "'%s' jest wymagane."
+
+msgctxt "#32175"
+msgid "Delete '%s'?"
+msgstr "Usunąć '%s'?"
+
+msgctxt "#32176"
+msgid "Modify '%s'?"
+msgstr "Zmodyfikować '%s'?"
+
+msgctxt "#32177"
+msgid "Disable '%s'?"
+msgstr "Wyłączyć '%s'?"
+
+msgctxt "#32178"
+msgid "Reset '%s' to defaults?"
+msgstr "Zresetować '%s' do ustawień domyślnych?"
+
+msgctxt "#32179"
+msgid "No Shortcuts"
+msgstr "Brak skrótów"
+
+msgctxt "#32180"
+msgid "No shortcut groupings defined in skin"
+msgstr "Brak zdefiniowanych grup skrótów w skórce"
+
+msgctxt "#32181"
+msgid "Select"
+msgstr "Wybierz"
+
+msgctxt "#32182"
+msgid "Location"
+msgstr "Lokalizacja"
+
+msgctxt "#32183"
+msgid "Not Available"
+msgstr "Niedostępne"
+
+msgctxt "#32184"
+msgid "Requires %s to be set first"
+msgstr "Wymagane jest najpierw ustawienie %s"
+
+msgctxt "#32185"
+msgid "View Settings"
+msgstr "Ustawienia widoku"
+
+msgctxt "#32186"
+msgid "Select Content Type"
+msgstr "Wybierz typ zawartości"
+
+msgctxt "#32187"
+msgid "Reset all library view selections?"
+msgstr "Zresetować wszystkie wybory widoku biblioteki?"
+
+msgctxt "#32188"
+msgid "Reset all add-on view selections?"
+msgstr "Zresetować wszystkie wybory widoku dodatku?"
+
+msgctxt "#32189"
+msgid "%s (reset)"
+msgstr "%s (resetowanie)"
+
+msgctxt "#32191"
+msgid "Reset all menus to skin defaults?[CR]All customizations will be removed."
+msgstr "Zresetować wszystkie menu do domyślnych ustawień skórki?[CR]Wszystkie dostosowania zostaną usunięte."
+
+msgctxt "#32192"
+msgid "Reset all view selections to skin defaults?"
+msgstr "Zresetować wszystkie wybrane widoki do domyślnych ustawień skórki?"
+
+msgctxt "#32193"
+msgid "Reset all menus to skin defaults?[CR]View selections will be preserved."
+msgstr "Zresetować wszystkie menu do domyślnych ustawień skórki?[CR]Wybrane widoki zostaną zachowane."
+
+msgctxt "#32194"
+msgid "Reset '%s' and its submenus to skin defaults?"
+msgstr "Zresetować '%s' i jego podmenu do domyślnych ustawień skórki?"
+
+msgctxt "#32195"
+msgid "Reset '%s' to skin defaults?"
+msgstr "Zresetować '%s' do domyślnych ustawień skórki?"
+
+msgctxt "#32196"
+msgid "Reset all submenus to skin defaults?"
+msgstr "Zresetować wszystkie podmenu do domyślnych ustawień skórki?"
+
+msgctxt "#32197"
+msgid "Enter action"
+msgstr "Wprowadź czynność"
+
+msgctxt "#32198"
+msgid "Reset views for %s?"
+msgstr "Zresetować widoki dla %s?"
+
+msgctxt "#32199"
+msgid "%s - Select View"
+msgstr "%s – Wybierz widok"
+
+msgctxt "#32200"
+msgid "This skin is built for Skin Shortcuts v2. Switch skins or downgrade the add-on."
+msgstr "Ta skórka jest przeznaczona dla Skin Shortcuts v2. Zmień skórkę lub obniż wersję dodatku."
+
+msgctxt "#32201"
+msgid "Open settings"
+msgstr "Otwórz ustawienia"
+
+msgctxt "#32202"
+msgid "Ignore for this skin"
+msgstr "Zignoruj dla tej skórki"
+
+msgctxt "#32203"
+msgid "Sort order"
+msgstr "Kolejność sortowania"
+
+msgctxt "#32204"
+msgid "Episodes not in this source"
+msgstr "Odcinki niedostępne w tym źródle"
+
+msgctxt "#32205"
+msgid "This source has no matching items in your library"
+msgstr "To źródło nie ma żadnych pasujących wpisów w bibliotece"
+
+msgctxt "#32206"
+msgid "Artists not in this source"
+msgstr "Wykonawcy niewymienieni w tym źródle"
+
+msgctxt "#32207"
+msgid "Enable shortcut"
+msgstr "Włącz skrót"

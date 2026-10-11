@@ -38,7 +38,7 @@ def _path(special):
 def _fetch(url, max_bytes):
     request = urllib.request.Request(
         url,
-        headers={"User-Agent": "KingBlap-Wizard/1.0.3 Kodi"},
+        headers={"User-Agent": "KingBlap-Wizard/1.0.4 Kodi"},
     )
     with urllib.request.urlopen(request, timeout=45) as response:
         length = response.headers.get("Content-Length")
@@ -192,7 +192,7 @@ def _validate_archive(archive):
 def _download_archive(url, destination, progress):
     request = urllib.request.Request(
         url,
-        headers={"User-Agent": "KingBlap-Wizard/1.0.3 Kodi"},
+        headers={"User-Agent": "KingBlap-Wizard/1.0.4 Kodi"},
     )
     with urllib.request.urlopen(request, timeout=60) as response:
         length = response.headers.get("Content-Length")
@@ -241,6 +241,15 @@ def _set_setting(setting, value):
     result = _jsonrpc("Settings.SetSettingValue", {"setting": setting, "value": value})
     if result is not True:
         raise RuntimeError("Kodi could not apply the {} setting.".format(setting))
+
+
+def _enable_addon(addon_id):
+    result = _jsonrpc("Addons.SetAddonEnabled", {
+        "addonid": addon_id,
+        "enabled": True,
+    })
+    if result not in (True, "OK"):
+        raise RuntimeError("Kodi could not enable the {} add-on.".format(addon_id))
 
 
 def _activate_skin(skin_id):
@@ -464,6 +473,7 @@ def _install(name, url):
 
         xbmc.executebuiltin("UpdateLocalAddons", True)
         xbmc.sleep(1500)
+        _enable_addon("script.skinshortcuts")
         skin_details = _jsonrpc(
             "Addons.GetAddonDetails",
             {"addonid": "skin.xonfluence", "properties": ["version"]},

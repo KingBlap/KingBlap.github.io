@@ -20,7 +20,7 @@ SKIN_ID = "skin.xonfluence"
 REPLACED_ADDON = "plugin.video.xstream-player"
 GIPTV_ID = "plugin.video.giptv"
 GIPTV_VERSION = "3.1.0"
-BUILD_VERSION = "1.0.4"
+BUILD_VERSION = "1.0.5"
 REPO_ID = "repository.kingblap"
 NATIVE_SUFFIXES = {".dll", ".so", ".dylib", ".pyd"}
 SECRET_ID = re.compile(
@@ -146,6 +146,8 @@ def skin_settings(snapshot, packages, chosen):
         value = "".join(element.itertext()).strip()
         if SECRET_ID.search(setting_id) or SECRET_VALUE.search(value):
             continue
+        if setting_id.casefold() == "use.skinshortcuts":
+            value = "true"
         portable_icon = portable_addon_icon(setting_id, value, packages, chosen)
         if portable_icon is not None:
             value = portable_icon
