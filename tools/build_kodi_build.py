@@ -22,7 +22,7 @@ LEGACY_SKIN_ID = "skin.estuary.modv2"
 REPLACED_ADDON = "plugin.video.xstream-player"
 GIPTV_ID = "plugin.video.giptv"
 GIPTV_VERSION = "3.1.0"
-BUILD_VERSION = "1.0.11"
+BUILD_VERSION = "1.0.12"
 REPO_ID = "repository.kingblap"
 NATIVE_SUFFIXES = {".dll", ".so", ".dylib", ".pyd"}
 SECRET_SETTING = re.compile(
@@ -238,7 +238,7 @@ def build(snapshot, output):
             "Kodi databases and media libraries",
             "provider playlists, EPG, and source paths",
             "add-on caches and thumbnails",
-            "Windows-only native add-ons",
+            "platform-specific native add-ons",
         ],
         "included_user_data": [
             "sanitized Xonfluence skin settings ({} portable settings)".format(skin_setting_count),

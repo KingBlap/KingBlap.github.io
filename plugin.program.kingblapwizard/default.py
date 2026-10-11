@@ -5,6 +5,7 @@ import re
 import shutil
 import sys
 import time
+import traceback
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -29,8 +30,9 @@ LEGACY_SKIN_ID = "skin.estuary.modv2"
 BUILD_LIMIT = 1024 * 1024 * 1024
 DOWNLOAD_LIMIT = 512 * 1024 * 1024
 CHUNK_SIZE = 1024 * 1024
-ADDON_REGISTRATION_TIMEOUT = 180
-SKIN_LOAD_TIMEOUT = 60
+ADDON_REGISTRATION_TIMEOUT = 600
+SKIN_LOAD_TIMEOUT = 120
+SKIN_CONFIRMATION_GRACE = 13
 
 
 def _log(message, level=xbmc.LOGINFO):
@@ -44,7 +46,7 @@ def _path(special):
 def _fetch(url, max_bytes):
     request = urllib.request.Request(
         url,
-        headers={"User-Agent": "KingBlap-Wizard/1.0.9 Kodi"},
+        headers={"User-Agent": "KingBlap-Wizard/1.0.21 Kodi"},
     )
     with urllib.request.urlopen(request, timeout=45) as response:
         length = response.headers.get("Content-Length")
@@ -135,16 +137,76 @@ def _restore_children(changes):
 
 
 def _write_member(archive, info, destination):
-    os.makedirs(os.path.dirname(destination), exist_ok=True)
-    with archive.open(info, "r") as source, open(destination, "wb") as output:
-        shutil.copyfileobj(source, output, CHUNK_SIZE)
+    parent = os.path.dirname(destination)
+    if not xbmcvfs.mkdirs(parent) and not os.path.isdir(parent):
+        raise OSError("Kodi could not create the staged folder for {}.".format(info.filename))
+
+    def remove_directory_conflict():
+        if os.path.isdir(destination):
+            shutil.rmtree(destination)
+            return True
+        if xbmcvfs.exists(destination.rstrip("/\\") + "/"):
+            if xbmcvfs.rmdir(destination.rstrip("/\\") + "/", True):
+                return True
+            raise OSError("Kodi could not remove a staged folder that conflicts with {}.".format(
+                info.filename
+            ))
+        return False
+
+    remove_directory_conflict()
+    with archive.open(info, "r") as source:
+        for attempt in range(3):
+            output = None
+            try:
+                output = xbmcvfs.File(destination, "w")
+                bytes_written = 0
+                while True:
+                    block = source.read(CHUNK_SIZE)
+                    if not block:
+                        break
+                    if not output.write(block):
+                        raise IOError("Kodi could not write {}.".format(info.filename))
+                    bytes_written += len(block)
+                if bytes_written != info.file_size:
+                    raise IOError("Kodi wrote an incomplete staged file: {}.".format(info.filename))
+            except Exception:
+                if output is not None:
+                    output.close()
+                if attempt == 2:
+                    raise
+                remove_directory_conflict()
+                source.seek(0)
+                time.sleep(0.1)
+            else:
+                output.close()
+                return
+
+
+def _required_external_dependencies(archive, packages):
+    dependencies = set()
+    for addon_id in packages:
+        manifest_path = "addons/{}/addon.xml".format(addon_id)
+        root = ET.fromstring(archive.read(manifest_path))
+        for dependency in root.findall("requires/import"):
+            dependency_id = dependency.get("addon", "")
+            if (
+                dependency_id
+                and dependency.get("optional", "false").lower() != "true"
+                and not dependency_id.startswith(("xbmc.", "kodi."))
+                and dependency_id not in packages
+            ):
+                dependencies.add(dependency_id)
+    return sorted(dependencies)
 
 
 def _validate_archive(archive):
     total = 0
     packages = {}
+    build_info = None
     skin_settings_found = False
     seen_names = set()
+    folded_paths = set()
+    file_paths = set()
     for info in archive.infolist():
         if info.is_dir():
             continue
@@ -152,8 +214,28 @@ def _validate_archive(archive):
         if name in seen_names:
             raise ValueError("The build archive contains a duplicate file path.")
         seen_names.add(name)
+        portable = "/".join(
+            part.rstrip(" .").casefold() for part in name.split("/")
+        )
+        if portable in folded_paths:
+            raise ValueError("The build archive contains paths that collide on Android or Windows.")
+        folded_paths.add(portable)
+        parts = portable.split("/")
+        if any("/".join(parts[:index]) in file_paths for index in range(1, len(parts))):
+            raise ValueError("The build archive uses a file as a directory.")
+        if any(
+            "/".join(parts[:index]) in folded_paths
+            for index in range(1, len(parts))
+        ):
+            raise ValueError("The build archive uses a file as a directory.")
+        file_paths.add(portable)
         if name == "build_info.json":
-            pass
+            try:
+                build_info = json.loads(archive.read(info).decode("utf-8-sig"))
+            except (UnicodeDecodeError, ValueError) as exc:
+                raise ValueError("The build information file is not valid JSON: {}".format(exc))
+            if not isinstance(build_info, dict):
+                raise ValueError("The build information file must contain a JSON object.")
         elif name == SKIN_SETTINGS_ARCHIVE_PATH:
             try:
                 settings = ET.fromstring(archive.read(info))
@@ -184,6 +266,10 @@ def _validate_archive(archive):
         mode = (info.external_attr >> 16) & 0xFFFF
         if mode & 0o170000 == 0o120000:
             raise ValueError("Symbolic links are not accepted in the build archive.")
+    for path in file_paths:
+        parts = path.split("/")
+        if any("/".join(parts[:index]) in file_paths for index in range(1, len(parts))):
+            raise ValueError("The build archive uses a file as a directory.")
     if packages.get("plugin.video.giptv") != "3.1.0":
         raise ValueError("The build archive does not contain the expected GIPTV package.")
     if packages.get(SKIN_ID) != SKIN_VERSION:
@@ -202,17 +288,35 @@ def _validate_archive(archive):
         dependency_id = dependency.get("addon", "")
         if dependency_id and not dependency_id.startswith("xbmc.") and dependency_id not in packages:
             raise ValueError("The build archive is missing the skin dependency: {}.".format(dependency_id))
-    if "build_info.json" not in archive.namelist():
+    if build_info is None:
         raise ValueError("The build archive is missing its build information.")
+    declared_addons = build_info.get("addons")
+    if (
+        not isinstance(declared_addons, list)
+        or any(
+            not isinstance(addon_id, str)
+            or not re.fullmatch(r"[A-Za-z0-9_.-]+", addon_id)
+            for addon_id in declared_addons
+        )
+        or set(declared_addons) != set(packages)
+    ):
+        raise ValueError("The build information does not match the packaged add-ons.")
+    platform_addons = build_info.get("excluded_platform_addons", [])
+    if not isinstance(platform_addons, list) or any(
+        not isinstance(addon_id, str)
+        or not re.fullmatch(r"[A-Za-z0-9_.-]+", addon_id)
+        for addon_id in platform_addons
+    ):
+        raise ValueError("The build information contains an invalid platform-specific add-on ID.")
     if not skin_settings_found:
         raise ValueError("The build archive is missing its Xonfluence skin settings file.")
-    return total, packages
+    return total, packages, sorted(set(platform_addons))
 
 
 def _download_archive(url, destination, progress):
     request = urllib.request.Request(
         url,
-        headers={"User-Agent": "KingBlap-Wizard/1.0.9 Kodi"},
+        headers={"User-Agent": "KingBlap-Wizard/1.0.21 Kodi"},
     )
     with urllib.request.urlopen(request, timeout=60) as response:
         length = response.headers.get("Content-Length")
@@ -286,49 +390,146 @@ def _enable_addon(addon_id):
         raise RuntimeError("Kodi could not enable the {} add-on.".format(addon_id))
 
 
+def _confirm_skin_keep_prompt():
+    if xbmcgui.getCurrentWindowDialogId() != 10100:
+        return False
+    try:
+        dialog = xbmcgui.Window(10100)
+        heading = dialog.getControl(1).getLabel().strip().casefold()
+        message = dialog.getControl(9).getText().strip().casefold()
+    except (AttributeError, RuntimeError, TypeError):
+        return False
+    prompt_text = "{} {}".format(heading, message)
+    if "keep" not in prompt_text or not (
+        "skin" in heading or "keep this change" in message or "keep this skin" in prompt_text
+    ):
+        return False
+    xbmc.executebuiltin("SendClick(10100,11)", True)
+    _log("Confirmed Kodi's keep-skin prompt: {}".format(heading))
+    return True
+
+
 def _activate_skin(skin_id):
+    previous_skin = _get_setting("lookandfeel.skin")
     _set_setting("lookandfeel.skin", skin_id)
-    xbmc.executebuiltin("ReloadSkin", True)
+    if previous_skin == skin_id and xbmc.getSkinDir() != skin_id:
+        xbmc.executebuiltin("ReloadSkin", True)
     stable_reads = 0
+    stable_since = None
     for unused in range(SKIN_LOAD_TIMEOUT * 2):
         xbmc.sleep(500)
+        _confirm_skin_keep_prompt()
         if (
             _get_setting("lookandfeel.skin") == skin_id
             and xbmc.getSkinDir() == skin_id
         ):
             stable_reads += 1
-            if stable_reads >= 3:
+            if stable_since is None:
+                stable_since = time.time()
+            if (
+                stable_reads >= 3
+                and time.time() - stable_since >= SKIN_CONFIRMATION_GRACE
+            ):
                 return
         else:
             stable_reads = 0
+            stable_since = None
     raise RuntimeError(
         "Kodi could not load the {} skin. The previous skin will be restored.".format(skin_id)
     )
 
 
-def _wait_for_addon_registration(addon_ids, progress):
+def _confirm_kodi_addon_prompt(addon_id, progress):
+    if xbmcgui.getCurrentWindowDialogId() != 10100:
+        return False
+    try:
+        dialog = xbmcgui.Window(10100)
+        heading = dialog.getControl(1).getLabel().strip().casefold()
+        message = dialog.getControl(9).getText().strip().casefold()
+    except (AttributeError, RuntimeError, TypeError):
+        return False
+    if heading != "add-on required" or "would you like to download this add-on?" not in message:
+        return False
+    progress.update(
+        93,
+        "KingBlap Wizard",
+        "Approving Kodi's installer for {}…".format(addon_id),
+    )
+    xbmc.executebuiltin("SendClick(10100,11)", True)
+    _log("Accepted Kodi's required add-on prompt for {}.".format(addon_id))
+    return True
+
+
+def _wait_for_addon_registration(addon_ids, progress, confirm_required_addon=False):
     pending = set(addon_ids)
-    deadline = time.monotonic() + ADDON_REGISTRATION_TIMEOUT
+    started = time.monotonic()
+    deadline = started + ADDON_REGISTRATION_TIMEOUT
     while pending and time.monotonic() < deadline:
         for addon_id in tuple(pending):
             try:
-                version = xbmcaddon.Addon(addon_id).getAddonInfo("version")
+                details = _jsonrpc("Addons.GetAddonDetails", {
+                    "addonid": addon_id,
+                    "properties": ["version"],
+                }).get("addon", {})
             except RuntimeError:
                 continue
-            if version:
+            if details.get("version"):
                 pending.remove(addon_id)
         if pending:
+            if confirm_required_addon:
+                _confirm_kodi_addon_prompt(next(iter(pending)), progress)
+            elapsed = int(time.monotonic() - started)
             progress.update(
-                94,
+                94 + min(2, elapsed // 15),
                 "KingBlap Wizard",
-                "Waiting for Kodi to register the skin and its required add-ons…",
+                "Waiting for Kodi to register required add-ons ({}s): {}".format(
+                    elapsed, ", ".join(sorted(pending))
+                ),
             )
             xbmc.sleep(1000)
     if pending:
         raise RuntimeError(
-            "Kodi did not finish registering these required add-ons: {}. "
-            "Restart Kodi and try the build again.".format(", ".join(sorted(pending)))
+            "Kodi did not finish registering these required add-ons after {} minutes: {}. "
+            "The build files were rolled back; restart Kodi and try again.".format(
+                ADDON_REGISTRATION_TIMEOUT // 60, ", ".join(sorted(pending))
+            )
         )
+
+
+def _enable_build_addons(addon_ids, progress):
+    addon_ids = sorted(set(addon_ids))
+    failures = []
+    total = max(1, len(addon_ids))
+    for index, addon_id in enumerate(addon_ids, 1):
+        try:
+            _enable_addon(addon_id)
+        except Exception as exc:
+            failures.append((addon_id, str(exc)))
+        if index == total or index % 4 == 0:
+            progress.update(
+                96 + int(index * 1 / total),
+                "KingBlap Wizard",
+                "Enabling add-ons ({}/{}): {}".format(index, total, addon_id),
+            )
+    if failures:
+        details = "; ".join("{}: {}".format(addon_id, reason) for addon_id, reason in failures[:8])
+        if len(failures) > 8:
+            details += "; and {} more".format(len(failures) - 8)
+        raise RuntimeError("Kodi could not enable every packaged add-on. {}".format(details))
+
+
+def _ensure_kodi_managed_addon(addon_id, progress):
+    try:
+        _jsonrpc("Addons.GetAddonDetails", {
+            "addonid": addon_id,
+            "properties": ["version", "enabled"],
+        })
+    except RuntimeError:
+        _log("Installing required Kodi repository dependency {}.".format(addon_id))
+        progress.update(93, "KingBlap Wizard", "Installing required component: {}".format(addon_id))
+        xbmc.executebuiltin("InstallAddon({})".format(addon_id), True)
+        _wait_for_addon_registration((addon_id,), progress, confirm_required_addon=True)
+    _enable_addon(addon_id)
 
 
 def _texture_source_path(url):
@@ -405,11 +606,22 @@ def _apply_skin_settings():
     _activate_skin(SKIN_ID)
 
 
+def _request_skin_reapply():
+    marker_dir = os.path.join(_path("special://profile/addon_data"), ADDON_ID)
+    os.makedirs(marker_dir, exist_ok=True)
+    marker = os.path.join(marker_dir, "skin-reapply.json")
+    temporary = marker + ".tmp"
+    with open(temporary, "w", encoding="utf-8") as marker_file:
+        json.dump({"skin": SKIN_ID, "requested": time.time()}, marker_file)
+    os.replace(temporary, marker)
+
+
 def _install(name, url):
     if not xbmcgui.Dialog().yesno(
         "Install {}?".format(name),
-        "This replaces matching add-on files, installs Xonfluence 6.0.6 for Kodi 22, "
-        "installs the build's sanitized Xonfluence skin settings, and removes the previous Estuary MOD V2 skin.\n\n"
+        "This installs and enables all packaged add-ons, fetches Android-compatible "
+        "native components through Kodi, replaces matching add-on files, and installs Xonfluence 6.0.6 for Kodi 22. "
+        "It also installs the build's sanitized Xonfluence skin settings and removes the previous Estuary MOD V2 skin.\n\n"
         "It also removes XStream Player and its saved settings from this Kodi profile.\n\n"
         "Your provider accounts, other add-on data, libraries, and databases are not in the build.",
         yeslabel="Install build",
@@ -420,11 +632,11 @@ def _install(name, url):
     home = _path("special://home")
     addon_root = _path("special://home/addons")
     data_root = _path("special://profile/addon_data")
-    wizard_data = _path("special://profile/addon_data/{}".format(ADDON_ID))
-    downloads = os.path.join(wizard_data, "downloads")
+    wizard_temp = os.path.join(_path("special://temp"), ADDON_ID)
+    downloads = os.path.join(wizard_temp, "downloads")
     archive_path = os.path.join(downloads, "KingBlapKodiBuild.zip")
     transaction = os.path.join(
-        wizard_data,
+        wizard_temp,
         "transactions",
         "{}-{}".format(time.strftime("%Y%m%d-%H%M%S"), uuid.uuid4().hex[:8]),
     )
@@ -440,10 +652,12 @@ def _install(name, url):
     original_skin = None
     committed = False
     rollback_complete = True
+    preserve_transaction = False
     try:
         _download_archive(url, archive_path, progress)
         with zipfile.ZipFile(archive_path, "r") as archive:
-            expanded_size, packages = _validate_archive(archive)
+            expanded_size, packages, platform_addons = _validate_archive(archive)
+            required_dependencies = _required_external_dependencies(archive, packages)
             free_space = shutil.disk_usage(home).free
             if free_space < expanded_size + os.path.getsize(archive_path) + 64 * 1024 * 1024:
                 raise OSError("There is not enough free storage to unpack this build safely.")
@@ -454,6 +668,7 @@ def _install(name, url):
             progress.create("KingBlap Wizard", "Preparing add-ons…")
 
             count = 0
+            last_percent = -1
             files = [info for info in archive.infolist() if not info.is_dir()]
             for info in files:
                 if info.filename.startswith("addons/"):
@@ -466,13 +681,43 @@ def _install(name, url):
                     continue
                 else:
                     continue
-                _write_member(archive, info, destination)
+                try:
+                    _write_member(archive, info, destination)
+                except OSError as exc:
+                    preserve_transaction = True
+                    try:
+                        destination_state = "lexists={}, islink={}, isdir={}, parent_isdir={}".format(
+                            os.path.lexists(destination),
+                            os.path.islink(destination),
+                            os.path.isdir(destination),
+                            os.path.isdir(os.path.dirname(destination)),
+                        )
+                        destination_state += ", parent_entries={!r}".format(
+                            os.listdir(os.path.dirname(destination))[:30]
+                        )
+                    except OSError as state_exc:
+                        destination_state = "state check failed: {}".format(state_exc)
+                    _log(
+                        "Archive member staging failed: member={!r}, destination={!r}, "
+                        "error={!r}, state={}, traceback={}".format(
+                            info.filename,
+                            destination,
+                            exc,
+                            destination_state,
+                            traceback.format_exc(),
+                        ),
+                        xbmc.LOGERROR,
+                    )
+                    raise
                 count += 1
-                progress.update(
-                    int(count * 90 / max(1, len(files))),
-                    "KingBlap Wizard",
-                    "Preparing add-ons without changing the current installation…",
-                )
+                percent = int(count * 90 / max(1, len(files)))
+                if percent != last_percent:
+                    progress.update(
+                        percent,
+                        "KingBlap Wizard",
+                        "Preparing add-ons without changing the current installation…",
+                    )
+                    last_percent = percent
 
         staged_skin_settings = os.path.join(
             staged_userdata,
@@ -523,13 +768,13 @@ def _install(name, url):
             changes,
         )
         xbmc.executebuiltin("UpdateLocalAddons", True)
-        _wait_for_addon_registration(
-            ("script.favourites", "script.image.resource.select", SKIN_ID),
-            progress,
-        )
-        _enable_addon("script.favourites")
-        _enable_addon("script.image.resource.select")
-        _enable_addon(SKIN_ID)
+        xbmc.executebuiltin("UpdateAddonRepos", True)
+        kodi_managed_addons = sorted(set(required_dependencies) | set(platform_addons))
+        for addon_id in kodi_managed_addons:
+            _ensure_kodi_managed_addon(addon_id, progress)
+        xbmc.executebuiltin("UpdateLocalAddons", True)
+        _wait_for_addon_registration(packages.keys(), progress)
+        _enable_build_addons(packages.keys(), progress)
         try:
             installed_skin_version = xbmcaddon.Addon(SKIN_ID).getAddonInfo("version")
         except RuntimeError:
@@ -549,17 +794,23 @@ def _install(name, url):
             _log("Could not refresh the add-on artwork cache: {}".format(cache_exc), xbmc.LOGWARNING)
         progress.close()
         success_message = (
-            "Kodi found {} portable add-ons and refreshed {} cached add-on images. "
-            "Restart Kodi to finish applying the build.\n\n"
+            "Kodi registered and enabled all {} add-ons in the build and checked {} "
+            "platform-specific add-ons through Kodi's add-on manager. It also refreshed "
+            "{} cached add-on images. After you close this message, the wizard will "
+            "finish applying Xonfluence.\n\n"
             "Kodi will recreate add-on logos and skin artwork when it displays them.\n"
             "Show and channel thumbnails need each add-on's own data and account settings.\n"
             "Keep Kodi's official repository enabled for Android-specific binary dependencies.\n"
             "Open GIPTV and enter your own provider details."
-        ).format(len(packages), refreshed_art)
+        ).format(len(packages), len(platform_addons), refreshed_art)
         xbmcgui.Dialog().ok(
             "KingBlap build installed",
             success_message,
         )
+        try:
+            _request_skin_reapply()
+        except OSError as marker_exc:
+            _log("Could not schedule the final Xonfluence apply: {}".format(marker_exc), xbmc.LOGWARNING)
         _log("Installed build {} with {} add-ons.".format(name, len(packages)))
     except Exception as exc:
         try:
@@ -588,7 +839,7 @@ def _install(name, url):
                     _log("Could not restore the previous skin: {}".format(
                         restore_exc
                     ), xbmc.LOGERROR)
-        if not committed and rollback_complete:
+        if not committed and rollback_complete and not preserve_transaction:
             try:
                 _remove_path(transaction)
             except OSError as cleanup_exc:
