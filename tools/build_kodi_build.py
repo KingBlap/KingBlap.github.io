@@ -16,12 +16,13 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 ZIP_ROOT = ROOT / "repo" / "zips"
-SKIN_ID = "skin.estuary.modv2"
-LEGACY_SKIN_ID = "skin.xonfluence"
+SKIN_ID = "skin.xonfluence"
+SKIN_VERSION = "6.0.6"
+LEGACY_SKIN_ID = "skin.estuary.modv2"
 REPLACED_ADDON = "plugin.video.xstream-player"
 GIPTV_ID = "plugin.video.giptv"
 GIPTV_VERSION = "3.1.0"
-BUILD_VERSION = "1.0.7"
+BUILD_VERSION = "1.0.8"
 REPO_ID = "repository.kingblap"
 NATIVE_SUFFIXES = {".dll", ".so", ".dylib", ".pyd"}
 
@@ -131,16 +132,14 @@ def build(snapshot, output):
 
     if GIPTV_ID not in chosen or packages.get(GIPTV_ID, (None,))[0] != GIPTV_VERSION:
         raise ValueError("GIPTV 3.1.0 must be present in the public Kodi repository first.")
-    if SKIN_ID not in chosen:
-        raise ValueError("The Kodi 22 Estuary MOD V2 skin package is missing from the repository.")
+    if SKIN_ID not in chosen or packages.get(SKIN_ID, (None,))[0] != SKIN_VERSION:
+        raise ValueError("The fresh Kodi 22 Xonfluence 6.0.6 skin package is missing from the repository.")
     for addon_id in (
-        "script.skinshortcuts",
+        "script.favourites",
         "script.image.resource.select",
-        "script.module.pvr.artwork",
-        "script.module.simplecache",
     ):
         if addon_id not in chosen:
-            raise ValueError("The Estuary MOD V2 dependency {} is missing.".format(addon_id))
+            raise ValueError("The Xonfluence dependency {} is missing.".format(addon_id))
 
     info = {
         "name": "KingBlap Kodi Build",

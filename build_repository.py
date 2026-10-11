@@ -27,7 +27,7 @@ def main():
             addon_id = addon.get("id")
             if not addon_id:
                 continue
-            if addon_id in ("service.upnext", "skin.estuary.modv2"):
+            if addon_id in ("service.upnext", "skin.estuary.modv2", "skin.xonfluence"):
                 # These upstream XML files contain indentation-only text nodes
                 # that produce noisy whitespace in the generated catalog.
                 for element in addon.iter():

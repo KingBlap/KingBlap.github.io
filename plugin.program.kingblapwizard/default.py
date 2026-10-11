@@ -22,8 +22,9 @@ import xbmcvfs
 ADDON = xbmcaddon.Addon()
 ADDON_ID = ADDON.getAddonInfo("id")
 BUILDS_URL = "https://kingblap.github.io/builds.txt"
-SKIN_ID = "skin.estuary.modv2"
-LEGACY_SKIN_ID = "skin.xonfluence"
+SKIN_ID = "skin.xonfluence"
+SKIN_VERSION = "6.0.6"
+LEGACY_SKIN_ID = "skin.estuary.modv2"
 BUILD_LIMIT = 1024 * 1024 * 1024
 DOWNLOAD_LIMIT = 512 * 1024 * 1024
 CHUNK_SIZE = 1024 * 1024
@@ -40,7 +41,7 @@ def _path(special):
 def _fetch(url, max_bytes):
     request = urllib.request.Request(
         url,
-        headers={"User-Agent": "KingBlap-Wizard/1.0.5 Kodi"},
+        headers={"User-Agent": "KingBlap-Wizard/1.0.6 Kodi"},
     )
     with urllib.request.urlopen(request, timeout=45) as response:
         length = response.headers.get("Content-Length")
@@ -169,19 +170,17 @@ def _validate_archive(archive):
             raise ValueError("Symbolic links are not accepted in the build archive.")
     if packages.get("plugin.video.giptv") != "3.1.0":
         raise ValueError("The build archive does not contain the expected GIPTV package.")
-    if packages.get(SKIN_ID) is None:
-        raise ValueError("The build archive does not contain the Estuary MOD V2 skin.")
+    if packages.get(SKIN_ID) != SKIN_VERSION:
+        raise ValueError("The build archive does not contain Xonfluence 6.0.6 for Kodi 22.")
     if LEGACY_SKIN_ID in packages:
-        raise ValueError("The build archive still contains the Xonfluence skin.")
+        raise ValueError("The build archive still contains Estuary MOD V2.")
     for addon_id in (
-        "script.skinshortcuts",
+        "script.favourites",
         "script.image.resource.select",
-        "script.module.pvr.artwork",
-        "script.module.simplecache",
         "script.module.requests",
     ):
         if addon_id not in packages:
-            raise ValueError("The build archive is missing a skin dependency: {}.".format(addon_id))
+            raise ValueError("The build archive is missing a required add-on: {}.".format(addon_id))
     skin_manifest = ET.fromstring(archive.read("addons/{}/addon.xml".format(SKIN_ID)))
     for dependency in skin_manifest.findall("requires/import"):
         dependency_id = dependency.get("addon", "")
@@ -195,7 +194,7 @@ def _validate_archive(archive):
 def _download_archive(url, destination, progress):
     request = urllib.request.Request(
         url,
-        headers={"User-Agent": "KingBlap-Wizard/1.0.5 Kodi"},
+        headers={"User-Agent": "KingBlap-Wizard/1.0.6 Kodi"},
     )
     with urllib.request.urlopen(request, timeout=60) as response:
         length = response.headers.get("Content-Length")
@@ -358,8 +357,9 @@ def _apply_skin_settings():
 def _install(name, url):
     if not xbmcgui.Dialog().yesno(
         "Install {}?".format(name),
-        "This replaces matching add-on files and installs the Estuary MOD V2 skin.\n\n"
-        "It removes XStream Player and its saved settings from this Kodi profile.\n\n"
+        "This replaces matching add-on files, installs Xonfluence 6.0.6 for Kodi 22, "
+        "and removes the previous Estuary MOD V2 skin.\n\n"
+        "It also removes XStream Player and its saved settings from this Kodi profile.\n\n"
         "Your provider accounts, other add-on data, libraries, and databases are not in the build.",
         yeslabel="Install build",
         nolabel="Cancel",
@@ -454,7 +454,8 @@ def _install(name, url):
         )
         xbmc.executebuiltin("UpdateLocalAddons", True)
         xbmc.sleep(1500)
-        _enable_addon("script.skinshortcuts")
+        _enable_addon("script.favourites")
+        _enable_addon("script.image.resource.select")
         _enable_addon(SKIN_ID)
         skin_details = _jsonrpc(
             "Addons.GetAddonDetails",
@@ -462,9 +463,9 @@ def _install(name, url):
         )
         skin_addon = skin_details.get("addon") if isinstance(skin_details, dict) else None
         if not isinstance(skin_addon, dict) or skin_addon.get("version") != packages[SKIN_ID]:
-            raise RuntimeError("Kodi did not register the installed Estuary MOD V2 skin.")
+            raise RuntimeError("Kodi did not register the installed Xonfluence 6.0.6 skin.")
 
-        progress.update(97, "KingBlap Wizard", "Loading Estuary MOD V2…")
+        progress.update(97, "KingBlap Wizard", "Loading Xonfluence…")
         _apply_skin_settings()
         committed = True
         try:

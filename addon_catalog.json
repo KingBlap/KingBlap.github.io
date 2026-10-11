@@ -1,5 +1,5 @@
 {
-  "generated_from": "Kodi 22 backup snapshot 2026-10-04 plus GIPTV 3.1.0, Kodi Up Next, Skin Shortcuts 3.0.4, Estuary MOD V2 22.0+piers, PVR Artwork 2.2.10, Simple Cache 2.0.2, and KingBlap Wizard 1.0.5",
+  "generated_from": "Kodi 22 backup snapshot 2026-10-04 plus GIPTV 3.1.0, Kodi Up Next, Skin Shortcuts 3.0.4, fresh Xonfluence 6.0.6 (BadIDMan commit 827ace3b3de32f28682fca7cf1c48ac4cd19a76b), Estuary MOD V2 22.0+piers, and KingBlap Wizard 1.0.6",
   "addons": [
     {
       "id": "context.otaku",
@@ -93,12 +93,12 @@
     },
     {
       "id": "plugin.program.kingblapwizard",
-      "version": "1.0.5",
+      "version": "1.0.6",
       "name": "KingBlap Wizard",
       "provider": "KingBlap",
       "license": "GPL-2.0-or-later",
-      "zip": "repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.5.zip",
-      "bytes": 81319
+      "zip": "repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.6.zip",
+      "bytes": 81349
     },
     {
       "id": "plugin.video.absolution",
@@ -1071,6 +1071,15 @@
       "license": "CC BY-SA 4.0, GNU GENERAL PUBLIC LICENSE Version 2.0",
       "zip": "repo/zips/skin.estuary.modv2/skin.estuary.modv2-22.0+piers.zip",
       "bytes": 97210566
+    },
+    {
+      "id": "skin.xonfluence",
+      "version": "6.0.6",
+      "name": "Xonfluence",
+      "provider": "Helly, bsoriano, jdig4240, rafikW",
+      "license": "GNU General Public License version 2",
+      "zip": "repo/zips/skin.xonfluence/skin.xonfluence-6.0.6.zip",
+      "bytes": 25023586
     },
     {
       "id": "weather.gismeteo",
