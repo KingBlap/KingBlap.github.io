@@ -1,5 +1,5 @@
 {
-  "generated_from": "Kodi backup snapshot 2026-10-04 plus GIPTV 3.1.0 from the GIPTV developer's Kodi repository",
+  "generated_from": "Kodi backup snapshot 2026-10-04 plus GIPTV 3.1.0, Kodi Up Next dependency, and KingBlap Wizard 1.0.0",
   "addons": [
     {
       "id": "context.otaku",
@@ -252,6 +252,15 @@
       "license": "GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007",
       "zip": "repo/zips/plugin.video.zoro/plugin.video.zoro-1.1.9.zip",
       "bytes": 8339362
+    },
+    {
+      "id": "plugin.program.kingblapwizard",
+      "version": "1.0.0",
+      "name": "KingBlap Wizard",
+      "provider": "KingBlap",
+      "license": "GPL-2.0-or-later",
+      "zip": "repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.0.zip",
+      "bytes": 79060
     },
     {
       "id": "program.easyplayerswitch",
@@ -999,6 +1008,15 @@
       "license": "MIT",
       "zip": "repo/zips/script.xbmcbackup/script.xbmcbackup-1.7.3.zip",
       "bytes": 850485
+    },
+    {
+      "id": "service.upnext",
+      "version": "1.1.9+matrix.1",
+      "name": "Up Next",
+      "provider": "im85288",
+      "license": "GPL-2.0-only",
+      "zip": "repo/zips/service.upnext/service.upnext-1.1.9+matrix.1.zip",
+      "bytes": 1760833
     },
     {
       "id": "service.xbmc.versioncheck",

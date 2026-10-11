@@ -27,6 +27,14 @@ def main():
             addon_id = addon.get("id")
             if not addon_id:
                 continue
+            if addon_id == "service.upnext":
+                # The upstream XML contains indentation-only text nodes that
+                # produce trailing whitespace in the generated catalog.
+                for element in addon.iter():
+                    if element.text is not None and not element.text.strip():
+                        element.text = None
+                    if element.tail is not None and not element.tail.strip():
+                        element.tail = None
             current = latest.get(addon_id)
             if current is None or version_key(addon.get("version", "")) > version_key(current.get("version", "")):
                 latest[addon_id] = addon
