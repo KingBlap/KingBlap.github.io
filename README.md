@@ -1,6 +1,6 @@
 # KingBlap Kodi Repository
 
-A Kodi add-on repository assembled from the supplied Kodi 22 backup snapshot dated October 4, 2026, with GIPTV 2.8.0 included in place of XStream Player.
+A Kodi add-on repository assembled from the supplied Kodi 22 backup snapshot dated October 4, 2026, with GIPTV 3.1.0 included in place of XStream Player.
 
 ## Install in Kodi
 
@@ -21,7 +21,7 @@ Kodi catalog: https://kingblap.github.io/repo/zips/addons.xml
 
 ## Contents
 
-This repository contains 113 add-on packages from the supplied addons folder and GIPTV 2.8.0 from the [Diggz Kodi 22 add-on catalog](https://github.com/nebulous42069/22/tree/master/22/zips/plugin.video.giptv), plus this repository add-on. XStream Player was removed. It does not include Kodi profile databases, add-on account data, settings, thumbnails, or a build wizard/archive. Individual packages retain their own add-on metadata and licensing information.
+This repository contains 113 add-on packages from the supplied addons folder and GIPTV 3.1.0 from the [GIPTV developer's Kodi repository](https://github.com/G00380316/GIPTV/tree/main/repo/zips/plugin.video.giptv), plus this repository add-on. GIPTV is marked for all platforms and requires `script.module.requests` and `service.upnext`; keep Kodi's official add-on repository enabled so Kodi can resolve dependencies. XStream Player was removed. It does not include Kodi profile databases, add-on account data, settings, thumbnails, or a build wizard/archive. Individual packages retain their own add-on metadata and licensing information.
 
 - context.otaku — 1.0.35
 - context.prism — 4.0.2
@@ -39,7 +39,7 @@ This repository contains 113 add-on packages from the supplied addons folder and
 - plugin.video.forge — 0.2.13
 - plugin.video.gears — 2.4.3
 - plugin.video.genocide — 6.9.9
-- plugin.video.giptv — 2.8.0
+- plugin.video.giptv — 3.1.0
 - plugin.video.homelander — 1.3.1
 - plugin.video.jet_guide — 0.0.21
 - plugin.video.loopguide — 3.8.2
