@@ -3,55 +3,233 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>KingBlap Kodi Repository and Build</title>
+  <meta name="description" content="KingBlap Kodi Repository setup instructions, wizard build details, downloads, release history, and package inventory.">
+  <title>KingBlap Kodi Repository</title>
   <style>
-    :root { color-scheme: dark; --bg:#081326; --panel:#111f36; --accent:#49d9e6; --muted:#b9c8dc; }
+    :root { color-scheme: dark; --bg:#081326; --panel:#111f36; --accent:#49d9e6; --muted:#b9c8dc; --line:#2d4761; }
     * { box-sizing:border-box; }
-    body { margin:0; background:radial-gradient(circle at 82% 15%,#164c67 0,transparent 35%),linear-gradient(135deg,#081326,#0c2138); color:#f3f7ff; font:16px/1.6 system-ui,Segoe UI,Arial,sans-serif; }
-    main { max-width:920px; margin:0 auto; padding:64px 24px 72px; }
-    .eyebrow { color:var(--accent); text-transform:uppercase; letter-spacing:.16em; font-size:.8rem; font-weight:700; }
-    h1 { font-size:clamp(2.4rem,7vw,4.5rem); line-height:1.05; margin:.35em 0; }
-    .lead { max-width:680px; color:var(--muted); font-size:1.15rem; }
-    .card { margin:32px 0; padding:28px; border:1px solid #2d4761; border-radius:20px; background:#0d1b2ee8; box-shadow:0 20px 60px #02091666; }
-    a.button { display:inline-block; background:var(--accent); color:#061522; padding:13px 20px; border-radius:10px; font-weight:800; text-decoration:none; }
+    body { margin:0; background:radial-gradient(circle at 82% 8%,#164c67 0,transparent 32%),linear-gradient(135deg,#081326,#0c2138); color:#f3f7ff; font:16px/1.65 system-ui,Segoe UI,Arial,sans-serif; }
+    main { max-width:1000px; margin:0 auto; padding:36px 24px 72px; }
+    .kodi-links { display:flex; flex-wrap:wrap; gap:10px; margin:0 0 28px; padding:18px; border:1px solid var(--line); border-radius:16px; background:#0d1b2ee8; }
+    .kodi-links a { display:inline-block; padding:9px 13px; border-radius:9px; background:#13273e; color:#a5eff4; font-weight:700; text-decoration:none; }
+    .kodi-links a:first-child { background:var(--accent); color:#061522; }
+    article { padding:32px; border:1px solid var(--line); border-radius:20px; background:#0d1b2ee8; box-shadow:0 20px 60px #02091666; overflow-wrap:anywhere; }
+    h1,h2,h3,h4 { line-height:1.2; margin:1.45em 0 .55em; }
+    h1 { font-size:clamp(2.2rem,6vw,3.6rem); margin-top:0; }
+    h2 { padding-bottom:.35em; border-bottom:1px solid #29415a; }
+    h3 { color:#d8f8fa; }
+    p,li { color:#e0e9f5; }
+    li { padding:.22em 0; }
     a { color:#8cecf0; }
-    ol { padding-left:1.3em; }
-    li { padding:.35em 0; }
-    code { color:#a5eff4; background:#13273e; padding:.15em .35em; border-radius:5px; }
-    footer { margin-top:36px; color:#93a7bf; font-size:.9rem; }
+    code { color:#a5eff4; background:#13273e; padding:.12em .35em; border-radius:5px; }
+    pre { overflow:auto; padding:16px; border:1px solid var(--line); border-radius:10px; background:#081326; }
+    pre code { padding:0; background:transparent; }
+    .table-scroll { overflow-x:auto; margin:20px 0; }
+    table { border-collapse:collapse; width:100%; min-width:540px; }
+    th,td { padding:9px 12px; border:1px solid var(--line); text-align:left; vertical-align:top; }
+    th { background:#13273e; color:#d8f8fa; }
+    tbody tr:nth-child(even) { background:#102038; }
+    @media (max-width:640px) { main { padding:16px 12px 40px; } article { padding:20px 16px; } .kodi-links { padding:12px; } }
   </style>
 </head>
 <body>
   <main>
-    <div class="eyebrow">Kodi 22 • Add-on repository and wizard build</div>
-    <h1>KingBlap Kodi Repository</h1>
-    <p class="lead">Install add-ons or set up the portable KingBlap build from the October 4, 2026 Kodi snapshot.</p>
-    <section class="card">
-      <h2>Install the repository in Kodi</h2>
-      <ol>
-        <li>In Kodi, open <strong>Settings → System → Add-ons</strong>, enable <strong>Unknown sources</strong>, and accept the prompt.</li>
-        <li>Open <strong>Settings → File Manager → Add source</strong>. Select the path field and enter <code>https://kingblap.github.io/</code>. Name the source <code>KingBlap Repo</code> and save it.</li>
-        <li>Open <strong>Add-ons → Install from zip file</strong>, select <strong>KingBlap Repo</strong>, then choose <code>repository.kingblap-1.0.0.zip</code>.</li>
-        <li>After Kodi confirms installation, open <strong>Install from repository → KingBlap Kodi Repository</strong>.</li>
-      </ol>
-      <h3>Android phones, Android TV, and Fire TV Stick</h3>
-      <p>The same File Manager steps work on Android phones, Android TV, and Fire TV Stick; Kodi downloads the repository ZIP from the source. If it appears empty or Kodi cannot connect, verify that the address is exactly <code>https://kingblap.github.io/</code> and that the device can open it in a browser. As a fallback, save the repository ZIP using the download button below and install it from the device's Downloads folder. Keep Kodi's official add-on repository enabled so Android ARM versions of binary dependencies can be installed where available. Add-on compatibility and service behavior vary by add-on, device, and Kodi version.</p>
-      <p><a href="/repository.kingblap-1.0.0.zip" class="button">repository.kingblap-1.0.0.zip</a></p>
-      <p>Repository feed: <a href="/repo/zips/addons.xml">addons.xml</a> · <a href="/README.md">setup details</a></p>
-    </section>
-    <section class="card">
-      <h2>Install the KingBlap Wizard build</h2>
-      <ol>
-        <li>Install or update <strong>KingBlap Wizard 1.0.22</strong> from <strong>Install from repository → KingBlap Kodi Repository → Program add-ons</strong>. This version checks for Xonfluence 6.0.7 and confirms Kodi’s “Keep skin?” prompt.</li>
-        <li>If an older Wizard is already installed and no update appears, choose <strong>Add-ons → Check for updates</strong>.</li>
-        <li>Open the wizard, choose <strong>KingBlap Kodi Build 1.0.14</strong>, and confirm.</li>
-        <li>Close the completion notice and let the wizard finish applying Xonfluence. Restart Kodi once to finish add-on startup, then enter your own GIPTV provider details.</li>
-      </ol>
-      <p>Build 1.0.14 includes Xonfluence 6.0.7 with your eight Demon Women pictures rotating as the global background slideshow. The images ship with the skin and work on Android phones, Android TV, and Fire TV Stick. The wizard registers and enables its 78 packaged add-ons, installs Android-compatible platform components through Kodi’s add-on manager, confirms Kodi’s “Keep skin?” prompt, and checks that Xonfluence stays selected after the rollback timer. It applies the saved skin again after the installer closes and at Kodi startup. The archive excludes account credentials, personal add-on data, Kodi databases, media libraries, sources, and thumbnail caches. Layouts can vary across Kodi 22 on Android phones, Android TV, and Fire TV Stick devices.</p>
-      <p><a href="/repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.22.zip" class="button">Download KingBlap Wizard ZIP</a></p>
-      <p><a href="/builds.txt">Build list</a> · <a href="https://github.com/KingBlap/KingBlap.github.io/releases/download/kingblap-build-v1.0.14/KingBlapKodiBuild-1.0.14.zip">Build archive</a></p>
-    </section>
-    <footer>Repository source files are published on GitHub. Add-ons retain their own metadata; compatibility and service availability vary by add-on.</footer>
+    <nav class="kodi-links" aria-label="Kodi links">
+      <a href="/repository.kingblap-1.0.0.zip">repository.kingblap-1.0.0.zip</a>
+      <a href="/repo/zips/addons.xml">Kodi add-on catalog</a>
+      <a href="/builds.txt">Wizard build list</a>
+      <a href="/README.md">README</a>
+    </nav>
+    <article>
+<h1 id="kingblap-kodi-repository">KingBlap Kodi Repository</h1>
+<p>This project provides two ways to install its Kodi add-ons: the <strong>KingBlap Kodi Repository</strong> lets you choose add-ons individually, while <strong>KingBlap Wizard</strong> installs the complete portable build. The repository catalog currently lists <strong>121 packages</strong>. Build <strong>1.0.14</strong> installs and enables <strong>78 add-ons</strong> and selects Xonfluence 6.0.7.</p>
+<p>The build was assembled from a Kodi 22 backup snapshot dated October 4, 2026. It targets Kodi 22. Compatibility and available features vary by Kodi version, device, add-on, and service provider.</p>
+<h2 id="install-in-kodi">Install in Kodi</h2>
+<ol>
+<li>In Kodi, open <strong>Settings → System → Add-ons</strong> and enable <strong>Unknown sources</strong> if needed.</li>
+<li>Open <strong>Settings → File Manager → Add source</strong>. Select the path field (usually <strong>&lt;None&gt;</strong>), enter <code>https://kingblap.github.io/</code>, and select <strong>OK</strong>. Name the source <code>KingBlap Repo</code> and save it.</li>
+<li>Return to Kodi&#39;s home screen and choose <strong>Add-ons → Install from zip file → KingBlap Repo</strong>.</li>
+<li>Select <code>repository.kingblap-1.0.0.zip</code>. If Kodi asks to install dependencies, choose <strong>OK</strong> and keep Kodi&#39;s official repository enabled.</li>
+<li>Choose <strong>Install from repository → KingBlap Kodi Repository</strong> to browse the add-ons. Open a category, select an add-on, and choose <strong>Install</strong>.</li>
+</ol>
+<p>This File Manager method also works on Android phones, Android TV, and Fire TV Stick; Kodi fetches the repository ZIP over HTTPS from the source. If the source appears empty or Kodi says it cannot connect, check that the path is exactly <code>https://kingblap.github.io/</code> and open that address in a browser on the same device. As a fallback, download the <a href="https://kingblap.github.io/repository.kingblap-1.0.0.zip">repository installer ZIP</a>, then use <strong>File Manager → Add source → Browse</strong> to add the folder containing the downloaded ZIP. Choose that source in <strong>Install from zip file</strong>.</p>
+<h2 id="install-the-complete-wizard-build">Install the complete wizard build</h2>
+<ol>
+<li>Install or update <strong>KingBlap Wizard 1.0.22</strong> from <strong>Install from repository → KingBlap Kodi Repository → Program add-ons</strong>. If the update is not listed, select <strong>Add-ons → Check for updates</strong> or install the <a href="https://kingblap.github.io/repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.22.zip">Wizard 1.0.22 ZIP</a>.</li>
+<li>Open <strong>KingBlap Wizard</strong>, choose <strong>KingBlap Kodi Build 1.0.14</strong>, and confirm.</li>
+<li>Let the download and installation finish. Close the completion notice, allow Kodi to finish loading add-ons and Xonfluence, then restart Kodi once.</li>
+<li>Open GIPTV and enter your own provider details. Sign in to any other services you use.</li>
+</ol>
+<p>Make a Kodi backup before installing over an existing setup. The wizard replaces the add-on files included in the build, removes XStream Player and the prior Estuary MOD V2 skin from the build target, and enables the 78 packaged add-ons. It does not wipe unrelated add-ons or Kodi libraries. Existing add-on settings outside the build archive may remain on the device.</p>
+<h2 id="what-build-1014-includes">What Build 1.0.14 includes</h2>
+<ul>
+<li><strong>78 pre-enabled add-ons</strong>, including 18 video add-ons, supporting modules, artwork tools, Up Next, and the KingBlap repository. The full 121-package repository catalog and versions are listed below; the build archive&#39;s <code>build_info.json</code> records the exact 78 add-on IDs in the build.</li>
+<li><strong>GIPTV 3.1.0</strong> in place of XStream Player. GIPTV needs your own provider details and any provider-required account or playlist setup.</li>
+<li><strong>Xonfluence 6.0.7</strong> for Kodi 22, based on <a href="https://github.com/BadIDMan/skin.xonfluence">BadIDMan/skin.xonfluence</a> at <a href="https://github.com/BadIDMan/skin.xonfluence/commit/827ace3b3de32f28682fca7cf1c48ac4cd19a76b">commit 827ace3</a>. Estuary MOD V2 is still available as an optional repository add-on, but is not the build&#39;s selected skin.</li>
+<li>Eight supplied Demon Women pictures, packaged with Xonfluence as a randomized, crossfading background slideshow. The images use a skin-relative location for portability across Windows, Android phones, Android TV, and Fire TV Stick; Xonfluence scales portrait images to fill the display.</li>
+<li>Sanitized Xonfluence skin settings from the supplied snapshot. The archive keeps portable presentation settings and removes local paths, web addresses, and secret-like values.</li>
+<li>Wizard fixes for Kodi add-on registration delays, install dialogs, the skin confirmation prompt, and applying Xonfluence after Kodi starts. The wizard also asks Kodi&#39;s add-on manager to obtain compatible platform-specific components when available.</li>
+</ul>
+<p>The public build does <strong>not</strong> contain service passwords, provider credentials, account tokens, other add-on profile data, Kodi databases, personal libraries, media-source paths, provider playlists or EPG data, caches, thumbnails, or platform-specific native binaries. Configure accounts and sources on each device after installation.</p>
+<p>The repository was assembled from a Windows Kodi 22 snapshot. Four native binary packages (<code>inputstream.adaptive</code>, <code>inputstream.ffmpegdirect</code>, <code>inputstream.rtmp</code>, and <code>pvr.iptvsimple</code>) are Windows x86-64 packages in the catalog and are omitted from the portable build. Leave Kodi&#39;s official repository enabled; Kodi may install a compatible Android ARM version where available. Other packages retain their upstream Kodi compatibility metadata, so availability and behavior can vary across devices.</p>
+<h2 id="current-downloads">Current downloads</h2>
+<ul>
+<li>Build list: <a href="https://kingblap.github.io/builds.txt">builds.txt</a></li>
+<li>Build 1.0.14: <a href="https://github.com/KingBlap/KingBlap.github.io/releases/download/kingblap-build-v1.0.14/KingBlapKodiBuild-1.0.14.zip">download the ZIP</a></li>
+<li>KingBlap repository installer: <a href="https://kingblap.github.io/repository.kingblap-1.0.0.zip">download the ZIP</a></li>
+<li>Kodi add-on catalog: <a href="https://kingblap.github.io/repo/zips/addons.xml">addons.xml</a></li>
+<li>Package inventory and versions: <a href="addon_catalog.json">addon_catalog.json</a></li>
+</ul>
+<h2 id="wizard-build-release-history">Wizard build release history</h2>
+<div class="table-scroll"><table><thead><tr><th>Build</th><th>Changes</th></tr></thead><tbody>
+<tr><td><strong>1.0.14</strong></td><td>Updated the wizard&#39;s Xonfluence version check to match the packaged Kodi 22 skin, version 6.0.7.</td></tr>
+<tr><td><strong>1.0.13</strong></td><td>Added the eight-image Demon Women Xonfluence slideshow.</td></tr>
+<tr><td><strong>1.0.12</strong></td><td>Enabled all 78 packaged add-ons and improved automatic confirmation and persistent application of Xonfluence.</td></tr>
+<tr><td><strong>1.0.11</strong></td><td>Improved installation on devices where Kodi registers add-ons slowly.</td></tr>
+<tr><td><strong>1.0.10</strong></td><td>Avoided invalid Kodi settings calls during installation.</td></tr>
+<tr><td><strong>1.0.9</strong></td><td>Added portable, sanitized Xonfluence skin settings to the build archive.</td></tr>
+<tr><td><strong>1.0.8</strong></td><td>Returned the build to a fresh Kodi 22-compatible Xonfluence package (6.0.6 at that release).</td></tr>
+<tr><td><strong>1.0.7</strong></td><td>Temporarily switched the build skin to Estuary MOD V2 and added its supporting packages. This skin was later removed from the build and remains optional in the repository.</td></tr>
+<tr><td><strong>1.0.6</strong></td><td>Updated the Xonfluence package to 5.1.1.</td></tr>
+<tr><td><strong>1.0.5</strong></td><td>Restored Xonfluence 5.1 as the build skin.</td></tr>
+<tr><td><strong>1.0.4</strong></td><td>Updated Xonfluence for Kodi 22.</td></tr>
+<tr><td><strong>1.0.3</strong></td><td>Fixed portable build logos.</td></tr>
+<tr><td><strong>1.0.2</strong></td><td>Fixed Kodi 22 wizard installation dialogs.</td></tr>
+<tr><td><strong>1.0.1</strong></td><td>Refreshed add-on artwork after build installation.</td></tr>
+<tr><td><strong>1.0.0</strong></td><td>Initial wizard build release.</td></tr>
+</tbody></table></div>
+<p>The main add-on change was replacing XStream Player with GIPTV. The repository contains GIPTV 3.1.0; the build does not include the user&#39;s provider playlist or login. Individual packages retain their upstream metadata and licenses.</p>
+<h2 id="repository-package-inventory">Repository package inventory</h2>
+<p>The list below describes all <strong>121 packages available in the repository</strong>. Only 78 are bundled and enabled by Wizard Build 1.0.14; the rest can be installed individually from the repository. It includes add-ons, dependencies, skins, and upstream add-on repositories. Package versions are shown alongside their add-on IDs.</p>
+<ul>
+<li><strong>In Build 1.0.14</strong> — context.otaku — 1.0.35</li>
+<li><strong>In Build 1.0.14</strong> — context.prism — 4.0.2</li>
+<li><strong>In Build 1.0.14</strong> — context.seren — 3.0.2</li>
+<li><strong>Repository only</strong> — inputstream.adaptive — 22.3.22</li>
+<li><strong>Repository only</strong> — inputstream.ffmpegdirect — 22.2.7</li>
+<li><strong>Repository only</strong> — inputstream.rtmp — 22.1.3</li>
+<li><strong>In Build 1.0.14</strong> — metadata.generic.albums — 1.0.20</li>
+<li><strong>In Build 1.0.14</strong> — metadata.generic.artists — 1.0.20</li>
+<li><strong>In Build 1.0.14</strong> — metadata.tvshows.themoviedb.org.python — 2.0.9</li>
+<li><strong>In Build 1.0.14</strong> — One.repo — 1.16</li>
+<li><strong>Repository only</strong> — plugin.program.kingblapwizard — 1.0.22</li>
+<li><strong>In Build 1.0.14</strong> — plugin.video.absolution — 4.4.1</li>
+<li><strong>In Build 1.0.14</strong> — plugin.video.cosmos — 4.3.26</li>
+<li><strong>In Build 1.0.14</strong> — plugin.video.dailymotion_com — 2.4.5</li>
+<li><strong>In Build 1.0.14</strong> — plugin.video.forge — 0.2.13</li>
+<li><strong>In Build 1.0.14</strong> — plugin.video.gears — 2.4.3</li>
+<li><strong>In Build 1.0.14</strong> — plugin.video.genocide — 6.9.9</li>
+<li><strong>In Build 1.0.14</strong> — plugin.video.giptv — 3.1.0</li>
+<li><strong>In Build 1.0.14</strong> — plugin.video.homelander — 1.3.1</li>
+<li><strong>In Build 1.0.14</strong> — plugin.video.jet_guide — 0.0.21</li>
+<li><strong>In Build 1.0.14</strong> — plugin.video.loopguide — 3.8.2</li>
+<li><strong>In Build 1.0.14</strong> — plugin.video.looptv — 26+matrix.2</li>
+<li><strong>In Build 1.0.14</strong> — plugin.video.madtitansports — 2.0.44</li>
+<li><strong>In Build 1.0.14</strong> — plugin.video.otaku — 5.3.3</li>
+<li><strong>In Build 1.0.14</strong> — plugin.video.prism — 5.0.56</li>
+<li><strong>In Build 1.0.14</strong> — plugin.video.tatv2 — 1.0.3</li>
+<li><strong>In Build 1.0.14</strong> — plugin.video.thechains — 6.0.1</li>
+<li><strong>In Build 1.0.14</strong> — plugin.video.watchnixtoons2 — 0.14.23</li>
+<li><strong>In Build 1.0.14</strong> — plugin.video.zoro — 1.1.9</li>
+<li><strong>In Build 1.0.14</strong> — program.easyplayerswitch — 1.1.0</li>
+<li><strong>In Build 1.0.14</strong> — program.optiklean — 2.0.7</li>
+<li><strong>Repository only</strong> — pvr.iptvsimple — 22.6.4</li>
+<li><strong>Repository only</strong> — repository.709 — 1.0.2</li>
+<li><strong>Repository only</strong> — repository.aliunde — 1.9.5</li>
+<li><strong>Repository only</strong> — repository.autowidget — 1.1</li>
+<li><strong>Repository only</strong> — repository.bugatsinho — 2.7</li>
+<li><strong>Repository only</strong> — repository.butter — 2.2.0</li>
+<li><strong>Repository only</strong> — repository.chainsrepo — 0.0.15</li>
+<li><strong>Repository only</strong> — repository.cMaNWizard — 3.2</li>
+<li><strong>Repository only</strong> — repository.cywteow — 1.1.1</li>
+<li><strong>Repository only</strong> — repository.diggz — 28</li>
+<li><strong>Repository only</strong> — repository.doomzday — 1.1.0</li>
+<li><strong>Repository only</strong> — repository.enigmawiz — 2.1.6</li>
+<li><strong>Repository only</strong> — repository.fenskeleton — 1.0.2</li>
+<li><strong>Repository only</strong> — repository.forge — 0.1.0</li>
+<li><strong>Repository only</strong> — repository.funstersplace — 0.3</li>
+<li><strong>Repository only</strong> — repository.gaia.full — 8.0.0</li>
+<li><strong>Repository only</strong> — repository.hooty — 1.0</li>
+<li><strong>Repository only</strong> — repository.jewrepo — 1.6.0</li>
+<li><strong>Repository only</strong> — repository.jmooremcc — 1.1.0</li>
+<li><strong>In Build 1.0.14</strong> — repository.kingblap — 1.0.0</li>
+<li><strong>Repository only</strong> — repository.kodifitzwell — 0.0.1</li>
+<li><strong>Repository only</strong> — repository.loop — 3.0.4</li>
+<li><strong>Repository only</strong> — repository.madforit — 1.6</li>
+<li><strong>Repository only</strong> — repository.Magnetic — 1.1.0b</li>
+<li><strong>Repository only</strong> — repository.mtr81 — 1.0</li>
+<li><strong>Repository only</strong> — repository.nixgates — 2.2.0</li>
+<li><strong>Repository only</strong> — repository.octopus — 0.7.0</li>
+<li><strong>Repository only</strong> — repository.peno64 — 1.5</li>
+<li><strong>Repository only</strong> — repository.prism — 1.0</li>
+<li><strong>Repository only</strong> — repository.redwizard — 1.2.2</li>
+<li><strong>Repository only</strong> — repository.swagotaku — 0.0.2</li>
+<li><strong>Repository only</strong> — repository.the666mafia — 1.0</li>
+<li><strong>Repository only</strong> — repository.thecrew — 0.3.8</li>
+<li><strong>Repository only</strong> — repository.thelab — 25.3.27</li>
+<li><strong>Repository only</strong> — repository.vanilla21 — 1.0.0</li>
+<li><strong>Repository only</strong> — repository.zachmorris — 1.0.4</li>
+<li><strong>In Build 1.0.14</strong> — resource.uisounds.appletv — 0.0.2</li>
+<li><strong>In Build 1.0.14</strong> — script.absolution.artwork — 4.1.7</li>
+<li><strong>In Build 1.0.14</strong> — script.ezmaintenanceplus — 2026.04.05.0</li>
+<li><strong>In Build 1.0.14</strong> — script.favourites — 8.1.2</li>
+<li><strong>In Build 1.0.14</strong> — script.homelander.artwork — 1.0.4</li>
+<li><strong>In Build 1.0.14</strong> — script.image.resource.select — 3.0.2</li>
+<li><strong>In Build 1.0.14</strong> — script.module.absolutionscrapers — 4.0.5</li>
+<li><strong>In Build 1.0.14</strong> — script.module.acctmgr — 1.1.6</li>
+<li><strong>In Build 1.0.14</strong> — script.module.acctvwr — 1.1.4</li>
+<li><strong>In Build 1.0.14</strong> — script.module.backports.zoneinfo — 0.2.1</li>
+<li><strong>In Build 1.0.14</strong> — script.module.beautifulsoup4 — 4.12.2</li>
+<li><strong>In Build 1.0.14</strong> — script.module.certifi — 2023.5.7</li>
+<li><strong>In Build 1.0.14</strong> — script.module.chainscrapers — 1.0.8</li>
+<li><strong>In Build 1.0.14</strong> — script.module.chardet — 5.1.0</li>
+<li><strong>In Build 1.0.14</strong> — script.module.cocoscrapers — 1.0.39</li>
+<li><strong>In Build 1.0.14</strong> — script.module.dateutil — 2.8.2</li>
+<li><strong>In Build 1.0.14</strong> — script.module.defusedxml — 0.6.0+matrix.1</li>
+<li><strong>In Build 1.0.14</strong> — script.module.dropbox — 10.3.1+matrix.1</li>
+<li><strong>In Build 1.0.14</strong> — script.module.fenomscrapers — 1.5.4</li>
+<li><strong>In Build 1.0.14</strong> — script.module.future — 1.0.0+matrix.1</li>
+<li><strong>In Build 1.0.14</strong> — script.module.gearsscrapers — 1.6.2</li>
+<li><strong>In Build 1.0.14</strong> — script.module.homelanderscrapers — 2.0.4</li>
+<li><strong>In Build 1.0.14</strong> — script.module.idna — 3.10.0</li>
+<li><strong>In Build 1.0.14</strong> — script.module.inputstreamhelper — 0.8.6</li>
+<li><strong>In Build 1.0.14</strong> — script.module.jetextractors — 3.3.26</li>
+<li><strong>In Build 1.0.14</strong> — script.module.kodi-six — 0.1.3.1</li>
+<li><strong>In Build 1.0.14</strong> — script.module.microjenscrapers — 1.4</li>
+<li><strong>In Build 1.0.14</strong> — script.module.myaccounts — 1.1.3</li>
+<li><strong>In Build 1.0.14</strong> — script.module.myconnpy — 8.0.33</li>
+<li><strong>Repository only</strong> — script.module.pvr.artwork — 2.2.10</li>
+<li><strong>In Build 1.0.14</strong> — script.module.pyamf — 0.8.10+matrix.4</li>
+<li><strong>In Build 1.0.14</strong> — script.module.pyjsparser — 3.0.0</li>
+<li><strong>In Build 1.0.14</strong> — script.module.pyqrcode — 1.2.1+matrix.4</li>
+<li><strong>In Build 1.0.14</strong> — script.module.pytz — 2023.3.0+matrix.1</li>
+<li><strong>In Build 1.0.14</strong> — script.module.requests — 2.31.0</li>
+<li><strong>In Build 1.0.14</strong> — script.module.resolveurl — 5.1.210</li>
+<li><strong>In Build 1.0.14</strong> — script.module.routing — 0.2.3+matrix.1</li>
+<li><strong>Repository only</strong> — script.module.simplecache — 2.0.2</li>
+<li><strong>In Build 1.0.14</strong> — script.module.simplejson — 3.19.1+matrix.1</li>
+<li><strong>In Build 1.0.14</strong> — script.module.simpleplugin3 — 3.0.6+matrix.1</li>
+<li><strong>In Build 1.0.14</strong> — script.module.six — 1.16.0+matrix.1</li>
+<li><strong>In Build 1.0.14</strong> — script.module.soupsieve — 2.4.1</li>
+<li><strong>In Build 1.0.14</strong> — script.module.tabulate — 0.9.1.2</li>
+<li><strong>In Build 1.0.14</strong> — script.module.tzdata — 2023.3.0+matrix.1</li>
+<li><strong>In Build 1.0.14</strong> — script.module.tzlocal — 5.0.1</li>
+<li><strong>In Build 1.0.14</strong> — script.module.unidecode — 1.3.6</li>
+<li><strong>In Build 1.0.14</strong> — script.module.urllib3 — 2.2.3</li>
+<li><strong>Repository only</strong> — script.skinshortcuts — 3.0.4</li>
+<li><strong>In Build 1.0.14</strong> — script.xbmcbackup — 1.7.3</li>
+<li><strong>In Build 1.0.14</strong> — service.upnext — 1.1.9+matrix.1</li>
+<li><strong>In Build 1.0.14</strong> — service.xbmc.versioncheck — 0.5.30+matrix.1</li>
+<li><strong>Repository only</strong> — skin.estuary.modv2 — 22.0+piers</li>
+<li><strong>In Build 1.0.14</strong> — skin.xonfluence — 6.0.7</li>
+<li><strong>In Build 1.0.14</strong> — weather.gismeteo — 0.6.4+matrix.1</li>
+</ul>
+<h2 id="updating-the-catalog">Updating the catalog</h2>
+<p>Add or replace an add-on ZIP under repo/zips/&lt;addon-id&gt;/&lt;addon-id&gt;-&lt;version&gt;.zip, then run the following in the repository root:</p>
+<pre><code>python build_repository.py</code></pre>
+<p>Commit the updated ZIP, repo/zips/addons.xml, and repo/zips/addons.xml.md5 together.</p>
+
+    </article>
   </main>
 </body>
 </html>
