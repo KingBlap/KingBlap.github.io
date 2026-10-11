@@ -42,7 +42,7 @@ def _path(special):
 def _fetch(url, max_bytes):
     request = urllib.request.Request(
         url,
-        headers={"User-Agent": "KingBlap-Wizard/1.0.7 Kodi"},
+        headers={"User-Agent": "KingBlap-Wizard/1.0.8 Kodi"},
     )
     with urllib.request.urlopen(request, timeout=45) as response:
         length = response.headers.get("Content-Length")
@@ -210,7 +210,7 @@ def _validate_archive(archive):
 def _download_archive(url, destination, progress):
     request = urllib.request.Request(
         url,
-        headers={"User-Agent": "KingBlap-Wizard/1.0.7 Kodi"},
+        headers={"User-Agent": "KingBlap-Wizard/1.0.8 Kodi"},
     )
     with urllib.request.urlopen(request, timeout=60) as response:
         length = response.headers.get("Content-Length")
@@ -244,7 +244,21 @@ def _jsonrpc(method, params):
     })
     response = json.loads(xbmc.executeJSONRPC(request))
     if "error" in response:
-        raise RuntimeError(response["error"].get("message", "Kodi could not apply a setting."))
+        error = response["error"]
+        detail = error.get("data", {})
+        stack = detail.get("stack", {}) if isinstance(detail, dict) else {}
+        explanation = stack.get("message") if isinstance(stack, dict) else None
+        if not explanation and isinstance(detail, dict):
+            explanation = detail.get("message")
+        message = "{} failed: {}".format(
+            method,
+            error.get("message", "Kodi could not complete the request."),
+        )
+        if explanation:
+            message += " ({})".format(explanation)
+        if error.get("code") is not None:
+            message += " [Kodi error {}]".format(error["code"])
+        raise RuntimeError(message)
     return response.get("result")
 
 
@@ -360,13 +374,7 @@ def _refresh_addon_art_cache(addon_root, addon_ids):
 
 
 def _apply_skin_settings():
-    # Keep the build's display defaults independent of the previously active skin.
-    values = (
-        ("lookandfeel.skinzoom", 0),
-        ("lookandfeel.enablerssfeeds", False),
-    )
-    for setting, value in values:
-        _set_setting(setting, value)
+    # Preserve the device's Kodi display preferences while activating its new skin.
     _activate_skin(SKIN_ID)
 
 
@@ -402,7 +410,6 @@ def _install(name, url):
     progress = xbmcgui.DialogProgress()
     progress.create("KingBlap Wizard", "Downloading build…")
     changes = []
-    original_settings = {}
     original_skin = None
     committed = False
     rollback_complete = True
@@ -463,13 +470,7 @@ def _install(name, url):
                 manifest = ET.parse(manifest_file).getroot()
             if manifest.get("id") != addon_id or manifest.get("version") != version:
                 raise ValueError("The staged {} add-on failed its manifest check.".format(addon_id))
-        for setting in (
-            "lookandfeel.skin",
-            "lookandfeel.skinzoom",
-            "lookandfeel.enablerssfeeds",
-        ):
-            original_settings[setting] = _get_setting(setting)
-        original_skin = original_settings["lookandfeel.skin"]
+        original_skin = _get_setting("lookandfeel.skin")
 
         if original_skin in (SKIN_ID, LEGACY_SKIN_ID):
             # Unload either skin before replacing or removing its files.
@@ -499,12 +500,11 @@ def _install(name, url):
         _enable_addon("script.favourites")
         _enable_addon("script.image.resource.select")
         _enable_addon(SKIN_ID)
-        skin_details = _jsonrpc(
-            "Addons.GetAddonDetails",
-            {"addonid": SKIN_ID, "properties": ["version"]},
-        )
-        skin_addon = skin_details.get("addon") if isinstance(skin_details, dict) else None
-        if not isinstance(skin_addon, dict) or skin_addon.get("version") != packages[SKIN_ID]:
+        try:
+            installed_skin_version = xbmcaddon.Addon(SKIN_ID).getAddonInfo("version")
+        except RuntimeError:
+            installed_skin_version = ""
+        if installed_skin_version != packages[SKIN_ID]:
             raise RuntimeError("Kodi did not register the installed Xonfluence 6.0.6 skin.")
 
         progress.update(97, "KingBlap Wizard", "Loading Xonfluence…")
@@ -558,18 +558,6 @@ def _install(name, url):
                     _log("Could not restore the previous skin: {}".format(
                         restore_exc
                     ), xbmc.LOGERROR)
-            for setting in (
-                "lookandfeel.skinzoom",
-                "lookandfeel.enablerssfeeds",
-            ):
-                if setting in original_settings:
-                    try:
-                        _set_setting(setting, original_settings[setting])
-                    except Exception as restore_exc:
-                        rollback_complete = False
-                        _log("Could not restore Kodi setting {}: {}".format(
-                            setting, restore_exc
-                        ), xbmc.LOGERROR)
         if not committed and rollback_complete:
             try:
                 _remove_path(transaction)
