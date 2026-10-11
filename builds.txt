@@ -1,2 +1,2 @@
 # Name | direct HTTPS download URL
-KingBlap Kodi Build 1.0.10 | https://github.com/KingBlap/KingBlap.github.io/releases/download/kingblap-build-v1.0.10/KingBlapKodiBuild-1.0.10.zip
+KingBlap Kodi Build 1.0.11 | https://github.com/KingBlap/KingBlap.github.io/releases/download/kingblap-build-v1.0.11/KingBlapKodiBuild-1.0.11.zip

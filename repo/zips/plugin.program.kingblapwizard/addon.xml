@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.program.kingblapwizard" name="KingBlap Wizard" version="1.0.8" provider-name="KingBlap">
+<addon id="plugin.program.kingblapwizard" name="KingBlap Wizard" version="1.0.9" provider-name="KingBlap">
   <requires>
     <import addon="xbmc.python" version="3.0.0" />
   </requires>
@@ -8,7 +8,7 @@
   </extension>
   <extension point="xbmc.addon.metadata">
     <summary lang="en_GB">Install the KingBlap Kodi build.</summary>
-    <description lang="en_GB">Downloads and installs the portable KingBlap Kodi build, including fresh Xonfluence 6.0.6 for Kodi 22 and sanitized skin settings, with clearer Kodi error reporting.</description>
+    <description lang="en_GB">Downloads and installs the portable KingBlap Kodi build, including fresh Xonfluence 6.0.6 for Kodi 22 and sanitized skin settings, while waiting for Kodi to register installed add-ons and load the skin.</description>
     <disclaimer lang="en_GB">The public build excludes personal accounts, provider credentials, media libraries, databases, and caches. Enter your own service credentials after installation.</disclaimer>
     <platform>all</platform>
     <license>GPL-2.0-or-later</license>

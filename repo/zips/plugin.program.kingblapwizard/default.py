@@ -29,6 +29,8 @@ LEGACY_SKIN_ID = "skin.estuary.modv2"
 BUILD_LIMIT = 1024 * 1024 * 1024
 DOWNLOAD_LIMIT = 512 * 1024 * 1024
 CHUNK_SIZE = 1024 * 1024
+ADDON_REGISTRATION_TIMEOUT = 180
+SKIN_LOAD_TIMEOUT = 60
 
 
 def _log(message, level=xbmc.LOGINFO):
@@ -42,7 +44,7 @@ def _path(special):
 def _fetch(url, max_bytes):
     request = urllib.request.Request(
         url,
-        headers={"User-Agent": "KingBlap-Wizard/1.0.8 Kodi"},
+        headers={"User-Agent": "KingBlap-Wizard/1.0.9 Kodi"},
     )
     with urllib.request.urlopen(request, timeout=45) as response:
         length = response.headers.get("Content-Length")
@@ -210,7 +212,7 @@ def _validate_archive(archive):
 def _download_archive(url, destination, progress):
     request = urllib.request.Request(
         url,
-        headers={"User-Agent": "KingBlap-Wizard/1.0.8 Kodi"},
+        headers={"User-Agent": "KingBlap-Wizard/1.0.9 Kodi"},
     )
     with urllib.request.urlopen(request, timeout=60) as response:
         length = response.headers.get("Content-Length")
@@ -288,7 +290,7 @@ def _activate_skin(skin_id):
     _set_setting("lookandfeel.skin", skin_id)
     xbmc.executebuiltin("ReloadSkin", True)
     stable_reads = 0
-    for unused in range(24):
+    for unused in range(SKIN_LOAD_TIMEOUT * 2):
         xbmc.sleep(500)
         if (
             _get_setting("lookandfeel.skin") == skin_id
@@ -302,6 +304,31 @@ def _activate_skin(skin_id):
     raise RuntimeError(
         "Kodi could not load the {} skin. The previous skin will be restored.".format(skin_id)
     )
+
+
+def _wait_for_addon_registration(addon_ids, progress):
+    pending = set(addon_ids)
+    deadline = time.monotonic() + ADDON_REGISTRATION_TIMEOUT
+    while pending and time.monotonic() < deadline:
+        for addon_id in tuple(pending):
+            try:
+                version = xbmcaddon.Addon(addon_id).getAddonInfo("version")
+            except RuntimeError:
+                continue
+            if version:
+                pending.remove(addon_id)
+        if pending:
+            progress.update(
+                94,
+                "KingBlap Wizard",
+                "Waiting for Kodi to register the skin and its required add-ons…",
+            )
+            xbmc.sleep(1000)
+    if pending:
+        raise RuntimeError(
+            "Kodi did not finish registering these required add-ons: {}. "
+            "Restart Kodi and try the build again.".format(", ".join(sorted(pending)))
+        )
 
 
 def _texture_source_path(url):
@@ -496,7 +523,10 @@ def _install(name, url):
             changes,
         )
         xbmc.executebuiltin("UpdateLocalAddons", True)
-        xbmc.sleep(1500)
+        _wait_for_addon_registration(
+            ("script.favourites", "script.image.resource.select", SKIN_ID),
+            progress,
+        )
         _enable_addon("script.favourites")
         _enable_addon("script.image.resource.select")
         _enable_addon(SKIN_ID)
