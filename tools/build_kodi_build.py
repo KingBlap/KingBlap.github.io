@@ -17,12 +17,12 @@ from pathlib import Path, PurePosixPath
 ROOT = Path(__file__).resolve().parents[1]
 ZIP_ROOT = ROOT / "repo" / "zips"
 SKIN_ID = "skin.xonfluence"
-SKIN_VERSION = "6.0.6"
+SKIN_VERSION = "6.0.7"
 LEGACY_SKIN_ID = "skin.estuary.modv2"
 REPLACED_ADDON = "plugin.video.xstream-player"
 GIPTV_ID = "plugin.video.giptv"
 GIPTV_VERSION = "3.1.0"
-BUILD_VERSION = "1.0.12"
+BUILD_VERSION = "1.0.13"
 REPO_ID = "repository.kingblap"
 NATIVE_SUFFIXES = {".dll", ".so", ".dylib", ".pyd"}
 SECRET_SETTING = re.compile(
@@ -181,6 +181,28 @@ def make_skin_settings(snapshot, packages, chosen):
         kept += 1
     if kept < 1:
         raise ValueError("No portable Xonfluence skin settings remained after sanitizing the snapshot.")
+
+    # The background pictures ship inside the skin, so this path works on
+    # Windows, Android phones, Android TV, and Fire TV without a profile path.
+    required_settings = {
+        "globalbackgroundpath": ("GlobalBackGroundPath", "string", "special://skin/extras/DemonWomen/"),
+        "singleglobalbackground": ("singleglobalbackground", "bool", "true"),
+        "globalliveweatherimage": ("globalliveweatherimage", "bool", "false"),
+    }
+    settings_by_id = {
+        setting.get("id", "").casefold(): setting
+        for setting in sanitized.findall("setting")
+    }
+    for setting_key, (setting_id, setting_type, value) in required_settings.items():
+        entry = settings_by_id.get(setting_key)
+        if entry is None:
+            entry = ET.SubElement(sanitized, "setting", {"id": setting_id, "type": setting_type})
+            settings_by_id[setting_key] = entry
+            kept += 1
+        else:
+            entry.set("id", setting_id)
+            entry.set("type", setting_type)
+        entry.text = value
     return ET.tostring(sanitized, encoding="utf-8", xml_declaration=True), kept
 
 
@@ -214,7 +236,7 @@ def build(snapshot, output):
     if GIPTV_ID not in chosen or packages.get(GIPTV_ID, (None,))[0] != GIPTV_VERSION:
         raise ValueError("GIPTV 3.1.0 must be present in the public Kodi repository first.")
     if SKIN_ID not in chosen or packages.get(SKIN_ID, (None,))[0] != SKIN_VERSION:
-        raise ValueError("The fresh Kodi 22 Xonfluence 6.0.6 skin package is missing from the repository.")
+        raise ValueError("The fresh Kodi 22 Xonfluence 6.0.7 skin package is missing from the repository.")
     for addon_id in (
         "script.favourites",
         "script.image.resource.select",

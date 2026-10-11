@@ -1,5 +1,5 @@
 {
-  "generated_from": "Kodi 22 backup snapshot 2026-10-04 plus GIPTV 3.1.0, Kodi Up Next, Skin Shortcuts 3.0.4, fresh Xonfluence 6.0.6 (BadIDMan commit 827ace3b3de32f28682fca7cf1c48ac4cd19a76b), Estuary MOD V2 22.0+piers, and KingBlap Wizard 1.0.21",
+  "generated_from": "Kodi 22 backup snapshot 2026-10-04 plus GIPTV 3.1.0, Kodi Up Next, Skin Shortcuts 3.0.4, fresh Xonfluence 6.0.7 with the eight supplied Demon Women background images (BadIDMan commit 827ace3b3de32f28682fca7cf1c48ac4cd19a76b), Estuary MOD V2 22.0+piers, and KingBlap Wizard 1.0.21",
   "addons": [
     {
       "id": "context.otaku",
@@ -1074,12 +1074,12 @@
     },
     {
       "id": "skin.xonfluence",
-      "version": "6.0.6",
+      "version": "6.0.7",
       "name": "Xonfluence",
       "provider": "Helly, bsoriano, jdig4240, rafikW",
       "license": "GNU General Public License version 2",
-      "zip": "repo/zips/skin.xonfluence/skin.xonfluence-6.0.6.zip",
-      "bytes": 25023586
+      "zip": "repo/zips/skin.xonfluence/skin.xonfluence-6.0.7.zip",
+      "bytes": 27363808
     },
     {
       "id": "weather.gismeteo",
