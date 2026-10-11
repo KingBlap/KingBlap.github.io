@@ -1,5 +1,5 @@
 {
-  "generated_from": "Kodi backup snapshot 2026-10-04 plus GIPTV 3.1.0, Kodi Up Next dependency, and KingBlap Wizard 1.0.2",
+  "generated_from": "Kodi backup snapshot 2026-10-04 plus GIPTV 3.1.0, Kodi Up Next dependency, KingBlap Wizard 1.0.2, and Kodi 22 Xonfluence 6.0.3",
   "addons": [
     {
       "id": "context.otaku",
@@ -1029,12 +1029,12 @@
     },
     {
       "id": "skin.xonfluence",
-      "version": "5.1",
+      "version": "6.0.3",
       "name": "Xonfluence",
-      "provider": "Helly, bsoriano, jdig4240",
+      "provider": "Helly, bsoriano, jdig4240, rafikW",
       "license": "GNU General Public License version 2",
-      "zip": "repo/zips/skin.xonfluence/skin.xonfluence-5.1.zip",
-      "bytes": 39777664
+      "zip": "repo/zips/skin.xonfluence/skin.xonfluence-6.0.3.zip",
+      "bytes": 24986395
     },
     {
       "id": "weather.gismeteo",
