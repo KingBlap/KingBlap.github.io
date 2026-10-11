@@ -11,7 +11,7 @@ import shutil
 import sqlite3
 import zipfile
 import xml.etree.ElementTree as ET
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -20,7 +20,7 @@ SKIN_ID = "skin.xonfluence"
 REPLACED_ADDON = "plugin.video.xstream-player"
 GIPTV_ID = "plugin.video.giptv"
 GIPTV_VERSION = "3.1.0"
-BUILD_VERSION = "1.0.2"
+BUILD_VERSION = "1.0.3"
 REPO_ID = "repository.kingblap"
 NATIVE_SUFFIXES = {".dll", ".so", ".dylib", ".pyd"}
 SECRET_ID = re.compile(
@@ -98,7 +98,46 @@ def portable_addon(addon_id, record):
         return False
 
 
-def skin_settings(snapshot):
+def portable_addon_icon(setting_id, value, packages, chosen):
+    """Translate a saved Windows add-on logo path to Kodi's portable path."""
+    if not setting_id.casefold().startswith("addonset") or not setting_id.casefold().endswith(".icon"):
+        return None
+
+    match = re.search(
+        r"(?i)(?:^|[\\/])addons[\\/](?P<addon>[A-Za-z0-9_.-]+)[\\/](?P<member>.+)$",
+        value,
+    )
+    if not match:
+        return None
+
+    addon_id = match.group("addon").casefold()
+    if addon_id not in chosen or addon_id not in packages:
+        return None
+    relative = PurePosixPath(match.group("member").replace("\\", "/"))
+    if relative.is_absolute() or not relative.parts or any(part in ("", ".", "..") for part in relative.parts):
+        return None
+
+    try:
+        with zipfile.ZipFile(packages[addon_id][2]) as archive:
+            root_entry, _ = addon_xml_from_zip(archive)
+            if root_entry is None:
+                return None
+            prefix = root_entry.split("/", 1)[0] + "/"
+            members = {
+                name[len(prefix):].casefold(): name[len(prefix):]
+                for name in archive.namelist()
+                if name.startswith(prefix) and not name.endswith("/")
+            }
+    except (OSError, zipfile.BadZipFile):
+        return None
+
+    packaged_member = members.get(relative.as_posix().casefold())
+    if packaged_member is None:
+        return None
+    return "special://home/addons/{}/{}".format(addon_id, packaged_member)
+
+
+def skin_settings(snapshot, packages, chosen):
     path = snapshot / "addon_data" / SKIN_ID / "settings.xml"
     root = ET.parse(path).getroot()
     sanitized = ET.Element("settings")
@@ -107,7 +146,10 @@ def skin_settings(snapshot):
         value = "".join(element.itertext()).strip()
         if SECRET_ID.search(setting_id) or SECRET_VALUE.search(value):
             continue
-        if LOCAL_PATH.search(value) or ("http://" in value.lower()) or ("https://" in value.lower()):
+        portable_icon = portable_addon_icon(setting_id, value, packages, chosen)
+        if portable_icon is not None:
+            value = portable_icon
+        elif LOCAL_PATH.search(value) or ("http://" in value.lower()) or ("https://" in value.lower()):
             continue
         value = re.sub(re.escape(REPLACED_ADDON), GIPTV_ID, value, flags=re.IGNORECASE)
         value = re.sub(r"(?i)xstream\s+player", "GIPTV", value)
@@ -179,7 +221,10 @@ def build(snapshot, output):
     output.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9, allowZip64=True) as build_zip:
         build_zip.writestr("build_info.json", json.dumps(info, indent=2) + "\n")
-        build_zip.writestr("userdata/addon_data/{}/settings.xml".format(SKIN_ID), skin_settings(snapshot))
+        build_zip.writestr(
+            "userdata/addon_data/{}/settings.xml".format(SKIN_ID),
+            skin_settings(snapshot, packages, chosen),
+        )
         for addon_id in sorted(chosen):
             record = packages[addon_id]
             with zipfile.ZipFile(record[2]) as addon_zip:
