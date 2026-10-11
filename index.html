@@ -29,12 +29,13 @@
     <section class="card">
       <h2>Install the repository in Kodi</h2>
       <ol>
-        <li>Download <a href="/repository.kingblap-1.0.0.zip">repository.kingblap-1.0.0.zip</a> to the device.</li>
-        <li>In Kodi, open <strong>Add-ons → Install from zip file → External storage → Download</strong> and select the ZIP.</li>
-        <li>Open <strong>Install from repository → KingBlap Kodi Repository</strong>.</li>
+        <li>In Kodi, open <strong>Settings → System → Add-ons</strong>, enable <strong>Unknown sources</strong>, and accept the prompt.</li>
+        <li>Open <strong>Settings → File Manager → Add source</strong>. Select the path field and enter <code>https://kingblap.github.io/</code>. Name the source <code>KingBlap Repo</code> and save it.</li>
+        <li>Open <strong>Add-ons → Install from zip file</strong>, select <strong>KingBlap Repo</strong>, then choose <code>repository.kingblap-1.0.0.zip</code>.</li>
+        <li>After Kodi confirms installation, open <strong>Install from repository → KingBlap Kodi Repository</strong>.</li>
       </ol>
       <h3>Android phones, Android TV, and Fire TV Stick</h3>
-      <p>On Android phones, download the ZIP in a browser. On Android TV and Fire TV Stick, use a browser or Downloader to save it to Downloads, then install it in Kodi from External storage → Download. GitHub Pages serves the installer ZIP but does not provide Kodi with a browsable directory listing, so do not add the site root as a Kodi file source. This repository came from a Windows Kodi 22 snapshot, so Kodi filters its Windows-only native packages on Android. Keep Kodi's official add-on repository enabled so Android ARM versions of binary dependencies can be installed where available. Add-on compatibility and service behavior still vary by add-on, device, and Kodi version.</p>
+      <p>The same File Manager steps work on Android phones, Android TV, and Fire TV Stick; Kodi downloads the repository ZIP from the source. If it appears empty or Kodi cannot connect, verify that the address is exactly <code>https://kingblap.github.io/</code> and that the device can open it in a browser. As a fallback, save the repository ZIP using the download button below and install it from the device's Downloads folder. Keep Kodi's official add-on repository enabled so Android ARM versions of binary dependencies can be installed where available. Add-on compatibility and service behavior vary by add-on, device, and Kodi version.</p>
       <p><a href="/repository.kingblap-1.0.0.zip" class="button">repository.kingblap-1.0.0.zip</a></p>
       <p>Repository feed: <a href="/repo/zips/addons.xml">addons.xml</a> · <a href="/README.md">setup details</a></p>
     </section>
