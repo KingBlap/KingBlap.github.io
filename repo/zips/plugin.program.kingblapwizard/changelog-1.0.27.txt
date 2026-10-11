@@ -1,0 +1,4 @@
+1.0.27
+- Show separate Public Builds and Private Builds folders before listing build choices.
+- Public builds download without an access code and are validated to contain no saved add-on profile data.
+- Keep private build listing and download access-code protected.

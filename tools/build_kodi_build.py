@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Create the portable KingBlap Kodi build ZIP from a Kodi backup snapshot.
+"""Create the portable KingBlap Kodi ZIP from a Kodi backup snapshot.
 
-The backup's add-on account data, Kodi databases, media sources, thumbnails,
-and platform-specific binary add-ons are intentionally excluded.
+Saved account data is excluded by default. The explicit private-profile flag
+includes add-on data for an access-code-protected build.
 """
 import argparse
 import json
@@ -28,7 +28,7 @@ WEATHER_VERSION = "0.6.4+matrix.1"
 WEATHER_LOCATION = "Thomasville"
 WEATHER_LOCATION_ID = "8771"
 WEATHER_SETTINGS_ARCHIVE_PATH = "userdata/addon_data/{}/settings.xml".format(WEATHER_ID)
-BUILD_VERSION = "1.0.18"
+BUILD_VERSION = "1.0.19"
 REPO_ID = "repository.kingblap"
 WIZARD_ID = "plugin.program.kingblapwizard"
 NATIVE_SUFFIXES = {".dll", ".so", ".dylib", ".pyd"}
@@ -358,8 +358,9 @@ def build(snapshot, output, include_profile_data=False):
     )
 
     info = {
-        "name": "KingBlap Kodi Build",
+        "name": "KingBlap Kodi {} Build".format("Private" if include_profile_data else "Public"),
         "version": BUILD_VERSION,
+        "distribution": "private" if include_profile_data else "public",
         "kodi_major": 22,
         "skin": SKIN_ID,
         "addons": sorted(chosen),
@@ -438,7 +439,7 @@ def main():
     parser.add_argument(
         "--include-profile-data",
         action="store_true",
-        help="Include private backup add-on data and credentials, except the Wizard's local access code settings",
+        help="Include private backup add-on data and credentials; never use for a public build",
     )
     args = parser.parse_args()
     build(args.snapshot.resolve(), args.output.resolve(), include_profile_data=args.include_profile_data)

@@ -610,7 +610,7 @@
       <screenshot>resources/screenshot-3.jpg</screenshot>
     </assets>
   </extension>
-</addon><addon id="plugin.program.kingblapwizard" name="KingBlap Wizard" version="1.0.26" provider-name="KingBlap">
+</addon><addon id="plugin.program.kingblapwizard" name="KingBlap Wizard" version="1.0.27" provider-name="KingBlap">
   <requires>
     <import addon="xbmc.python" version="3.0.0" />
   </requires>
@@ -620,8 +620,8 @@
   <extension point="xbmc.service" library="service.py" start="startup" />
   <extension point="xbmc.addon.metadata">
     <summary lang="en_GB">Install the KingBlap Kodi build.</summary>
-    <description lang="en_GB">Installs the private KingBlap Kodi build using an access code, restores saved add-on profile data, enables packaged add-ons, sets and refreshes Gismeteo for Thomasville, North Carolina, removes the OnePlay repository, and applies Xonfluence 6.0.7 after installation and on Kodi startup.</description>
-    <disclaimer lang="en_GB">The private build may include service credentials saved in add-on profile data. Only people with the shared access code can download it; share the code and build only with intended recipients. The Wizard's own settings and access code are excluded from restored profile data.</disclaimer>
+    <description lang="en_GB">Shows separate public and private KingBlap Kodi build choices. Public builds omit saved account profile data; private builds require an access code and may restore saved service credentials. The Wizard enables packaged add-ons, sets Gismeteo for Thomasville, removes the OnePlay repository, and applies Xonfluence 6.0.7.</description>
+    <disclaimer lang="en_GB">Public builds do not include saved add-on account profile data from the backup. Private builds may include service credentials saved in add-on profile data and require a shared access code. Review the selected build before installing it.</disclaimer>
     <platform>all</platform>
     <license>GPL-2.0-or-later</license>
     <source>https://github.com/KingBlap/KingBlap.github.io</source>

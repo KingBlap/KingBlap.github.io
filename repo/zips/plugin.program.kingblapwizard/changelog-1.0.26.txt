@@ -1,4 +1,0 @@
-1.0.26
-- Restore saved add-on profile data from the private build archive.
-- Preserve the local Wizard settings and access code during build installation.
-- Replace matching add-on data with rollback support if installation fails.

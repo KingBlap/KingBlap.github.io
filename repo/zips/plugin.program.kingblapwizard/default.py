@@ -24,6 +24,13 @@ ADDON = xbmcaddon.Addon()
 ADDON_ID = ADDON.getAddonInfo("id")
 DEFAULT_API_URL = "https://kingblap-api.tyshawncalvin243.workers.dev"
 BUILDS_PATH = "/v1/builds"
+PUBLIC_BUILD_ID = "kingblap-public-1.0.19"
+PUBLIC_BUILD_NAME = "Public KingBlap Kodi Build 1.0.19"
+PUBLIC_BUILD_PARTS = (
+    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-1.0.19.zip.part001", 83886080),
+    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-1.0.19.zip.part002", 83886080),
+    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-1.0.19.zip.part003", 10645365),
+)
 SKIN_ID = "skin.xonfluence"
 SKIN_VERSION = "6.0.7"
 WEATHER_VERSION = "0.6.4+matrix.1"
@@ -76,15 +83,14 @@ def _api_url(path):
     return base.rstrip("/") + path
 
 
-def _fetch(url, max_bytes, access_code):
-    request = urllib.request.Request(
-        url,
-        headers={
-            "User-Agent": "KingBlap-Wizard/1.0.26 Kodi",
-            "Accept": "application/json",
-            "Authorization": "Bearer {}".format(access_code),
-        },
-    )
+def _fetch(url, max_bytes, access_code=None):
+    headers = {
+        "User-Agent": "KingBlap-Wizard/1.0.27 Kodi",
+        "Accept": "application/json",
+    }
+    if access_code:
+        headers["Authorization"] = "Bearer {}".format(access_code)
+    request = urllib.request.Request(url, headers=headers)
     try:
         with urllib.request.urlopen(request, timeout=45) as response:
             length = response.headers.get("Content-Length")
@@ -100,16 +106,19 @@ def _fetch(url, max_bytes, access_code):
     return data
 
 
-def _get_builds(access_code):
+def _get_builds(access_code=None, public_build=False):
+    if public_build:
+        return [(PUBLIC_BUILD_ID, PUBLIC_BUILD_NAME)]
+    label = "public" if public_build else "private"
     content = _fetch(_api_url(BUILDS_PATH), 1024 * 1024, access_code).decode("utf-8-sig")
     payload = json.loads(content)
     if not isinstance(payload, dict) or not isinstance(payload.get("builds"), list):
-        raise ValueError("The private build list is not valid JSON.")
+        raise ValueError("The {} build list is not valid JSON.".format(label))
     builds = []
     seen = set()
     for entry in payload["builds"]:
         if not isinstance(entry, dict):
-            raise ValueError("The private build list contains an invalid entry.")
+            raise ValueError("The {} build list contains an invalid entry.".format(label))
         build_id = entry.get("id")
         name = entry.get("name")
         if (
@@ -121,7 +130,7 @@ def _get_builds(access_code):
             or len(name) > 120
             or any(ord(character) < 32 for character in name)
         ):
-            raise ValueError("The private build list contains an invalid entry.")
+            raise ValueError("The {} build list contains an invalid entry.".format(label))
         seen.add(build_id)
         builds.append((build_id, name.strip()))
     return builds
@@ -255,7 +264,7 @@ def _required_external_dependencies(archive, packages):
     return sorted(dependencies)
 
 
-def _validate_archive(archive):
+def _validate_archive(archive, expected_public=None):
     total = 0
     packages = {}
     build_info = None
@@ -379,6 +388,14 @@ def _validate_archive(archive):
             raise ValueError("The build archive is missing the skin dependency: {}.".format(dependency_id))
     if build_info is None:
         raise ValueError("The build archive is missing its build information.")
+    distribution = build_info.get("distribution")
+    if expected_public is True and (
+        distribution != "public"
+        or build_info.get("profile_data_mode") != "settings-only"
+    ):
+        raise ValueError("The public download contains private profile data or has no public marker.")
+    if expected_public is False and distribution == "public":
+        raise ValueError("The selected private route returned a public build.")
     declared_addons = build_info.get("addons")
     if (
         not isinstance(declared_addons, list)
@@ -446,18 +463,69 @@ def _validate_archive(archive):
     )
 
 
-def _download_archive(build_id, destination, progress, access_code):
+def _download_public_archive(destination, progress):
+    total_expected = sum(size for _, size in PUBLIC_BUILD_PARTS)
+    total_written = 0
+    with open(destination, "wb") as output:
+        for part_index, (url, expected_part_size) in enumerate(PUBLIC_BUILD_PARTS):
+            request = urllib.request.Request(
+                url,
+                headers={
+                    "User-Agent": "KingBlap-Wizard/1.0.27 Kodi",
+                    "Accept": "application/octet-stream",
+                },
+            )
+            part_written = 0
+            try:
+                with urllib.request.urlopen(request, timeout=60) as response:
+                    length = response.headers.get("Content-Length")
+                    if length and int(length) != expected_part_size:
+                        raise IOError("A public build part has an unexpected size.")
+                    while True:
+                        if progress.iscanceled():
+                            raise InterruptedError("Build installation was cancelled.")
+                        block = response.read(CHUNK_SIZE)
+                        if not block:
+                            break
+                        part_written += len(block)
+                        total_written += len(block)
+                        if part_written > expected_part_size or total_written > DOWNLOAD_LIMIT:
+                            raise ValueError("The public build download is larger than expected.")
+                        output.write(block)
+                        percent = int(total_written * 100 / total_expected)
+                        progress.update(
+                            min(percent, 99),
+                            "Downloading public build part {} of {}…".format(
+                                part_index + 1, len(PUBLIC_BUILD_PARTS)
+                            ),
+                        )
+            except urllib.error.HTTPError as exc:
+                if exc.code == 404:
+                    raise ValueError("A public build part is not available yet.")
+                raise
+            if part_written != expected_part_size:
+                raise IOError("A public build part was incomplete.")
+    if total_written != total_expected:
+        raise IOError("The public build download was incomplete.")
+
+
+def _download_archive(build_id, destination, progress, access_code=None, public_build=False):
+    if public_build:
+        if build_id != PUBLIC_BUILD_ID:
+            raise ValueError("The selected public build is not valid.")
+        _download_public_archive(destination, progress)
+        return
+    route = "/v1/builds"
     url = _api_url(
-        "/v1/builds/{}/download".format(urllib.parse.quote(build_id, safe=""))
+        "{}/{}/download".format(route, urllib.parse.quote(build_id, safe=""))
     )
-    request = urllib.request.Request(
-        url,
-        headers={
-            "User-Agent": "KingBlap-Wizard/1.0.26 Kodi",
-            "Accept": "application/zip",
-            "Authorization": "Bearer {}".format(access_code),
-        },
-    )
+    headers = {
+        "User-Agent": "KingBlap-Wizard/1.0.27 Kodi",
+        "Accept": "application/zip",
+    }
+    if access_code:
+        headers["Authorization"] = "Bearer {}".format(access_code)
+    request = urllib.request.Request(url, headers=headers)
     try:
         with urllib.request.urlopen(request, timeout=60) as response:
             length = response.headers.get("Content-Length")
@@ -783,15 +851,24 @@ def _request_skin_reapply():
     os.replace(temporary, marker)
 
 
-def _install(name, build_id, access_code):
+def _install(name, build_id, access_code, public_build=False):
+    if public_build:
+        profile_notice = (
+            "This public build contains no saved add-on profile data, API keys, or account credentials from the backup. "
+            "It leaves other add-on profile data on this device in place."
+        )
+    else:
+        profile_notice = (
+            "Saved settings and login data for add-ons included in this private build may replace the matching add-on data on this device."
+        )
     if not xbmcgui.Dialog().yesno(
         "Install {}?".format(name),
         "This installs and enables all packaged add-ons, fetches Android-compatible "
         "native components through Kodi, replaces matching add-on files, and installs Xonfluence {} for Kodi 22. ".format(SKIN_VERSION) +
         "It also sets Gismeteo to Thomasville, North Carolina, installs the Xonfluence skin settings, and removes Estuary MOD V2 and the OnePlay repository.\n\n"
-        "It also removes XStream Player and its saved settings from this Kodi profile.\n\n"
-        "Saved settings and login data for add-ons included in this private build may replace the matching add-on data on this device. "
-        "The KingBlap Wizard's own settings and access code are excluded and will stay saved here. Libraries and Kodi databases are not in the build.",
+        "It also removes XStream Player and its saved settings from this Kodi profile.\n\n" +
+        profile_notice + " The KingBlap Wizard's own settings and access code will stay saved here. "
+        "Libraries and Kodi databases are not in the build.",
         yeslabel="Install build",
         nolabel="Cancel",
     ):
@@ -824,7 +901,9 @@ def _install(name, build_id, access_code):
     rollback_complete = True
     preserve_transaction = False
     try:
-        _download_archive(build_id, archive_path, progress, access_code)
+        _download_archive(
+            build_id, archive_path, progress, access_code, public_build=public_build
+        )
         with zipfile.ZipFile(archive_path, "r") as archive:
             (
                 expanded_size,
@@ -833,7 +912,7 @@ def _install(name, build_id, access_code):
                 removed_addons,
                 profile_mode,
                 profile_addon_data_ids,
-            ) = _validate_archive(archive)
+            ) = _validate_archive(archive, expected_public=public_build)
             required_dependencies = _required_external_dependencies(archive, packages)
             free_space = shutil.disk_usage(home).free
             if free_space < expanded_size + os.path.getsize(archive_path) + 64 * 1024 * 1024:
@@ -1035,8 +1114,17 @@ def _install(name, build_id, access_code):
             "Show and channel thumbnails need each add-on's own data and account settings.\n"
             "Keep Kodi's official repository enabled for Android-specific binary dependencies.\n"
             "Gismeteo is set to Thomasville, North Carolina. The OnePlay repository was removed.\n"
-            "Saved profile data for add-ons in this build has been restored. The Wizard access code remains saved locally."
-        ).format(len(packages), len(platform_addons), refreshed_art)
+            "{} The Wizard access code remains saved locally."
+        ).format(
+            len(packages),
+            len(platform_addons),
+            refreshed_art,
+            (
+                "No saved add-on API keys or account credentials were imported."
+                if public_build
+                else "Saved profile data for add-ons in this private build has been restored."
+            ),
+        )
         xbmcgui.Dialog().ok(
             "KingBlap build installed",
             success_message,
@@ -1099,9 +1187,11 @@ def _install(name, build_id, access_code):
             ), xbmc.LOGWARNING)
         else:
             _log("Build install failed: {}".format(exc), xbmc.LOGERROR)
-            if isinstance(exc, AccessDenied):
+            if isinstance(exc, AccessDenied) and not public_build:
                 ADDON.setSetting("access_code", "")
                 message = "The access code was not accepted. Enter the correct code in KingBlap Wizard settings and try again."
+            elif isinstance(exc, AccessDenied):
+                message = "The public download was refused. Try again later."
             else:
                 message = "The build was not installed.\n\n{}".format(exc)
             xbmcgui.Dialog().ok(
@@ -1122,11 +1212,27 @@ def _install(name, build_id, access_code):
             ), xbmc.LOGWARNING)
 
 
-def _add_directory_item(handle, name, build_id):
+def _add_category_item(handle, name, category, description):
     item = xbmcgui.ListItem(label=name)
-    item.setInfo("video", {"title": name, "plot": "Install the portable KingBlap Kodi build."})
-    item_url = "{}?action=install&name={}&build={}".format(
-        sys.argv[0], urllib.parse.quote(name), urllib.parse.quote(build_id, safe="")
+    item.setInfo("video", {"title": name, "plot": description})
+    item_url = "{}?category={}".format(sys.argv[0], category)
+    xbmcplugin.addDirectoryItem(handle, item_url, item, isFolder=True)
+
+
+def _add_directory_item(handle, name, build_id, public_build=False):
+    item = xbmcgui.ListItem(label=name)
+    tier = "public" if public_build else "private"
+    description = (
+        "Public build: no saved add-on profile data or account credentials from the backup."
+        if public_build
+        else "Private build: contains saved add-on profile data; the access code is required."
+    )
+    item.setInfo("video", {"title": name, "plot": description})
+    item_url = "{}?action=install&name={}&build={}&tier={}".format(
+        sys.argv[0],
+        urllib.parse.quote(name),
+        urllib.parse.quote(build_id, safe=""),
+        tier,
     )
     xbmcplugin.addDirectoryItem(handle, item_url, item, isFolder=False)
 
@@ -1135,15 +1241,17 @@ def main():
     handle = int(sys.argv[1])
     query = urllib.parse.parse_qs(sys.argv[2][1:]) if len(sys.argv) > 2 and sys.argv[2].startswith("?") else {}
     access_code = ADDON.getSetting("access_code").strip()
+    category = query.get("category", [""])[0]
     if query.get("action") == ["install"]:
         name = query.get("name", ["KingBlap Kodi Build"])[0]
         build_id = query.get("build", [""])[0]
-        if not access_code:
+        public_build = query.get("tier", [""])[0] == "public"
+        if not public_build and not access_code:
             xbmcgui.Dialog().ok(
                 "KingBlap Wizard",
                 "Enter your access code in KingBlap Wizard settings before installing a build.",
             )
-        elif not _valid_access_code(access_code):
+        elif not public_build and not _valid_access_code(access_code):
             xbmcgui.Dialog().ok(
                 "KingBlap Wizard",
                 "The access code must contain 32–128 letters, numbers, underscores, or hyphens.",
@@ -1151,19 +1259,41 @@ def main():
         elif not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,79}", build_id):
             xbmcgui.Dialog().ok("KingBlap Wizard", "The selected build is invalid.")
         else:
-            _install(name, build_id, access_code)
+            _install(
+                name,
+                build_id,
+                access_code if not public_build else None,
+                public_build=public_build,
+            )
         xbmcplugin.endOfDirectory(handle, succeeded=True, cacheToDisc=False)
         return
 
     xbmcplugin.setContent(handle, "files")
-    if not access_code:
+    if category not in ("public", "private"):
+        _add_category_item(
+            handle,
+            "Public Builds",
+            "public",
+            "Credential-free builds; no saved account settings from the backup are included.",
+        )
+        _add_category_item(
+            handle,
+            "Private Builds",
+            "private",
+            "Builds that include saved add-on profile data and require the private access code.",
+        )
+        xbmcplugin.endOfDirectory(handle, succeeded=True, cacheToDisc=False)
+        return
+
+    public_build = category == "public"
+    if not public_build and not access_code:
         xbmcgui.Dialog().ok(
             "KingBlap Wizard",
             "Enter your access code in KingBlap Wizard settings, then open the wizard again.",
         )
         xbmcplugin.endOfDirectory(handle, succeeded=True, cacheToDisc=False)
         return
-    if not _valid_access_code(access_code):
+    if not public_build and not _valid_access_code(access_code):
         xbmcgui.Dialog().ok(
             "KingBlap Wizard",
             "The access code must contain 32–128 letters, numbers, underscores, or hyphens. Update it in KingBlap Wizard settings.",
@@ -1171,17 +1301,24 @@ def main():
         xbmcplugin.endOfDirectory(handle, succeeded=True, cacheToDisc=False)
         return
     try:
-        builds = _get_builds(access_code)
-        for build_id, name in builds:
-            _add_directory_item(handle, name, build_id)
-        if not builds:
-            xbmcgui.Dialog().ok("KingBlap Wizard", "No builds are listed right now.")
-    except AccessDenied:
-        ADDON.setSetting("access_code", "")
-        xbmcgui.Dialog().ok(
-            "KingBlap Wizard",
-            "The access code was not accepted. Enter the correct code in KingBlap Wizard settings and try again.",
+        builds = _get_builds(
+            access_code if not public_build else None,
+            public_build=public_build,
         )
+        for build_id, name in builds:
+            _add_directory_item(handle, name, build_id, public_build=public_build)
+        if not builds:
+            xbmcgui.Dialog().ok(
+                "KingBlap Wizard",
+                "No {} builds are listed right now.".format(category),
+            )
+    except AccessDenied:
+        if not public_build:
+            ADDON.setSetting("access_code", "")
+            message = "The access code was not accepted. Enter the correct code in KingBlap Wizard settings and try again."
+        else:
+            message = "The public build endpoint refused the request. Try again later."
+        xbmcgui.Dialog().ok("KingBlap Wizard", message)
     except (OSError, ValueError, urllib.error.URLError) as exc:
         _log("Could not load build list: {}".format(exc), xbmc.LOGERROR)
         xbmcgui.Dialog().ok(
