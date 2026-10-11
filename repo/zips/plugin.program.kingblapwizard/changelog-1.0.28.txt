@@ -1,0 +1,2 @@
+1.0.28
+- Change the private build access code format to exactly 16 numeric digits.

@@ -14,8 +14,8 @@ Build 1.0.18 uses the Kodi 22 backup snapshot dated October 11, 2026. Compatibil
 
 ## Install the complete Wizard build
 
-1. Install or update KingBlap Wizard 1.0.27 from Install from repository → KingBlap Kodi Repository → Program add-ons. If needed, install the Wizard 1.0.27 ZIP from https://kingblap.github.io/repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.27.zip.
-2. Open the Wizard. It shows separate **Public Builds** and **Private Builds** folders before listing a build. The public 1.0.19 build does not require an access code and excludes saved add-on profile data and credentials from the backup. The private 1.0.18 build requires the shared access code and restores saved profile data for 34 add-ons.
+1. Install or update KingBlap Wizard 1.0.28 from Install from repository → KingBlap Kodi Repository → Program add-ons. If needed, install the Wizard 1.0.28 ZIP from https://kingblap.github.io/repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.28.zip.
+2. Open the Wizard. It shows separate **Public Builds** and **Private Builds** folders before listing a build. The public 1.0.19 build does not require an access code and excludes saved add-on profile data and credentials from the backup. The private 1.0.18 build requires the shared 16-digit numeric access code and restores saved profile data for 34 add-ons.
 3. Select the intended build and review the confirmation message before installing. The private build can replace matching saved add-on settings and login data. The Wizard's own API URL and access code are excluded and remain saved locally.
 4. Let the download and installation finish, close the completion notice, and restart Kodi once.
 
@@ -52,6 +52,7 @@ The repository was assembled from Windows Kodi 22 files. Windows-specific native
 
 | Build | Changes |
 | --- | --- |
+| **Wizard 1.0.28** | Requires exactly 16 numeric digits for private build access codes. |
 | **Wizard 1.0.27** | Adds separate Public Builds and Private Builds folders; public downloads do not send an access code and reject credential-bearing archives. |
 | **Public Build 1.0.19** | Built without backup account profiles, API keys, or saved service credentials. |
 | **Private Build 1.0.18** | Restores saved add-on profile data from the October 11 backup while preserving the local Wizard URL and access code. |

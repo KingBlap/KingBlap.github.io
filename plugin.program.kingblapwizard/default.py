@@ -49,7 +49,7 @@ WEATHER_SETTINGS_ARCHIVE_PATH = "userdata/addon_data/{}/settings.xml".format(WEA
 PROFILE_DATA_MODE = "replace-addon-data-except-wizard"
 BUILD_LIMIT = 1024 * 1024 * 1024
 DOWNLOAD_LIMIT = 512 * 1024 * 1024
-ACCESS_CODE_PATTERN = re.compile(r"[A-Za-z0-9_-]{32,128}\Z")
+ACCESS_CODE_PATTERN = re.compile(r"[0-9]{16}\Z")
 CHUNK_SIZE = 1024 * 1024
 ADDON_REGISTRATION_TIMEOUT = 600
 SKIN_LOAD_TIMEOUT = 120
@@ -85,7 +85,7 @@ def _api_url(path):
 
 def _fetch(url, max_bytes, access_code=None):
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.27 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.28 Kodi",
         "Accept": "application/json",
     }
     if access_code:
@@ -471,7 +471,7 @@ def _download_public_archive(destination, progress):
             request = urllib.request.Request(
                 url,
                 headers={
-                    "User-Agent": "KingBlap-Wizard/1.0.27 Kodi",
+                    "User-Agent": "KingBlap-Wizard/1.0.28 Kodi",
                     "Accept": "application/octet-stream",
                 },
             )
@@ -520,7 +520,7 @@ def _download_archive(build_id, destination, progress, access_code=None, public_
         "{}/{}/download".format(route, urllib.parse.quote(build_id, safe=""))
     )
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.27 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.28 Kodi",
         "Accept": "application/zip",
     }
     if access_code:
@@ -1254,7 +1254,7 @@ def main():
         elif not public_build and not _valid_access_code(access_code):
             xbmcgui.Dialog().ok(
                 "KingBlap Wizard",
-                "The access code must contain 32–128 letters, numbers, underscores, or hyphens.",
+                "The access code must be exactly 16 digits.",
             )
         elif not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,79}", build_id):
             xbmcgui.Dialog().ok("KingBlap Wizard", "The selected build is invalid.")
@@ -1296,7 +1296,7 @@ def main():
     if not public_build and not _valid_access_code(access_code):
         xbmcgui.Dialog().ok(
             "KingBlap Wizard",
-            "The access code must contain 32–128 letters, numbers, underscores, or hyphens. Update it in KingBlap Wizard settings.",
+            "The access code must be exactly 16 digits. Update it in KingBlap Wizard settings.",
         )
         xbmcplugin.endOfDirectory(handle, succeeded=True, cacheToDisc=False)
         return

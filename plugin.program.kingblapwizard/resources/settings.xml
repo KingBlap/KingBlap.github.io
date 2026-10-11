@@ -13,7 +13,7 @@
             <heading>KingBlap Worker HTTPS URL</heading>
           </control>
         </setting>
-        <setting id="access_code" type="string" label="Access code" help="Enter the shared code provided by KingBlap. Kodi saves it in this add-on's local settings.">
+        <setting id="access_code" type="string" label="Access code (16 digits)" help="Enter the 16-digit numeric code provided by KingBlap. Kodi saves it in this add-on's local settings.">
           <level>0</level>
           <default />
           <constraints>
