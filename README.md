@@ -16,14 +16,14 @@ The repository installer and HTTPS catalog work in Kodi on Android, including ph
 ## Install the KingBlap Wizard build
 
 1. Install **KingBlap Wizard** from **Install from repository → KingBlap Kodi Repository → Program add-ons**.
-2. Open **KingBlap Wizard**, choose **KingBlap Kodi Build 1.0.5**, and confirm the install.
+2. Open **KingBlap Wizard**, choose **KingBlap Kodi Build 1.0.6**, and confirm the install.
 3. Restart Kodi after the wizard reports completion. Open GIPTV and enter your own provider details.
 
-Build 1.0.5 restores Xonfluence 5.1. It includes Skin Shortcuts 3.0.4, enables it in the saved skin settings, and includes a starter shortcuts file so Kodi can generate the customized menu include on first launch. Wizard 1.0.4 validates the whole archive before installation, switches to Kodi's default Estuary skin while replacing Xonfluence, then enables Skin Shortcuts and activates Xonfluence. It also keeps the portable add-on logo paths from version 1.0.4. It removes XStream Player and its saved settings when you confirm. The public build does not include account credentials, other add-on data, Kodi databases, personal libraries, media source paths, or the profile thumbnail cache. Show and channel artwork is supplied by each add-on after you configure it. Keep Kodi's official add-on repository enabled for Android versions of native binary dependencies. Skin usability and individual add-on compatibility can vary by device.
+Build 1.0.6 reinstalls the repaired Xonfluence 5.1.1 package. It includes Skin Shortcuts 3.0.4, enables it in the saved skin settings, and includes a starter shortcuts file so Kodi can generate the customized menu include on first launch. Wizard 1.0.4 validates the whole archive before installation, switches to Kodi's default Estuary skin while replacing Xonfluence, then enables Skin Shortcuts and activates Xonfluence. It also keeps the portable add-on logo paths from version 1.0.4. It removes XStream Player and its saved settings when you confirm. The public build does not include account credentials, other add-on data, Kodi databases, personal libraries, media source paths, or the profile thumbnail cache. Show and channel artwork is supplied by each add-on after you configure it. Keep Kodi's official add-on repository enabled for Android versions of native binary dependencies. Skin usability and individual add-on compatibility can vary by device.
 
 Build list: https://kingblap.github.io/builds.txt
 
-Build archive: https://github.com/KingBlap/KingBlap.github.io/releases/download/kingblap-build-v1.0.5/KingBlapKodiBuild-1.0.5.zip
+Build archive: https://github.com/KingBlap/KingBlap.github.io/releases/download/kingblap-build-v1.0.6/KingBlapKodiBuild-1.0.6.zip
 
 This repository was assembled from a Windows Kodi 22 snapshot. Its four native binary add-ons (`inputstream.adaptive`, `inputstream.ffmpegdirect`, `inputstream.rtmp`, and `pvr.iptvsimple`) are tagged `windows-x86_64`, so Kodi filters those Windows packages out on Android. Leave Kodi's official add-on repository enabled: it provides Android ARM builds of those binary dependencies where available. The other add-ons retain their original Kodi compatibility metadata, so individual add-on availability and service behavior can still vary by device and Kodi version.
 
@@ -151,7 +151,7 @@ This repository contains 118 add-on packages from the supplied addons folder, GI
 - script.xbmcbackup — 1.7.3
 - service.upnext — 1.1.9+matrix.1
 - service.xbmc.versioncheck — 0.5.30+matrix.1
-- skin.xonfluence — 5.1
+- skin.xonfluence — 5.1.1
 - weather.gismeteo — 0.6.4+matrix.1
 
 ## Updating the catalog
