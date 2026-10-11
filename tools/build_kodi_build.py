@@ -20,6 +20,7 @@ SKIN_ID = "skin.xonfluence"
 REPLACED_ADDON = "plugin.video.xstream-player"
 GIPTV_ID = "plugin.video.giptv"
 GIPTV_VERSION = "3.1.0"
+BUILD_VERSION = "1.0.1"
 REPO_ID = "repository.kingblap"
 NATIVE_SUFFIXES = {".dll", ".so", ".dylib", ".pyd"}
 SECRET_ID = re.compile(
@@ -160,7 +161,7 @@ def build(snapshot, output):
 
     info = {
         "name": "KingBlap Kodi Build",
-        "version": "1.0.0",
+        "version": BUILD_VERSION,
         "kodi_major": 22,
         "skin": SKIN_ID,
         "addons": sorted(chosen),
@@ -208,7 +209,7 @@ def main():
     parser.add_argument(
         "--output",
         type=Path,
-        default=ROOT.parent / "KingBlapKodiBuild-1.0.0.zip",
+        default=ROOT.parent / "KingBlapKodiBuild-{}.zip".format(BUILD_VERSION),
         help="Output build archive path",
     )
     args = parser.parse_args()

@@ -16,14 +16,14 @@ The repository installer and HTTPS catalog work in Kodi on Android, including ph
 ## Install the KingBlap Wizard build
 
 1. Install **KingBlap Wizard** from **Install from repository → KingBlap Kodi Repository → Program add-ons**.
-2. Open **KingBlap Wizard**, choose **KingBlap Kodi Build 1.0.0**, and confirm the install.
+2. Open **KingBlap Wizard**, choose **KingBlap Kodi Build 1.0.1**, and confirm the install.
 3. Restart Kodi after the wizard reports completion. Open GIPTV and enter your own provider details.
 
-The build installs the Xonfluence skin and the portable add-ons from the backup. It removes XStream Player and its saved settings when you confirm. It does not include account credentials, other add-on data, Kodi databases, personal libraries, media source paths, or caches. Keep Kodi's official add-on repository enabled for Android versions of native binary dependencies. Skin usability and individual add-on compatibility can vary by device.
+The build installs the Xonfluence skin and the portable add-ons from the backup. The wizard refreshes Kodi's cached copies of replaced add-on images and reloads the skin, so Kodi can rebuild logos and skin artwork from the installed files. It removes XStream Player and its saved settings when you confirm. The public build does not include account credentials, other add-on data, Kodi databases, personal libraries, media source paths, or the profile thumbnail cache. Show and channel artwork is supplied by each add-on after you configure it. Keep Kodi's official add-on repository enabled for Android versions of native binary dependencies. Skin usability and individual add-on compatibility can vary by device.
 
 Build list: https://kingblap.github.io/builds.txt
 
-Build archive: https://github.com/KingBlap/KingBlap.github.io/releases/download/kingblap-build-v1.0.0/KingBlapKodiBuild-1.0.0.zip
+Build archive: https://github.com/KingBlap/KingBlap.github.io/releases/download/kingblap-build-v1.0.1/KingBlapKodiBuild-1.0.1.zip
 
 This repository was assembled from a Windows Kodi 22 snapshot. Its four native binary add-ons (`inputstream.adaptive`, `inputstream.ffmpegdirect`, `inputstream.rtmp`, and `pvr.iptvsimple`) are tagged `windows-x86_64`, so Kodi filters those Windows packages out on Android. Leave Kodi's official add-on repository enabled: it provides Android ARM builds of those binary dependencies where available. The other add-ons retain their original Kodi compatibility metadata, so individual add-on availability and service behavior can still vary by device and Kodi version.
 
@@ -33,7 +33,7 @@ Kodi catalog: https://kingblap.github.io/repo/zips/addons.xml
 
 ## Contents
 
-This repository contains 113 add-on packages from the supplied addons folder, GIPTV 3.1.0 from the [GIPTV developer's Kodi repository](https://github.com/G00380316/GIPTV/tree/main/repo/zips/plugin.video.giptv), Kodi's Up Next dependency, KingBlap Wizard 1.0.0, and this repository add-on. GIPTV is marked for all platforms and requires `script.module.requests` and `service.upnext`. The Up Next package is from [Kodi's official Omega add-on repository](https://kodi.tv/addons/omega/service.upnext/). Keep Kodi's official add-on repository enabled so Kodi can resolve other platform-specific dependencies. XStream Player was removed. The repository's add-on packages do not include Kodi profile databases, account data, settings, or thumbnails. Individual packages retain their own add-on metadata and licensing information.
+This repository contains 113 add-on packages from the supplied addons folder, GIPTV 3.1.0 from the [GIPTV developer's Kodi repository](https://github.com/G00380316/GIPTV/tree/main/repo/zips/plugin.video.giptv), Kodi's Up Next dependency, KingBlap Wizard 1.0.1, and this repository add-on. GIPTV is marked for all platforms and requires `script.module.requests` and `service.upnext`. The Up Next package is from [Kodi's official Omega add-on repository](https://kodi.tv/addons/omega/service.upnext/). Keep Kodi's official add-on repository enabled so Kodi can resolve other platform-specific dependencies. XStream Player was removed. The repository's add-on packages do not include Kodi profile databases, account data, settings, or the Kodi profile thumbnail cache. Individual packages retain their own add-on metadata and licensing information.
 
 - context.otaku — 1.0.35
 - context.prism — 4.0.2
@@ -63,7 +63,7 @@ This repository contains 113 add-on packages from the supplied addons folder, GI
 - plugin.video.thechains — 6.0.1
 - plugin.video.watchnixtoons2 — 0.14.23
 - plugin.video.zoro — 1.1.9
-- plugin.program.kingblapwizard — 1.0.0
+- plugin.program.kingblapwizard — 1.0.1
 - program.easyplayerswitch — 1.1.0
 - program.optiklean — 2.0.7
 - pvr.iptvsimple — 22.6.4

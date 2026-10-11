@@ -37,7 +37,7 @@ def _path(special):
 def _fetch(url, max_bytes):
     request = urllib.request.Request(
         url,
-        headers={"User-Agent": "KingBlap-Wizard/1.0.0 Kodi"},
+        headers={"User-Agent": "KingBlap-Wizard/1.0.1 Kodi"},
     )
     with urllib.request.urlopen(request, timeout=45) as response:
         length = response.headers.get("Content-Length")
@@ -154,7 +154,7 @@ def _validate_archive(archive):
 def _download_archive(url, destination, progress):
     request = urllib.request.Request(
         url,
-        headers={"User-Agent": "KingBlap-Wizard/1.0.0 Kodi"},
+        headers={"User-Agent": "KingBlap-Wizard/1.0.1 Kodi"},
     )
     with urllib.request.urlopen(request, timeout=60) as response:
         length = response.headers.get("Content-Length")
@@ -190,6 +190,75 @@ def _jsonrpc(method, params):
     if "error" in response:
         raise RuntimeError(response["error"].get("message", "Kodi could not apply a setting."))
     return response.get("result")
+
+
+def _texture_source_path(url):
+    """Resolve a cached texture URL to a local path when it refers to an add-on file."""
+    value = str(url or "").strip()
+    if not value:
+        return None
+
+    if value.lower().startswith("special://"):
+        value = _path(value)
+    elif value.lower().startswith("file://"):
+        value = urllib.parse.unquote(urllib.parse.urlsplit(value).path)
+    elif value.lower().startswith("image://"):
+        value = urllib.parse.unquote(value[8:]).rstrip("/")
+        if value.lower().startswith(("http://", "https://", "plugin://")):
+            return None
+    elif value.lower().startswith(("http://", "https://", "plugin://")):
+        return None
+    else:
+        value = urllib.parse.unquote(value)
+
+    if not os.path.isabs(value):
+        return None
+    return os.path.realpath(value)
+
+
+def _refresh_addon_art_cache(addon_root, addon_ids):
+    """Drop stale texture records for add-on files that this build replaced."""
+    addon_root = os.path.realpath(addon_root)
+    roots = []
+    for addon_id in addon_ids:
+        candidate = os.path.realpath(os.path.join(addon_root, addon_id))
+        try:
+            if os.path.commonpath((addon_root, candidate)) == addon_root and candidate != addon_root:
+                roots.append(candidate)
+        except ValueError:
+            continue
+    if not roots:
+        return 0
+
+    try:
+        result = _jsonrpc("Textures.GetTextures", {"properties": ["url", "textureid"]})
+    except (RuntimeError, ValueError, TypeError) as exc:
+        _log("Could not inspect the add-on artwork cache: {}".format(exc), xbmc.LOGWARNING)
+        return 0
+
+    entries = result.get("textures", []) if isinstance(result, dict) else []
+    stale_ids = set()
+    for entry in entries:
+        source = _texture_source_path(entry.get("url"))
+        texture_id = entry.get("textureid")
+        if source is None or texture_id is None:
+            continue
+        for root in roots:
+            try:
+                if os.path.commonpath((root, source)) == root and source != root:
+                    stale_ids.add(int(texture_id))
+                    break
+            except ValueError:
+                continue
+
+    removed = 0
+    for texture_id in stale_ids:
+        try:
+            _jsonrpc("Textures.RemoveTexture", {"textureid": texture_id})
+            removed += 1
+        except (RuntimeError, ValueError, TypeError):
+            continue
+    return removed
 
 
 def _apply_skin_settings():
@@ -273,11 +342,17 @@ def _install(name, url):
         _remove_exact_child(addon_root, "plugin.video.xstream-player")
         _remove_exact_child(_path("special://profile/addon_data"), "plugin.video.xstream-player")
         xbmc.executebuiltin("UpdateLocalAddons", True)
+        refreshed_art = _refresh_addon_art_cache(
+            addon_root, set(packages) | {"plugin.video.xstream-player"}
+        )
         _apply_skin_settings()
+        xbmc.executebuiltin("ReloadSkin", True)
         progress.close()
         xbmcgui.Dialog().ok(
             "KingBlap build installed",
-            "Kodi found {} portable add-ons. Restart Kodi to finish applying the build.".format(len(packages)),
+            "Kodi found {} portable add-ons and refreshed {} cached add-on images. Restart Kodi to finish applying the build.".format(len(packages), refreshed_art),
+            "Kodi will recreate add-on logos and skin artwork when it displays them.",
+            "Show and channel thumbnails need each add-on's own data and account settings.",
             "Keep Kodi's official repository enabled for Android-specific binary dependencies.",
             "Open GIPTV and enter your own provider details.",
         )
