@@ -37,7 +37,7 @@ def _path(special):
 def _fetch(url, max_bytes):
     request = urllib.request.Request(
         url,
-        headers={"User-Agent": "KingBlap-Wizard/1.0.1 Kodi"},
+        headers={"User-Agent": "KingBlap-Wizard/1.0.2 Kodi"},
     )
     with urllib.request.urlopen(request, timeout=45) as response:
         length = response.headers.get("Content-Length")
@@ -154,7 +154,7 @@ def _validate_archive(archive):
 def _download_archive(url, destination, progress):
     request = urllib.request.Request(
         url,
-        headers={"User-Agent": "KingBlap-Wizard/1.0.1 Kodi"},
+        headers={"User-Agent": "KingBlap-Wizard/1.0.2 Kodi"},
     )
     with urllib.request.urlopen(request, timeout=60) as response:
         length = response.headers.get("Content-Length")
@@ -348,20 +348,26 @@ def _install(name, url):
         _apply_skin_settings()
         xbmc.executebuiltin("ReloadSkin", True)
         progress.close()
+        success_message = (
+            "Kodi found {} portable add-ons and refreshed {} cached add-on images. "
+            "Restart Kodi to finish applying the build.\n\n"
+            "Kodi will recreate add-on logos and skin artwork when it displays them.\n"
+            "Show and channel thumbnails need each add-on's own data and account settings.\n"
+            "Keep Kodi's official repository enabled for Android-specific binary dependencies.\n"
+            "Open GIPTV and enter your own provider details."
+        ).format(len(packages), refreshed_art)
         xbmcgui.Dialog().ok(
             "KingBlap build installed",
-            "Kodi found {} portable add-ons and refreshed {} cached add-on images. Restart Kodi to finish applying the build.".format(len(packages), refreshed_art),
-            "Kodi will recreate add-on logos and skin artwork when it displays them.",
-            "Show and channel thumbnails need each add-on's own data and account settings.",
-            "Keep Kodi's official repository enabled for Android-specific binary dependencies.",
-            "Open GIPTV and enter your own provider details.",
+            success_message,
         )
         _log("Installed build {} with {} add-ons.".format(name, len(packages)))
     except (OSError, ValueError, zipfile.BadZipFile, urllib.error.URLError,
             json.JSONDecodeError, ET.ParseError, RuntimeError, InterruptedError) as exc:
         progress.close()
         _log("Build install failed: {}".format(exc), xbmc.LOGERROR)
-        xbmcgui.Dialog().ok("KingBlap build", "The build was not installed.", str(exc))
+        xbmcgui.Dialog().ok(
+            "KingBlap build", "The build was not installed.\n\n{}".format(exc)
+        )
     finally:
         try:
             if os.path.exists(archive_path):
@@ -401,7 +407,9 @@ def main():
             xbmcgui.Dialog().ok("KingBlap Wizard", "No builds are listed right now.")
     except (OSError, ValueError, urllib.error.URLError) as exc:
         _log("Could not load build list: {}".format(exc), xbmc.LOGERROR)
-        xbmcgui.Dialog().ok("KingBlap Wizard", "Could not load the build list.", str(exc))
+        xbmcgui.Dialog().ok(
+            "KingBlap Wizard", "Could not load the build list.\n\n{}".format(exc)
+        )
     xbmcplugin.endOfDirectory(handle, succeeded=True, cacheToDisc=False)
 
 

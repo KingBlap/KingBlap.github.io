@@ -1,5 +1,5 @@
 {
-  "generated_from": "Kodi backup snapshot 2026-10-04 plus GIPTV 3.1.0, Kodi Up Next dependency, and KingBlap Wizard 1.0.1",
+  "generated_from": "Kodi backup snapshot 2026-10-04 plus GIPTV 3.1.0, Kodi Up Next dependency, and KingBlap Wizard 1.0.2",
   "addons": [
     {
       "id": "context.otaku",
@@ -255,12 +255,12 @@
     },
     {
       "id": "plugin.program.kingblapwizard",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "name": "KingBlap Wizard",
       "provider": "KingBlap",
       "license": "GPL-2.0-or-later",
-      "zip": "repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.1.zip",
-      "bytes": 79813
+      "zip": "repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.2.zip",
+      "bytes": 79833
     },
     {
       "id": "program.easyplayerswitch",
