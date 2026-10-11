@@ -28,7 +28,7 @@ WEATHER_VERSION = "0.6.4+matrix.1"
 WEATHER_LOCATION = "Thomasville"
 WEATHER_LOCATION_ID = "8771"
 WEATHER_SETTINGS_ARCHIVE_PATH = "userdata/addon_data/{}/settings.xml".format(WEATHER_ID)
-BUILD_VERSION = "1.0.16"
+BUILD_VERSION = "1.0.17"
 REPO_ID = "repository.kingblap"
 NATIVE_SUFFIXES = {".dll", ".so", ".dylib", ".pyd"}
 SECRET_SETTING = re.compile(
@@ -212,15 +212,74 @@ def make_skin_settings(snapshot, packages, chosen):
     return ET.tostring(sanitized, encoding="utf-8", xml_declaration=True), kept
 
 
-def make_weather_settings():
-    """Package the requested Gismeteo location without unrelated profile data."""
-    settings = ET.Element("settings", {"version": "4"})
-    for setting_id, value in (
-        ("CurrentLocation", "false"),
-        ("Location1", WEATHER_LOCATION),
-        ("Location1ID", WEATHER_LOCATION_ID),
-    ):
-        ET.SubElement(settings, "setting", {"id": setting_id}).text = value
+def make_weather_settings(snapshot):
+    """Preserve Gismeteo preferences while setting its portable primary city."""
+    source = snapshot / "addon_data" / WEATHER_ID / "settings.xml"
+    if not source.is_file():
+        raise ValueError("The Kodi snapshot is missing Gismeteo settings.xml.")
+    original = ET.parse(source).getroot()
+    if original.tag != "settings":
+        raise ValueError("The snapshot's Gismeteo settings file is not valid Kodi settings XML.")
+
+    # Keep only preferences supported by the packaged Gismeteo version. Other
+    # location slots are cleared so the public build contains only the city the
+    # user requested, while language, units, timezone, and icon preferences
+    # retain the supplied profile's values.
+    supported_settings = {
+        "CurrentLocation", "Location1", "Location2", "Location3", "Location4", "Location5",
+        "Location1ID", "Location2ID", "Location3ID", "Location4ID", "Location5ID",
+        "Language", "Weekend", "TimeZone", "PresUnit", "PrecipUnit", "UseProviderIcons",
+    }
+    target_values = {
+        "CurrentLocation": "false",
+        "Location1": WEATHER_LOCATION,
+        "Location1ID": WEATHER_LOCATION_ID,
+        "Location2": "",
+        "Location3": "",
+        "Location4": "",
+        "Location5": "",
+        "Location2ID": "",
+        "Location3ID": "",
+        "Location4ID": "",
+        "Location5ID": "",
+    }
+    settings = ET.Element("settings", {"version": original.get("version", "4")})
+    copied = set()
+    for source_setting in original.findall("setting"):
+        setting_id = source_setting.get("id", "")
+        if setting_id not in supported_settings or setting_id in copied:
+            continue
+        entry = ET.SubElement(settings, "setting", dict(source_setting.attrib))
+        if setting_id in target_values:
+            entry.text = target_values[setting_id]
+            if setting_id in ("CurrentLocation", "Location1", "Location1ID"):
+                entry.attrib.pop("default", None)
+        else:
+            entry.text = source_setting.text
+        copied.add(setting_id)
+
+    required_settings = {
+        "CurrentLocation": "false",
+        "Location1": WEATHER_LOCATION,
+        "Location1ID": WEATHER_LOCATION_ID,
+        "Location2": "",
+        "Location3": "",
+        "Location4": "",
+        "Location5": "",
+        "Location2ID": "",
+        "Location3ID": "",
+        "Location4ID": "",
+        "Location5ID": "",
+        "Language": "0",
+        "Weekend": "0",
+        "TimeZone": "0",
+        "PresUnit": "0",
+        "PrecipUnit": "0",
+        "UseProviderIcons": "false",
+    }
+    for setting_id, default_value in required_settings.items():
+        if setting_id not in copied:
+            ET.SubElement(settings, "setting", {"id": setting_id}).text = default_value
     return ET.tostring(settings, encoding="utf-8", xml_declaration=True)
 
 
@@ -265,7 +324,7 @@ def build(snapshot, output):
             raise ValueError("The Xonfluence dependency {} is missing.".format(addon_id))
 
     skin_settings, skin_setting_count = make_skin_settings(snapshot, packages, chosen)
-    weather_settings = make_weather_settings()
+    weather_settings = make_weather_settings(snapshot)
 
     info = {
         "name": "KingBlap Kodi Build",
@@ -288,7 +347,7 @@ def build(snapshot, output):
         ],
         "included_user_data": [
             "sanitized Xonfluence skin settings ({} portable settings)".format(skin_setting_count),
-            "Gismeteo weather configuration for Thomasville, North Carolina",
+            "Gismeteo language, unit, timezone, and icon preferences with Thomasville as the primary location",
         ],
     }
 
