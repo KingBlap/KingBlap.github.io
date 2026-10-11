@@ -1,0 +1,4 @@
+1.0.25
+- Require the KingBlap access code to list and download private builds.
+- Send the code only in an HTTPS Authorization header, not in Kodi plugin URLs.
+- Add settings for the Worker HTTPS URL and access code.

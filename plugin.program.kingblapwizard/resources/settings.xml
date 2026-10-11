@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<settings version="1">
+  <section id="plugin.program.kingblapwizard">
+    <category id="private_access" label="KingBlap Private Builds" help="Configure the private build service.">
+      <group id="1" label="Connection">
+        <setting id="api_url" type="string" label="Worker HTTPS URL" help="Use the HTTPS URL shown by Cloudflare after the KingBlap Worker is deployed.">
+          <level>0</level>
+          <default>https://kingblap-api.tyshawncalvin243.workers.dev</default>
+          <constraints>
+            <allowempty>false</allowempty>
+          </constraints>
+          <control type="edit" format="string">
+            <heading>KingBlap Worker HTTPS URL</heading>
+          </control>
+        </setting>
+        <setting id="access_code" type="string" label="Access code" help="Enter the shared code provided by KingBlap. Kodi saves it in this add-on's local settings.">
+          <level>0</level>
+          <default />
+          <constraints>
+            <allowempty>true</allowempty>
+          </constraints>
+          <control type="edit" format="string">
+            <heading>KingBlap build access code</heading>
+            <hidden>true</hidden>
+          </control>
+        </setting>
+      </group>
+    </category>
+  </section>
+</settings>

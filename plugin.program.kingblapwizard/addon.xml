@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.program.kingblapwizard" name="KingBlap Wizard" version="1.0.24" provider-name="KingBlap">
+<addon id="plugin.program.kingblapwizard" name="KingBlap Wizard" version="1.0.25" provider-name="KingBlap">
   <requires>
     <import addon="xbmc.python" version="3.0.0" />
   </requires>
@@ -9,8 +9,8 @@
   <extension point="xbmc.service" library="service.py" start="startup" />
   <extension point="xbmc.addon.metadata">
     <summary lang="en_GB">Install the KingBlap Kodi build.</summary>
-    <description lang="en_GB">Installs and enables all packaged add-ons, sets and refreshes Gismeteo for Thomasville, North Carolina, removes the OnePlay repository, automatically confirms Kodi's required platform-specific component installs, then applies Xonfluence 6.0.7 after installation and on Kodi startup.</description>
-    <disclaimer lang="en_GB">The public build excludes personal accounts, provider credentials, media libraries, databases, and caches. Enter your own service credentials after installation.</disclaimer>
+    <description lang="en_GB">Installs the private KingBlap Kodi build using an access code, enables packaged add-ons, sets and refreshes Gismeteo for Thomasville, North Carolina, removes the OnePlay repository, and applies Xonfluence 6.0.7 after installation and on Kodi startup.</description>
+    <disclaimer lang="en_GB">Enter the access code supplied by KingBlap in the add-on settings. The build excludes personal accounts, provider credentials, media libraries, databases, and caches. Enter your own service credentials after installation.</disclaimer>
     <platform>all</platform>
     <license>GPL-2.0-or-later</license>
     <source>https://github.com/KingBlap/KingBlap.github.io</source>

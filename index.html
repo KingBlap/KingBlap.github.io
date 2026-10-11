@@ -55,8 +55,8 @@
 <p>This File Manager method also works on Android phones, Android TV, and Fire TV Stick; Kodi fetches the repository ZIP over HTTPS from the source. If the source appears empty or Kodi says it cannot connect, check that the path is exactly <code>https://kingblap.github.io/</code> and open that address in a browser on the same device. As a fallback, download the <a href="https://kingblap.github.io/repository.kingblap-1.0.0.zip">repository installer ZIP</a>, then use <strong>File Manager → Add source → Browse</strong> to add the folder containing the downloaded ZIP. Choose that source in <strong>Install from zip file</strong>.</p>
 <h2 id="install-the-complete-wizard-build">Install the complete wizard build</h2>
 <ol>
-<li>Install or update <strong>KingBlap Wizard 1.0.24</strong> from <strong>Install from repository → KingBlap Kodi Repository → Program add-ons</strong>. If the update is not listed, select <strong>Add-ons → Check for updates</strong> or install the <a href="https://kingblap.github.io/repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.24.zip">Wizard 1.0.24 ZIP</a>.</li>
-<li>Open <strong>KingBlap Wizard</strong>, choose <strong>KingBlap Kodi Build 1.0.17</strong>, and confirm.</li>
+<li>Install or update <strong>KingBlap Wizard 1.0.25</strong> from <strong>Install from repository → KingBlap Kodi Repository → Program add-ons</strong>. If the update is not listed, select <strong>Add-ons → Check for updates</strong> or install the <a href="https://kingblap.github.io/repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.25.zip">Wizard 1.0.25 ZIP</a>.</li>
+<li>Open KingBlap Wizard settings and enter your private access code (the Worker HTTPS URL is preconfigured). Save the settings, reopen the wizard, choose <strong>KingBlap Kodi Build 1.0.17</strong>, and confirm.</li>
 <li>Let the download and installation finish. Close the completion notice, allow Kodi to finish loading add-ons and Xonfluence, then restart Kodi once.</li>
 <li>Gismeteo is enabled and set to Thomasville, North Carolina. The wizard selects it as the active location and forces a weather refresh, replacing any prior IP-detected city. Open GIPTV and enter your own provider details. Sign in to any other services you use.</li>
 </ol>
@@ -72,12 +72,12 @@
 <li>The OnePlay repository (<code>One.repo</code>) is excluded from the build and removed by the wizard, including its saved add-on data. It remains available as an optional package in the repository catalog.</li>
 <li>Wizard fixes for Kodi add-on registration delays, install dialogs, the skin confirmation prompt, and applying Xonfluence after Kodi starts. The wizard also asks Kodi&#x27;s add-on manager to obtain compatible platform-specific components when available.</li>
 </ul>
-<p>The public build does <strong>not</strong> contain service passwords, provider credentials, account tokens, other add-on profile data beyond the sanitized skin settings and Thomasville weather location, Kodi databases, personal libraries, media-source paths, provider playlists or EPG data, caches, thumbnails, or platform-specific native binaries. Configure accounts and sources on each device after installation.</p>
+<p>The build archive does <strong>not</strong> contain service passwords, provider credentials, account tokens, other add-on profile data beyond the sanitized skin settings and Thomasville weather location, Kodi databases, personal libraries, media-source paths, provider playlists or EPG data, caches, thumbnails, or platform-specific native binaries. Configure accounts and sources on each device after installation.</p>
 <p>The repository was assembled from a Windows Kodi 22 snapshot. Four native binary packages (<code>inputstream.adaptive</code>, <code>inputstream.ffmpegdirect</code>, <code>inputstream.rtmp</code>, and <code>pvr.iptvsimple</code>) are Windows x86-64 packages in the catalog and are omitted from the portable build. Leave Kodi&#x27;s official repository enabled; Kodi may install a compatible Android ARM version where available. Other packages retain their upstream Kodi compatibility metadata, so availability and behavior can vary across devices.</p>
 <h2 id="current-downloads">Current downloads</h2>
 <ul>
 <li>Build list: <a href="https://kingblap.github.io/builds.txt">builds.txt</a></li>
-<li>Build 1.0.17: <a href="https://github.com/KingBlap/KingBlap.github.io/releases/download/kingblap-build-v1.0.17/KingBlapKodiBuild-1.0.17.zip">download the ZIP</a></li>
+<li>Private build 1.0.17: install through KingBlap Wizard after entering your access code.</li>
 <li>KingBlap repository installer: <a href="https://kingblap.github.io/repository.kingblap-1.0.0.zip">download the ZIP</a></li>
 <li>Kodi add-on catalog: <a href="https://kingblap.github.io/repo/zips/addons.xml">addons.xml</a></li>
 <li>Package inventory and versions: <a href="addon_catalog.json">addon_catalog.json</a></li>
@@ -117,7 +117,7 @@
 <li><strong>In Build 1.0.17</strong> — metadata.generic.artists — 1.0.20</li>
 <li><strong>In Build 1.0.17</strong> — metadata.tvshows.themoviedb.org.python — 2.0.9</li>
 <li><strong>Repository only</strong> — One.repo — 1.16</li>
-<li><strong>Repository only</strong> — plugin.program.kingblapwizard — 1.0.24</li>
+<li><strong>Repository only</strong> — plugin.program.kingblapwizard — 1.0.25</li>
 <li><strong>In Build 1.0.17</strong> — plugin.video.absolution — 4.4.1</li>
 <li><strong>In Build 1.0.17</strong> — plugin.video.cosmos — 4.3.26</li>
 <li><strong>In Build 1.0.17</strong> — plugin.video.dailymotion_com — 2.4.5</li>

@@ -16,8 +16,8 @@ This File Manager method also works on Android phones, Android TV, and Fire TV S
 
 ## Install the complete wizard build
 
-1. Install or update **KingBlap Wizard 1.0.24** from **Install from repository → KingBlap Kodi Repository → Program add-ons**. If the update is not listed, select **Add-ons → Check for updates** or install the [Wizard 1.0.24 ZIP](https://kingblap.github.io/repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.24.zip).
-2. Open **KingBlap Wizard**, choose **KingBlap Kodi Build 1.0.17**, and confirm.
+1. Install or update **KingBlap Wizard 1.0.25** from **Install from repository → KingBlap Kodi Repository → Program add-ons**. If the update is not listed, select **Add-ons → Check for updates** or install the [Wizard 1.0.25 ZIP](https://kingblap.github.io/repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.25.zip).
+2. Open KingBlap Wizard settings and enter your private access code (the Worker HTTPS URL is preconfigured). Save the settings, reopen the wizard, choose **KingBlap Kodi Build 1.0.17**, and confirm.
 3. Let the download and installation finish. Close the completion notice, allow Kodi to finish loading add-ons and Xonfluence, then restart Kodi once.
 4. Gismeteo is enabled and set to Thomasville, North Carolina. The wizard selects it as the active location and forces a weather refresh, replacing any prior IP-detected city. Open GIPTV and enter your own provider details. Sign in to any other services you use.
 
@@ -34,14 +34,14 @@ Make a Kodi backup before installing over an existing setup. The wizard replaces
 - The OnePlay repository (`One.repo`) is excluded from the build and removed by the wizard, including its saved add-on data. It remains available as an optional package in the repository catalog.
 - Wizard fixes for Kodi add-on registration delays, install dialogs, the skin confirmation prompt, and applying Xonfluence after Kodi starts. The wizard also asks Kodi's add-on manager to obtain compatible platform-specific components when available.
 
-The public build does **not** contain service passwords, provider credentials, account tokens, other add-on profile data beyond the sanitized skin settings and Thomasville weather location, Kodi databases, personal libraries, media-source paths, provider playlists or EPG data, caches, thumbnails, or platform-specific native binaries. Configure accounts and sources on each device after installation.
+The build archive does **not** contain service passwords, provider credentials, account tokens, other add-on profile data beyond the sanitized skin settings and Thomasville weather location, Kodi databases, personal libraries, media-source paths, provider playlists or EPG data, caches, thumbnails, or platform-specific native binaries. Configure accounts and sources on each device after installation.
 
 The repository was assembled from a Windows Kodi 22 snapshot. Four native binary packages (`inputstream.adaptive`, `inputstream.ffmpegdirect`, `inputstream.rtmp`, and `pvr.iptvsimple`) are Windows x86-64 packages in the catalog and are omitted from the portable build. Leave Kodi's official repository enabled; Kodi may install a compatible Android ARM version where available. Other packages retain their upstream Kodi compatibility metadata, so availability and behavior can vary across devices.
 
 ## Current downloads
 
 - Build list: [builds.txt](https://kingblap.github.io/builds.txt)
-- Build 1.0.17: [download the ZIP](https://github.com/KingBlap/KingBlap.github.io/releases/download/kingblap-build-v1.0.17/KingBlapKodiBuild-1.0.17.zip)
+- Private build 1.0.17: install through KingBlap Wizard after entering your access code.
 - KingBlap repository installer: [download the ZIP](https://kingblap.github.io/repository.kingblap-1.0.0.zip)
 - Kodi add-on catalog: [addons.xml](https://kingblap.github.io/repo/zips/addons.xml)
 - Package inventory and versions: [addon_catalog.json](addon_catalog.json)
@@ -85,7 +85,7 @@ The list below describes all **121 packages available in the repository**. Only 
 - **In Build 1.0.17** — metadata.generic.artists — 1.0.20
 - **In Build 1.0.17** — metadata.tvshows.themoviedb.org.python — 2.0.9
 - **Repository only** — One.repo — 1.16
-- **Repository only** — plugin.program.kingblapwizard — 1.0.24
+- **Repository only** — plugin.program.kingblapwizard — 1.0.25
 - **In Build 1.0.17** — plugin.video.absolution — 4.4.1
 - **In Build 1.0.17** — plugin.video.cosmos — 4.3.26
 - **In Build 1.0.17** — plugin.video.dailymotion_com — 2.4.5

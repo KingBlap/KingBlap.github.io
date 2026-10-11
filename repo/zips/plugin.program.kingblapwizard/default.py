@@ -22,7 +22,8 @@ import xbmcvfs
 
 ADDON = xbmcaddon.Addon()
 ADDON_ID = ADDON.getAddonInfo("id")
-BUILDS_URL = "https://kingblap.github.io/builds.txt"
+DEFAULT_API_URL = "https://kingblap-api.tyshawncalvin243.workers.dev"
+BUILDS_PATH = "/v1/builds"
 SKIN_ID = "skin.xonfluence"
 SKIN_VERSION = "6.0.7"
 WEATHER_VERSION = "0.6.4+matrix.1"
@@ -40,10 +41,15 @@ WEATHER_ADDON_SETTINGS = {
 WEATHER_SETTINGS_ARCHIVE_PATH = "userdata/addon_data/{}/settings.xml".format(WEATHER_ID)
 BUILD_LIMIT = 1024 * 1024 * 1024
 DOWNLOAD_LIMIT = 512 * 1024 * 1024
+ACCESS_CODE_PATTERN = re.compile(r"[A-Za-z0-9_-]{32,128}\Z")
 CHUNK_SIZE = 1024 * 1024
 ADDON_REGISTRATION_TIMEOUT = 600
 SKIN_LOAD_TIMEOUT = 120
 SKIN_CONFIRMATION_GRACE = 13
+
+
+class AccessDenied(ValueError):
+    """The private KingBlap API rejected the configured access code."""
 
 
 def _log(message, level=xbmc.LOGINFO):
@@ -54,36 +60,74 @@ def _path(special):
     return os.path.abspath(xbmcvfs.translatePath(special))
 
 
-def _fetch(url, max_bytes):
+def _api_url(path):
+    base = ADDON.getSetting("api_url").strip() or DEFAULT_API_URL
+    parsed = urllib.parse.urlsplit(base)
+    if (
+        parsed.scheme.casefold() != "https"
+        or not parsed.netloc
+        or parsed.username
+        or parsed.password
+        or parsed.query
+        or parsed.fragment
+    ):
+        raise ValueError("Set the Worker URL to a valid HTTPS address in KingBlap Wizard settings.")
+    return base.rstrip("/") + path
+
+
+def _fetch(url, max_bytes, access_code):
     request = urllib.request.Request(
         url,
-        headers={"User-Agent": "KingBlap-Wizard/1.0.24 Kodi"},
+        headers={
+            "User-Agent": "KingBlap-Wizard/1.0.25 Kodi",
+            "Accept": "application/json",
+            "Authorization": "Bearer {}".format(access_code),
+        },
     )
-    with urllib.request.urlopen(request, timeout=45) as response:
-        length = response.headers.get("Content-Length")
-        if length and int(length) > max_bytes:
-            raise ValueError("The download is larger than the wizard limit.")
-        data = response.read(max_bytes + 1)
+    try:
+        with urllib.request.urlopen(request, timeout=45) as response:
+            length = response.headers.get("Content-Length")
+            if length and int(length) > max_bytes:
+                raise ValueError("The download is larger than the wizard limit.")
+            data = response.read(max_bytes + 1)
+    except urllib.error.HTTPError as exc:
+        if exc.code in (401, 403):
+            raise AccessDenied("The access code was not accepted.")
+        raise
     if len(data) > max_bytes:
         raise ValueError("The download is larger than the wizard limit.")
     return data
 
 
-def _get_builds():
-    content = _fetch(BUILDS_URL, 1024 * 1024).decode("utf-8-sig")
+def _get_builds(access_code):
+    content = _fetch(_api_url(BUILDS_PATH), 1024 * 1024, access_code).decode("utf-8-sig")
+    payload = json.loads(content)
+    if not isinstance(payload, dict) or not isinstance(payload.get("builds"), list):
+        raise ValueError("The private build list is not valid JSON.")
     builds = []
-    for line in content.splitlines():
-        line = line.strip()
-        if not line or line.startswith("#"):
-            continue
-        if "|" in line:
-            name, url = [part.strip() for part in line.split("|", 1)]
-        else:
-            url = line
-            name = os.path.basename(urllib.parse.urlparse(url).path) or "Kodi Build"
-        if name and url.startswith("https://"):
-            builds.append((name, url))
+    seen = set()
+    for entry in payload["builds"]:
+        if not isinstance(entry, dict):
+            raise ValueError("The private build list contains an invalid entry.")
+        build_id = entry.get("id")
+        name = entry.get("name")
+        if (
+            not isinstance(build_id, str)
+            or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,79}", build_id)
+            or build_id in seen
+            or not isinstance(name, str)
+            or not name.strip()
+            or len(name) > 120
+            or any(ord(character) < 32 for character in name)
+        ):
+            raise ValueError("The private build list contains an invalid entry.")
+        seen.add(build_id)
+        builds.append((build_id, name.strip()))
     return builds
+
+
+def _valid_access_code(access_code):
+    return bool(ACCESS_CODE_PATTERN.fullmatch(access_code))
 
 
 def _safe_target(root, relative):
@@ -360,32 +404,46 @@ def _validate_archive(archive):
     return total, packages, sorted(set(platform_addons)), sorted(set(removed_addons))
 
 
-def _download_archive(url, destination, progress):
+def _download_archive(build_id, destination, progress, access_code):
+    url = _api_url(
+        "/v1/builds/{}/download".format(urllib.parse.quote(build_id, safe=""))
+    )
     request = urllib.request.Request(
         url,
-        headers={"User-Agent": "KingBlap-Wizard/1.0.24 Kodi"},
+        headers={
+            "User-Agent": "KingBlap-Wizard/1.0.25 Kodi",
+            "Accept": "application/zip",
+            "Authorization": "Bearer {}".format(access_code),
+        },
     )
-    with urllib.request.urlopen(request, timeout=60) as response:
-        length = response.headers.get("Content-Length")
-        expected = int(length) if length else None
-        if expected and expected > DOWNLOAD_LIMIT:
-            raise ValueError("The build download is larger than the wizard limit.")
-        written = 0
-        with open(destination, "wb") as output:
-            while True:
-                if progress.iscanceled():
-                    raise InterruptedError("Build installation was cancelled.")
-                block = response.read(CHUNK_SIZE)
-                if not block:
-                    break
-                written += len(block)
-                if written > DOWNLOAD_LIMIT:
-                    raise ValueError("The build download is larger than the wizard limit.")
-                output.write(block)
-                percent = int(written * 100 / expected) if expected else 0
-                progress.update(min(percent, 99), "Downloading build…")
-        if expected and written != expected:
-            raise IOError("The build download was incomplete.")
+    try:
+        with urllib.request.urlopen(request, timeout=60) as response:
+            length = response.headers.get("Content-Length")
+            expected = int(length) if length else None
+            if expected and expected > DOWNLOAD_LIMIT:
+                raise ValueError("The build download is larger than the wizard limit.")
+            written = 0
+            with open(destination, "wb") as output:
+                while True:
+                    if progress.iscanceled():
+                        raise InterruptedError("Build installation was cancelled.")
+                    block = response.read(CHUNK_SIZE)
+                    if not block:
+                        break
+                    written += len(block)
+                    if written > DOWNLOAD_LIMIT:
+                        raise ValueError("The build download is larger than the wizard limit.")
+                    output.write(block)
+                    percent = int(written * 100 / expected) if expected else 0
+                    progress.update(min(percent, 99), "Downloading build…")
+            if expected and written != expected:
+                raise IOError("The build download was incomplete.")
+    except urllib.error.HTTPError as exc:
+        if exc.code in (401, 403):
+            raise AccessDenied("The access code was not accepted.")
+        if exc.code == 404:
+            raise ValueError("The selected build is not available.")
+        raise
 
 
 def _jsonrpc(method, params):
@@ -683,7 +741,7 @@ def _request_skin_reapply():
     os.replace(temporary, marker)
 
 
-def _install(name, url):
+def _install(name, build_id, access_code):
     if not xbmcgui.Dialog().yesno(
         "Install {}?".format(name),
         "This installs and enables all packaged add-ons, fetches Android-compatible "
@@ -723,7 +781,7 @@ def _install(name, url):
     rollback_complete = True
     preserve_transaction = False
     try:
-        _download_archive(url, archive_path, progress)
+        _download_archive(build_id, archive_path, progress, access_code)
         with zipfile.ZipFile(archive_path, "r") as archive:
             expanded_size, packages, platform_addons, removed_addons = _validate_archive(archive)
             required_dependencies = _required_external_dependencies(archive, packages)
@@ -975,8 +1033,13 @@ def _install(name, url):
             ), xbmc.LOGWARNING)
         else:
             _log("Build install failed: {}".format(exc), xbmc.LOGERROR)
+            if isinstance(exc, AccessDenied):
+                ADDON.setSetting("access_code", "")
+                message = "The access code was not accepted. Enter the correct code in KingBlap Wizard settings and try again."
+            else:
+                message = "The build was not installed.\n\n{}".format(exc)
             xbmcgui.Dialog().ok(
-                "KingBlap build", "The build was not installed.\n\n{}".format(exc)
+                "KingBlap build", message
             )
     finally:
         try:
@@ -993,35 +1056,66 @@ def _install(name, url):
             ), xbmc.LOGWARNING)
 
 
-def _add_directory_item(handle, name, url):
+def _add_directory_item(handle, name, build_id):
     item = xbmcgui.ListItem(label=name)
     item.setInfo("video", {"title": name, "plot": "Install the portable KingBlap Kodi build."})
-    xbmcplugin.addDirectoryItem(handle, url, item, isFolder=False)
+    item_url = "{}?action=install&name={}&build={}".format(
+        sys.argv[0], urllib.parse.quote(name), urllib.parse.quote(build_id, safe="")
+    )
+    xbmcplugin.addDirectoryItem(handle, item_url, item, isFolder=False)
 
 
 def main():
     handle = int(sys.argv[1])
     query = urllib.parse.parse_qs(sys.argv[2][1:]) if len(sys.argv) > 2 and sys.argv[2].startswith("?") else {}
+    access_code = ADDON.getSetting("access_code").strip()
     if query.get("action") == ["install"]:
         name = query.get("name", ["KingBlap Kodi Build"])[0]
-        url = query.get("url", [""])[0]
-        if not url.startswith("https://"):
-            xbmcgui.Dialog().ok("KingBlap Wizard", "The build link is invalid.")
+        build_id = query.get("build", [""])[0]
+        if not access_code:
+            xbmcgui.Dialog().ok(
+                "KingBlap Wizard",
+                "Enter your access code in KingBlap Wizard settings before installing a build.",
+            )
+        elif not _valid_access_code(access_code):
+            xbmcgui.Dialog().ok(
+                "KingBlap Wizard",
+                "The access code must contain 32–128 letters, numbers, underscores, or hyphens.",
+            )
+        elif not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,79}", build_id):
+            xbmcgui.Dialog().ok("KingBlap Wizard", "The selected build is invalid.")
         else:
-            _install(name, url)
+            _install(name, build_id, access_code)
         xbmcplugin.endOfDirectory(handle, succeeded=True, cacheToDisc=False)
         return
 
     xbmcplugin.setContent(handle, "files")
+    if not access_code:
+        xbmcgui.Dialog().ok(
+            "KingBlap Wizard",
+            "Enter your access code in KingBlap Wizard settings, then open the wizard again.",
+        )
+        xbmcplugin.endOfDirectory(handle, succeeded=True, cacheToDisc=False)
+        return
+    if not _valid_access_code(access_code):
+        xbmcgui.Dialog().ok(
+            "KingBlap Wizard",
+            "The access code must contain 32–128 letters, numbers, underscores, or hyphens. Update it in KingBlap Wizard settings.",
+        )
+        xbmcplugin.endOfDirectory(handle, succeeded=True, cacheToDisc=False)
+        return
     try:
-        builds = _get_builds()
-        for name, url in builds:
-            item_url = "{}?action=install&name={}&url={}".format(
-                sys.argv[0], urllib.parse.quote(name), urllib.parse.quote(url, safe="")
-            )
-            _add_directory_item(handle, name, item_url)
+        builds = _get_builds(access_code)
+        for build_id, name in builds:
+            _add_directory_item(handle, name, build_id)
         if not builds:
             xbmcgui.Dialog().ok("KingBlap Wizard", "No builds are listed right now.")
+    except AccessDenied:
+        ADDON.setSetting("access_code", "")
+        xbmcgui.Dialog().ok(
+            "KingBlap Wizard",
+            "The access code was not accepted. Enter the correct code in KingBlap Wizard settings and try again.",
+        )
     except (OSError, ValueError, urllib.error.URLError) as exc:
         _log("Could not load build list: {}".format(exc), xbmc.LOGERROR)
         xbmcgui.Dialog().ok(
