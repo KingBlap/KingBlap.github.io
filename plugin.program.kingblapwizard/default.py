@@ -39,6 +39,7 @@ WEATHER_ADDON_SETTINGS = {
     "Location1ID": WEATHER_LOCATION_ID,
 }
 WEATHER_SETTINGS_ARCHIVE_PATH = "userdata/addon_data/{}/settings.xml".format(WEATHER_ID)
+PROFILE_DATA_MODE = "replace-addon-data-except-wizard"
 BUILD_LIMIT = 1024 * 1024 * 1024
 DOWNLOAD_LIMIT = 512 * 1024 * 1024
 ACCESS_CODE_PATTERN = re.compile(r"[A-Za-z0-9_-]{32,128}\Z")
@@ -79,7 +80,7 @@ def _fetch(url, max_bytes, access_code):
     request = urllib.request.Request(
         url,
         headers={
-            "User-Agent": "KingBlap-Wizard/1.0.25 Kodi",
+            "User-Agent": "KingBlap-Wizard/1.0.26 Kodi",
             "Accept": "application/json",
             "Authorization": "Bearer {}".format(access_code),
         },
@@ -258,6 +259,7 @@ def _validate_archive(archive):
     total = 0
     packages = {}
     build_info = None
+    profile_addon_data_ids = set()
     skin_settings_found = False
     weather_settings_found = False
     seen_names = set()
@@ -300,6 +302,7 @@ def _validate_archive(archive):
             if settings.tag != "settings" or not settings.findall("setting"):
                 raise ValueError("The build archive's Xonfluence skin settings are empty or invalid.")
             skin_settings_found = True
+            profile_addon_data_ids.add(SKIN_ID)
         elif name == WEATHER_SETTINGS_ARCHIVE_PATH:
             try:
                 settings = ET.fromstring(archive.read(info))
@@ -316,6 +319,18 @@ def _validate_archive(archive):
             ):
                 raise ValueError("The build archive does not select Thomasville, North Carolina in Gismeteo.")
             weather_settings_found = True
+            profile_addon_data_ids.add(WEATHER_ID)
+        elif name.startswith("userdata/addon_data/"):
+            relative = name[len("userdata/addon_data/"):]
+            parts = relative.split("/")
+            if (
+                len(parts) < 2
+                or not re.fullmatch(r"[A-Za-z0-9_.-]+", parts[0])
+                or parts[0] in (ADDON_ID, "plugin.video.xstream-player", ONEPLAY_REPO_ID, LEGACY_SKIN_ID)
+            ):
+                raise ValueError("The build archive contains an invalid add-on profile path.")
+            _safe_target("/build/userdata/addon_data", relative)
+            profile_addon_data_ids.add(parts[0])
         elif name.startswith("addons/"):
             relative = name[len("addons/"):]
             parts = relative.split("/")
@@ -401,7 +416,34 @@ def _validate_archive(archive):
         or build_info.get("weather_location_id") != WEATHER_LOCATION_ID
     ):
         raise ValueError("The build information does not identify the Thomasville, North Carolina weather setup.")
-    return total, packages, sorted(set(platform_addons)), sorted(set(removed_addons))
+    profile_mode = build_info.get("profile_data_mode", "settings-only")
+    if profile_mode not in ("settings-only", PROFILE_DATA_MODE):
+        raise ValueError("The build information contains an unsupported add-on profile mode.")
+    declared_profile_ids = build_info.get("profile_addon_data_ids", [])
+    if not isinstance(declared_profile_ids, list) or any(
+        not isinstance(addon_id, str)
+        or not re.fullmatch(r"[A-Za-z0-9_.-]+", addon_id)
+        or addon_id in (ADDON_ID, "plugin.video.xstream-player", ONEPLAY_REPO_ID, LEGACY_SKIN_ID)
+        for addon_id in declared_profile_ids
+    ):
+        raise ValueError("The build information contains an invalid profile add-on ID.")
+    if profile_mode == PROFILE_DATA_MODE:
+        if (
+            set(declared_profile_ids) != profile_addon_data_ids
+            or SKIN_ID not in profile_addon_data_ids
+            or WEATHER_ID not in profile_addon_data_ids
+        ):
+            raise ValueError("The build profile data list does not match the archived add-on data.")
+    elif profile_addon_data_ids != {SKIN_ID, WEATHER_ID} or declared_profile_ids:
+        raise ValueError("The settings-only build contains unexpected add-on profile data.")
+    return (
+        total,
+        packages,
+        sorted(set(platform_addons)),
+        sorted(set(removed_addons)),
+        profile_mode,
+        sorted(profile_addon_data_ids) if profile_mode == PROFILE_DATA_MODE else [],
+    )
 
 
 def _download_archive(build_id, destination, progress, access_code):
@@ -411,7 +453,7 @@ def _download_archive(build_id, destination, progress, access_code):
     request = urllib.request.Request(
         url,
         headers={
-            "User-Agent": "KingBlap-Wizard/1.0.25 Kodi",
+            "User-Agent": "KingBlap-Wizard/1.0.26 Kodi",
             "Accept": "application/zip",
             "Authorization": "Bearer {}".format(access_code),
         },
@@ -748,7 +790,8 @@ def _install(name, build_id, access_code):
         "native components through Kodi, replaces matching add-on files, and installs Xonfluence {} for Kodi 22. ".format(SKIN_VERSION) +
         "It also sets Gismeteo to Thomasville, North Carolina, installs the Xonfluence skin settings, and removes Estuary MOD V2 and the OnePlay repository.\n\n"
         "It also removes XStream Player and its saved settings from this Kodi profile.\n\n"
-        "Your provider accounts, other add-on data, libraries, and databases are not in the build.",
+        "Saved settings and login data for add-ons included in this private build may replace the matching add-on data on this device. "
+        "The KingBlap Wizard's own settings and access code are excluded and will stay saved here. Libraries and Kodi databases are not in the build.",
         yeslabel="Install build",
         nolabel="Cancel",
     ):
@@ -783,7 +826,14 @@ def _install(name, build_id, access_code):
     try:
         _download_archive(build_id, archive_path, progress, access_code)
         with zipfile.ZipFile(archive_path, "r") as archive:
-            expanded_size, packages, platform_addons, removed_addons = _validate_archive(archive)
+            (
+                expanded_size,
+                packages,
+                platform_addons,
+                removed_addons,
+                profile_mode,
+                profile_addon_data_ids,
+            ) = _validate_archive(archive)
             required_dependencies = _required_external_dependencies(archive, packages)
             free_space = shutil.disk_usage(home).free
             if free_space < expanded_size + os.path.getsize(archive_path) + 64 * 1024 * 1024:
@@ -868,6 +918,11 @@ def _install(name, build_id, access_code):
         )
         if not os.path.isfile(staged_weather_settings):
             raise ValueError("The staged build is missing its Gismeteo settings file.")
+        if profile_mode == PROFILE_DATA_MODE:
+            staged_profile_root = os.path.join(staged_userdata, "addon_data")
+            for addon_id in profile_addon_data_ids:
+                if not os.path.isdir(os.path.join(staged_profile_root, addon_id)):
+                    raise ValueError("The staged build is missing profile data for {}.".format(addon_id))
 
         for addon_id, version in packages.items():
             manifest_path = _safe_target(staged_addons, "{}/addon.xml".format(addon_id))
@@ -894,13 +949,23 @@ def _install(name, build_id, access_code):
             staged = os.path.join(staged_addons, addon_id) if addon_id in packages else None
             backup = os.path.join(rollback_root, "addons", addon_id)
             _swap_child(addon_root, addon_id, staged, backup, changes)
-        _swap_child(
-            os.path.join(data_root, SKIN_ID),
-            "settings.xml",
-            staged_skin_settings,
-            os.path.join(rollback_root, "addon-data", SKIN_ID, "settings.xml"),
-            changes,
-        )
+        if profile_mode == PROFILE_DATA_MODE:
+            for addon_id in profile_addon_data_ids:
+                _swap_child(
+                    data_root,
+                    addon_id,
+                    os.path.join(staged_userdata, "addon_data", addon_id),
+                    os.path.join(rollback_root, "addon-data", addon_id),
+                    changes,
+                )
+        else:
+            _swap_child(
+                os.path.join(data_root, SKIN_ID),
+                "settings.xml",
+                staged_skin_settings,
+                os.path.join(rollback_root, "addon-data", SKIN_ID, "settings.xml"),
+                changes,
+            )
         _swap_child(
             data_root,
             "plugin.video.xstream-player",
@@ -915,13 +980,14 @@ def _install(name, build_id, access_code):
             os.path.join(rollback_root, "addon-data", ONEPLAY_REPO_ID),
             changes,
         )
-        _swap_child(
-            os.path.join(data_root, WEATHER_ID),
-            "settings.xml",
-            staged_weather_settings,
-            os.path.join(rollback_root, "addon-data", WEATHER_ID, "settings.xml"),
-            changes,
-        )
+        if profile_mode != PROFILE_DATA_MODE:
+            _swap_child(
+                os.path.join(data_root, WEATHER_ID),
+                "settings.xml",
+                staged_weather_settings,
+                os.path.join(rollback_root, "addon-data", WEATHER_ID, "settings.xml"),
+                changes,
+            )
         xbmc.executebuiltin("UpdateLocalAddons", True)
         xbmc.executebuiltin("UpdateAddonRepos", True)
         kodi_managed_addons = sorted(set(required_dependencies) | set(platform_addons))
@@ -969,7 +1035,7 @@ def _install(name, build_id, access_code):
             "Show and channel thumbnails need each add-on's own data and account settings.\n"
             "Keep Kodi's official repository enabled for Android-specific binary dependencies.\n"
             "Gismeteo is set to Thomasville, North Carolina. The OnePlay repository was removed.\n"
-            "Open GIPTV and enter your own provider details."
+            "Saved profile data for add-ons in this build has been restored. The Wizard access code remains saved locally."
         ).format(len(packages), len(platform_addons), refreshed_art)
         xbmcgui.Dialog().ok(
             "KingBlap build installed",

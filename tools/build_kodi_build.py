@@ -28,8 +28,9 @@ WEATHER_VERSION = "0.6.4+matrix.1"
 WEATHER_LOCATION = "Thomasville"
 WEATHER_LOCATION_ID = "8771"
 WEATHER_SETTINGS_ARCHIVE_PATH = "userdata/addon_data/{}/settings.xml".format(WEATHER_ID)
-BUILD_VERSION = "1.0.17"
+BUILD_VERSION = "1.0.18"
 REPO_ID = "repository.kingblap"
+WIZARD_ID = "plugin.program.kingblapwizard"
 NATIVE_SUFFIXES = {".dll", ".so", ".dylib", ".pyd"}
 SECRET_SETTING = re.compile(
     r"(?i)(?:^|[._-])(?:password|passwd|token|secret|api[_-]?key|credential|auth|email|username|client[_-]?id|refresh[_-]?token)(?:$|[._-])"
@@ -103,7 +104,7 @@ def installed_ids(snapshot):
 
 def portable_addon(addon_id, record):
     version, platform, path = record
-    if addon_id in (REPLACED_ADDON, LEGACY_SKIN_ID, ONEPLAY_REPO_ID):
+    if addon_id in (REPLACED_ADDON, LEGACY_SKIN_ID, ONEPLAY_REPO_ID, WIZARD_ID):
         return False
     if addon_id.startswith("repository.") and addon_id != REPO_ID:
         return False
@@ -283,7 +284,34 @@ def make_weather_settings(snapshot):
     return ET.tostring(settings, encoding="utf-8", xml_declaration=True)
 
 
-def build(snapshot, output):
+def private_profile_data(snapshot):
+    """Return backup add-on data files, excluding the Wizard's local access settings."""
+    source = snapshot / "addon_data"
+    if not source.is_dir():
+        raise ValueError("The Kodi snapshot is missing its add-on profile data folder.")
+    files = []
+    addon_ids = set()
+    for path in source.rglob("*"):
+        if path.is_symlink():
+            raise ValueError("Symbolic links are not accepted in Kodi add-on profile data.")
+        if not path.is_file():
+            continue
+        relative = path.relative_to(source)
+        if not relative.parts or not re.fullmatch(r"[A-Za-z0-9_.-]+", relative.parts[0]):
+            raise ValueError("The Kodi snapshot contains an invalid add-on profile path.")
+        addon_id = relative.parts[0]
+        if addon_id == WIZARD_ID or addon_id in (REPLACED_ADDON, LEGACY_SKIN_ID, ONEPLAY_REPO_ID):
+            continue
+        if len(relative.parts) < 2 or any(part in ("", ".", "..") for part in relative.parts):
+            raise ValueError("The Kodi snapshot contains an invalid add-on profile path.")
+        files.append((path, relative.as_posix()))
+        addon_ids.add(addon_id)
+    if SKIN_ID not in addon_ids or WEATHER_ID not in addon_ids:
+        raise ValueError("The Kodi snapshot is missing the required skin or weather profile data.")
+    return sorted(files, key=lambda item: item[1].casefold()), addon_ids
+
+
+def build(snapshot, output, include_profile_data=False):
     if not (snapshot / "xbmcbackup.val").is_file():
         raise ValueError("The selected folder is not a Kodi backup snapshot (xbmcbackup.val is missing).")
     packages = package_index()
@@ -325,6 +353,9 @@ def build(snapshot, output):
 
     skin_settings, skin_setting_count = make_skin_settings(snapshot, packages, chosen)
     weather_settings = make_weather_settings(snapshot)
+    profile_files, profile_addon_ids = (
+        private_profile_data(snapshot) if include_profile_data else ([], set())
+    )
 
     info = {
         "name": "KingBlap Kodi Build",
@@ -338,15 +369,17 @@ def build(snapshot, output):
         "weather_location": "Thomasville, North Carolina",
         "weather_location_id": WEATHER_LOCATION_ID,
         "excluded_platform_addons": sorted(excluded_platform),
+        "profile_data_mode": "replace-addon-data-except-wizard" if include_profile_data else "settings-only",
+        "profile_addon_data_ids": sorted(profile_addon_ids) if include_profile_data else [],
         "excluded_user_data": [
-            "add-on accounts and credentials",
+            "KingBlap Wizard settings and access code",
             "Kodi databases and media libraries",
             "provider playlists, EPG, and source paths",
             "add-on caches and thumbnails",
             "platform-specific native add-ons",
         ],
         "included_user_data": [
-            "sanitized Xonfluence skin settings ({} portable settings)".format(skin_setting_count),
+            "saved add-on profile data from the private backup, including service credentials" if include_profile_data else "sanitized Xonfluence skin settings ({} portable settings)".format(skin_setting_count),
             "Gismeteo language, unit, timezone, and icon preferences with Thomasville as the primary location",
         ],
     }
@@ -359,6 +392,17 @@ def build(snapshot, output):
             skin_settings,
         )
         build_zip.writestr(WEATHER_SETTINGS_ARCHIVE_PATH, weather_settings)
+        for source, relative in profile_files:
+            if relative == "{}/settings.xml".format(SKIN_ID):
+                continue
+            if relative == "{}/settings.xml".format(WEATHER_ID):
+                continue
+            build_zip.write(
+                source,
+                "userdata/addon_data/{}".format(relative),
+                compress_type=zipfile.ZIP_DEFLATED,
+                compresslevel=9,
+            )
         for addon_id in sorted(chosen):
             record = packages[addon_id]
             with zipfile.ZipFile(record[2]) as addon_zip:
@@ -391,8 +435,13 @@ def main():
         default=ROOT.parent / "KingBlapKodiBuild-{}.zip".format(BUILD_VERSION),
         help="Output build archive path",
     )
+    parser.add_argument(
+        "--include-profile-data",
+        action="store_true",
+        help="Include private backup add-on data and credentials, except the Wizard's local access code settings",
+    )
     args = parser.parse_args()
-    build(args.snapshot.resolve(), args.output.resolve())
+    build(args.snapshot.resolve(), args.output.resolve(), include_profile_data=args.include_profile_data)
 
 
 if __name__ == "__main__":

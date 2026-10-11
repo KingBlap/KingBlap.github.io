@@ -1,5 +1,5 @@
 {
-  "generated_from": "Kodi 22 backup snapshot 2026-10-04 plus GIPTV 3.1.0, Kodi Up Next, Skin Shortcuts 3.0.4, fresh Xonfluence 6.0.7 with the eight supplied Demon Women background images (BadIDMan commit 827ace3b3de32f28682fca7cf1c48ac4cd19a76b), Estuary MOD V2 22.0+piers, and KingBlap Wizard 1.0.25",
+  "generated_from": "Kodi 22 backup snapshot 2026-10-11 plus GIPTV 3.1.0, Kodi Up Next, Skin Shortcuts 3.0.4, fresh Xonfluence 6.0.7 with the eight supplied Demon Women background images (BadIDMan commit 827ace3b3de32f28682fca7cf1c48ac4cd19a76b), Estuary MOD V2 22.0+piers, and KingBlap Wizard 1.0.26",
   "addons": [
     {
       "id": "context.otaku",
@@ -93,12 +93,12 @@
     },
     {
       "id": "plugin.program.kingblapwizard",
-      "version": "1.0.25",
+      "version": "1.0.26",
       "name": "KingBlap Wizard",
       "provider": "KingBlap",
       "license": "GPL-2.0-or-later",
-      "zip": "repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.25.zip",
-      "bytes": 89165
+      "zip": "repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.26.zip",
+      "bytes": 89626
     },
     {
       "id": "plugin.video.absolution",
