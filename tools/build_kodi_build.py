@@ -11,7 +11,7 @@ import shutil
 import sqlite3
 import zipfile
 import xml.etree.ElementTree as ET
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -22,9 +22,27 @@ LEGACY_SKIN_ID = "skin.estuary.modv2"
 REPLACED_ADDON = "plugin.video.xstream-player"
 GIPTV_ID = "plugin.video.giptv"
 GIPTV_VERSION = "3.1.0"
-BUILD_VERSION = "1.0.8"
+BUILD_VERSION = "1.0.9"
 REPO_ID = "repository.kingblap"
 NATIVE_SUFFIXES = {".dll", ".so", ".dylib", ".pyd"}
+SECRET_SETTING = re.compile(
+    r"(?i)(?:^|[._-])(?:password|passwd|token|secret|api[_-]?key|credential|auth|email|username|client[_-]?id|refresh[_-]?token)(?:$|[._-])"
+)
+SECRET_VALUE = re.compile(
+    r"(?i)(?:\bbearer\s+[A-Za-z0-9._~-]{12,}|"
+    r"\b(?:password|passwd|token|secret|api[_-]?key|credential|auth|email|username)\s*[:=]\s*[^\s<&]+|"
+    r"[?&](?:password|passwd|token|secret|api[_-]?key|credential|auth|email|username)=|"
+    r"https?://[^/\s:@]+:[^/\s@]+@)"
+)
+LOCAL_PATH = re.compile(
+    r"(?i)(?:[a-z]:[\\/]|\\\\|(?:^|[\\/])(?:storage|home|users|profiles)[\\/]|"
+    r"special://(?:home|profile|temp|masterprofile)/)"
+)
+WEB_URL = re.compile(r"(?i)https?://")
+ADDON_ICON_SETTING = re.compile(r"(?i)^addonset[^.]*\.[^.]+\.icon$")
+ADDON_PATH = re.compile(
+    r"(?i)(?:^|[\\/])addons[\\/](?P<addon_id>[A-Za-z0-9_.-]+)[\\/](?P<member>.+)$"
+)
 
 
 def version_key(value):
@@ -103,6 +121,69 @@ def package_dependencies(addon):
     ]
 
 
+def portable_addon_icon(setting_id, value, packages, chosen):
+    """Translate a snapshot-local add-on icon path into Kodi's portable path."""
+    if not ADDON_ICON_SETTING.fullmatch(setting_id):
+        return None
+    match = ADDON_PATH.search(value)
+    if match is None:
+        return None
+    addon_id = match.group("addon_id")
+    member = PurePosixPath(match.group("member").replace("\\", "/"))
+    if (
+        addon_id not in chosen
+        or member.is_absolute()
+        or any(part in ("", ".", "..") for part in member.parts)
+    ):
+        return None
+    record = packages.get(addon_id)
+    if record is None:
+        return None
+    with zipfile.ZipFile(record[2]) as addon_zip:
+        root, addon = addon_xml_from_zip(addon_zip)
+        if addon is None or addon.get("id") != addon_id:
+            return None
+        expected = root.split("/", 1)[0] + "/" + member.as_posix()
+        if expected not in addon_zip.namelist():
+            return None
+    return "special://home/addons/{}/{}".format(addon_id, member.as_posix())
+
+
+def make_skin_settings(snapshot, packages, chosen):
+    """Keep portable Xonfluence presentation settings and discard private/local values."""
+    source = snapshot / "addon_data" / SKIN_ID / "settings.xml"
+    if not source.is_file():
+        raise ValueError("The Kodi snapshot is missing Xonfluence skin settings.xml.")
+    original = ET.parse(source).getroot()
+    if original.tag != "settings":
+        raise ValueError("The snapshot's Xonfluence settings file is not valid Kodi settings XML.")
+
+    sanitized = ET.Element("settings")
+    kept = 0
+    for setting in original.findall("setting"):
+        setting_id = setting.get("id", "")
+        value = setting.text or ""
+        if (
+            not setting_id
+            or SECRET_SETTING.search(setting_id)
+            or setting_id.casefold() == "lastvideoplayed"
+        ):
+            continue
+        if SECRET_VALUE.search(value):
+            continue
+        if LOCAL_PATH.search(value) or WEB_URL.search(value):
+            portable = portable_addon_icon(setting_id, value, packages, chosen)
+            if portable is None:
+                continue
+            value = portable
+        entry = ET.SubElement(sanitized, "setting", dict(setting.attrib))
+        entry.text = value
+        kept += 1
+    if kept < 1:
+        raise ValueError("No portable Xonfluence skin settings remained after sanitizing the snapshot.")
+    return ET.tostring(sanitized, encoding="utf-8", xml_declaration=True), kept
+
+
 def build(snapshot, output):
     if not (snapshot / "xbmcbackup.val").is_file():
         raise ValueError("The selected folder is not a Kodi backup snapshot (xbmcbackup.val is missing).")
@@ -141,6 +222,8 @@ def build(snapshot, output):
         if addon_id not in chosen:
             raise ValueError("The Xonfluence dependency {} is missing.".format(addon_id))
 
+    skin_settings, skin_setting_count = make_skin_settings(snapshot, packages, chosen)
+
     info = {
         "name": "KingBlap Kodi Build",
         "version": BUILD_VERSION,
@@ -157,11 +240,18 @@ def build(snapshot, output):
             "add-on caches and thumbnails",
             "Windows-only native add-ons",
         ],
+        "included_user_data": [
+            "sanitized Xonfluence skin settings ({} portable settings)".format(skin_setting_count),
+        ],
     }
 
     output.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9, allowZip64=True) as build_zip:
         build_zip.writestr("build_info.json", json.dumps(info, indent=2) + "\n")
+        build_zip.writestr(
+            "userdata/addon_data/{}/settings.xml".format(SKIN_ID),
+            skin_settings,
+        )
         for addon_id in sorted(chosen):
             record = packages[addon_id]
             with zipfile.ZipFile(record[2]) as addon_zip:

@@ -24,6 +24,7 @@ ADDON_ID = ADDON.getAddonInfo("id")
 BUILDS_URL = "https://kingblap.github.io/builds.txt"
 SKIN_ID = "skin.xonfluence"
 SKIN_VERSION = "6.0.6"
+SKIN_SETTINGS_ARCHIVE_PATH = "userdata/addon_data/{}/settings.xml".format(SKIN_ID)
 LEGACY_SKIN_ID = "skin.estuary.modv2"
 BUILD_LIMIT = 1024 * 1024 * 1024
 DOWNLOAD_LIMIT = 512 * 1024 * 1024
@@ -41,7 +42,7 @@ def _path(special):
 def _fetch(url, max_bytes):
     request = urllib.request.Request(
         url,
-        headers={"User-Agent": "KingBlap-Wizard/1.0.6 Kodi"},
+        headers={"User-Agent": "KingBlap-Wizard/1.0.7 Kodi"},
     )
     with urllib.request.urlopen(request, timeout=45) as response:
         length = response.headers.get("Content-Length")
@@ -140,12 +141,25 @@ def _write_member(archive, info, destination):
 def _validate_archive(archive):
     total = 0
     packages = {}
+    skin_settings_found = False
+    seen_names = set()
     for info in archive.infolist():
         if info.is_dir():
             continue
         name = info.filename
+        if name in seen_names:
+            raise ValueError("The build archive contains a duplicate file path.")
+        seen_names.add(name)
         if name == "build_info.json":
             pass
+        elif name == SKIN_SETTINGS_ARCHIVE_PATH:
+            try:
+                settings = ET.fromstring(archive.read(info))
+            except ET.ParseError:
+                raise ValueError("The build archive's Xonfluence skin settings are not valid XML.")
+            if settings.tag != "settings" or not settings.findall("setting"):
+                raise ValueError("The build archive's Xonfluence skin settings are empty or invalid.")
+            skin_settings_found = True
         elif name.startswith("addons/"):
             relative = name[len("addons/"):]
             parts = relative.split("/")
@@ -188,13 +202,15 @@ def _validate_archive(archive):
             raise ValueError("The build archive is missing the skin dependency: {}.".format(dependency_id))
     if "build_info.json" not in archive.namelist():
         raise ValueError("The build archive is missing its build information.")
+    if not skin_settings_found:
+        raise ValueError("The build archive is missing its Xonfluence skin settings file.")
     return total, packages
 
 
 def _download_archive(url, destination, progress):
     request = urllib.request.Request(
         url,
-        headers={"User-Agent": "KingBlap-Wizard/1.0.6 Kodi"},
+        headers={"User-Agent": "KingBlap-Wizard/1.0.7 Kodi"},
     )
     with urllib.request.urlopen(request, timeout=60) as response:
         length = response.headers.get("Content-Length")
@@ -358,7 +374,7 @@ def _install(name, url):
     if not xbmcgui.Dialog().yesno(
         "Install {}?".format(name),
         "This replaces matching add-on files, installs Xonfluence 6.0.6 for Kodi 22, "
-        "and removes the previous Estuary MOD V2 skin.\n\n"
+        "installs the build's sanitized Xonfluence skin settings, and removes the previous Estuary MOD V2 skin.\n\n"
         "It also removes XStream Player and its saved settings from this Kodi profile.\n\n"
         "Your provider accounts, other add-on data, libraries, and databases are not in the build.",
         yeslabel="Install build",
@@ -378,6 +394,7 @@ def _install(name, url):
         "{}-{}".format(time.strftime("%Y%m%d-%H%M%S"), uuid.uuid4().hex[:8]),
     )
     staged_addons = os.path.join(transaction, "staged", "addons")
+    staged_userdata = os.path.join(transaction, "staged", "userdata")
     rollback_root = os.path.join(transaction, "rollback")
     os.makedirs(downloads, exist_ok=True)
     os.makedirs(addon_root, exist_ok=True)
@@ -408,6 +425,9 @@ def _install(name, url):
                 if info.filename.startswith("addons/"):
                     relative = info.filename[len("addons/"):]
                     destination = _safe_target(staged_addons, relative)
+                elif info.filename.startswith("userdata/"):
+                    relative = info.filename[len("userdata/"):]
+                    destination = _safe_target(staged_userdata, relative)
                 elif info.filename == "build_info.json":
                     continue
                 else:
@@ -419,6 +439,21 @@ def _install(name, url):
                     "KingBlap Wizard",
                     "Preparing add-ons without changing the current installation…",
                 )
+
+        staged_skin_settings = os.path.join(
+            staged_userdata,
+            "addon_data",
+            SKIN_ID,
+            "settings.xml",
+        )
+        if not os.path.isfile(staged_skin_settings):
+            raise ValueError("The staged build is missing its Xonfluence skin settings file.")
+        try:
+            staged_settings = ET.parse(staged_skin_settings).getroot()
+        except ET.ParseError:
+            raise ValueError("The staged Xonfluence skin settings are not valid XML.")
+        if staged_settings.tag != "settings" or not staged_settings.findall("setting"):
+            raise ValueError("The staged Xonfluence skin settings are empty or invalid.")
 
         for addon_id, version in packages.items():
             manifest_path = _safe_target(staged_addons, "{}/addon.xml".format(addon_id))
@@ -445,6 +480,13 @@ def _install(name, url):
             staged = os.path.join(staged_addons, addon_id) if addon_id in packages else None
             backup = os.path.join(rollback_root, "addons", addon_id)
             _swap_child(addon_root, addon_id, staged, backup, changes)
+        _swap_child(
+            os.path.join(data_root, SKIN_ID),
+            "settings.xml",
+            staged_skin_settings,
+            os.path.join(rollback_root, "addon-data", SKIN_ID, "settings.xml"),
+            changes,
+        )
         _swap_child(
             data_root,
             "plugin.video.xstream-player",
