@@ -54,9 +54,9 @@ KODI21_PRIVATE_BUILD_ID = "kingblap-private-kodi21.3-1.0.20"
 KODI21_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 21.3 (choose ZIP)"
 KODI21_PRIVATE_BUILD_NAME = "Private KingBlap Build for Kodi 21.3 (choose ZIP)"
 KODI22_PUBLIC_BUILD_ID = "kingblap-public-kodi22-1.0.21"
-KODI22_PRIVATE_BUILD_ID = "kingblap-private-kodi22-1.0.24"
+KODI22_PRIVATE_BUILD_ID = "kingblap-private-kodi22-1.0.25"
 KODI22_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 22 (download)"
-KODI22_PRIVATE_BUILD_NAME = "Private KingBlap Build for Kodi 22 1.0.24 (download)"
+KODI22_PRIVATE_BUILD_NAME = "Private KingBlap Build for Kodi 22 1.0.25 (download)"
 KODI22_PRIVATE_BUILD_PREFIX = "kingblap-private-kodi22-"
 PUBLIC_BUILD_PARTS = (
     ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-1.0.19.zip.part001", 83886080),
@@ -146,7 +146,7 @@ def _api_url(path):
 
 def _fetch(url, max_bytes, access_code=None):
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.37 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.39 Kodi",
         "Accept": "application/json",
     }
     if access_code:
@@ -444,8 +444,8 @@ def _validate_archive(archive, expected_public=None):
         parts = path.split("/")
         if any("/".join(parts[:index]) in file_paths for index in range(1, len(parts))):
             raise ValueError("The build archive uses a file as a directory.")
-    if packages.get("plugin.video.giptv") != "3.1.1":
-        raise ValueError("The build archive does not contain the expected GIPTV package.")
+    if packages.get("plugin.video.giptv") not in ("3.1.0", "3.1.1"):
+        raise ValueError("The build archive does not contain a supported GIPTV package.")
     if packages.get(SKIN_ID) != SKIN_VERSION:
         raise ValueError("The build archive does not contain the Xonfluence skin for Kodi {}.".format(KODI_MAJOR))
     if packages.get(WEATHER_ID) != WEATHER_VERSION:
@@ -571,7 +571,7 @@ def _download_public_archive(destination, progress, build_id):
             request = urllib.request.Request(
                 url,
                 headers={
-                    "User-Agent": "KingBlap-Wizard/1.0.37 Kodi",
+                    "User-Agent": "KingBlap-Wizard/1.0.39 Kodi",
                     "Accept": "application/octet-stream",
                 },
             )
@@ -630,7 +630,7 @@ def _download_archive(build_id, destination, progress, access_code=None, public_
         "{}/{}/download".format(route, urllib.parse.quote(build_id, safe=""))
     )
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.37 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.39 Kodi",
         "Accept": "application/zip",
     }
     if access_code:
@@ -1191,7 +1191,6 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
             "weather.currentlocation": _get_setting("weather.currentlocation"),
         }
         original_weather_addon_settings = _read_weather_addon_settings()
-
         if original_skin in (SKIN_ID, LEGACY_SKIN_ID):
             # Unload either skin before replacing or removing its files.
             _activate_skin("skin.estuary")
@@ -1219,20 +1218,14 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                 os.path.join(rollback_root, "addon-data", SKIN_ID, "settings.xml"),
                 changes,
             )
-        _swap_child(
-            data_root,
-            "plugin.video.xstream-player",
-            None,
-            os.path.join(rollback_root, "addon-data", "plugin.video.xstream-player"),
-            changes,
-        )
-        _swap_child(
-            data_root,
-            ONEPLAY_REPO_ID,
-            None,
-            os.path.join(rollback_root, "addon-data", ONEPLAY_REPO_ID),
-            changes,
-        )
+        for addon_id in removed_addons:
+            _swap_child(
+                data_root,
+                addon_id,
+                None,
+                os.path.join(rollback_root, "addon-data", addon_id),
+                changes,
+            )
         if profile_mode != PROFILE_DATA_MODE:
             _swap_child(
                 os.path.join(data_root, WEATHER_ID),
@@ -1288,7 +1281,7 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
             "Kodi will recreate add-on logos and skin artwork when it displays them.\n"
             "Show and channel thumbnails need each add-on's own data and account settings.\n"
             "Keep Kodi's official repository enabled so Kodi can install native dependencies for {}.\n"
-            "Gismeteo is set to Thomasville, North Carolina. The OnePlay repository was removed.\n"
+            "Gismeteo is set to Thomasville, North Carolina. The OnePlay repository and build-marked add-ons were removed with their saved profile data.\n"
             "{} The Wizard access code remains saved locally."
         ).format(
             len(packages),
