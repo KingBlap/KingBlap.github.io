@@ -54,9 +54,9 @@ KODI21_PRIVATE_BUILD_ID = "kingblap-private-kodi21.3-1.0.20"
 KODI21_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 21.3 (choose ZIP)"
 KODI21_PRIVATE_BUILD_NAME = "Private KingBlap Build for Kodi 21.3 (choose ZIP)"
 KODI22_PUBLIC_BUILD_ID = "kingblap-public-kodi22-1.0.21"
-KODI22_PRIVATE_BUILD_ID = "kingblap-private-kodi22-1.0.21"
+KODI22_PRIVATE_BUILD_ID = "kingblap-private-kodi22-1.0.22"
 KODI22_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 22 (download)"
-KODI22_PRIVATE_BUILD_NAME = "Private KingBlap Build for Kodi 22 (download)"
+KODI22_PRIVATE_BUILD_NAME = "Private KingBlap Build for Kodi 22 1.0.22 (download)"
 PUBLIC_BUILD_PARTS = (
     ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-1.0.19.zip.part001", 83886080),
     ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-1.0.19.zip.part002", 83886080),
@@ -145,7 +145,7 @@ def _api_url(path):
 
 def _fetch(url, max_bytes, access_code=None):
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.34 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.35 Kodi",
         "Accept": "application/json",
     }
     if access_code:
@@ -566,7 +566,7 @@ def _download_public_archive(destination, progress, build_id):
             request = urllib.request.Request(
                 url,
                 headers={
-                    "User-Agent": "KingBlap-Wizard/1.0.33 Kodi",
+                    "User-Agent": "KingBlap-Wizard/1.0.35 Kodi",
                     "Accept": "application/octet-stream",
                 },
             )
@@ -625,7 +625,7 @@ def _download_archive(build_id, destination, progress, access_code=None, public_
         "{}/{}/download".format(route, urllib.parse.quote(build_id, safe=""))
     )
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.34 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.35 Kodi",
         "Accept": "application/zip",
     }
     if access_code:

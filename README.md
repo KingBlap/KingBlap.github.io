@@ -14,14 +14,14 @@ Build 1.0.18 uses the Kodi 22 backup snapshot dated October 11, 2026. Compatibil
 
 ## Install the complete Wizard build
 
-1. Install or update KingBlap Wizard 1.0.34 from Install from repository → KingBlap Kodi Repository → Program add-ons. If needed, install the Wizard 1.0.34 ZIP from https://kingblap.github.io/repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.34.zip.
-2. Open the Wizard and choose **Public Builds** or **Private Builds**. On Kodi 22, Public Build 1.0.21 downloads from the public repository and the Wizard verifies its SHA-256 checksum. Private Build 1.0.21 appears after the access code is accepted and downloads through the protected build service. Kodi 21.3 public and private builds still require selecting a compatible ZIP from local or network storage. Use a Kodi 21.3 archive only on Kodi 21.3, and a Kodi 22 archive only on Kodi 22.
+1. Install or update KingBlap Wizard 1.0.35 from Install from repository → KingBlap Kodi Repository → Program add-ons. If needed, install the Wizard 1.0.35 ZIP from https://kingblap.github.io/repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.35.zip.
+2. Open the Wizard and choose **Public Builds** or **Private Builds**. On Kodi 22, Public Build 1.0.21 downloads from the public repository and the Wizard verifies its SHA-256 checksum. Private Build 1.0.22 appears after the access code is accepted and downloads through the protected build service. Kodi 21.3 public and private builds still require selecting a compatible ZIP from local or network storage. Use a Kodi 21.3 archive only on Kodi 21.3, and a Kodi 22 archive only on Kodi 22.
 3. Private builds require the shared 16-digit numeric access code. Review the confirmation before installing: a private archive can replace saved add-on settings and login data for included add-ons. Keep private archives and the access code private. The Wizard's own API URL and access code remain saved on the device.
 4. Leave Kodi open while the build installs, close the completion notice, and restart Kodi once.
 
 The public archive is built without add-on account profile data. Its only user-data files are the sanitized Xonfluence and Gismeteo preferences needed for the visual setup and weather location. It does not include the backup's saved API keys or service credentials. The private build restores saved add-on profile data from the October 11 backup for 34 add-ons, including credentials stored by those add-ons. Anyone with the shared access code can download that private profile data, so share the code and private build only with intended recipients.
 
-Back up Kodi before installing over an existing setup. Both choices replace packaged add-on files and remove XStream Player, Estuary MOD V2, and the OnePlay repository, then enable 78 add-ons. The public choice leaves other add-on account profiles in place; the private choice replaces matching profile data for its 34 included add-ons. Kodi libraries remain on the device. Gismeteo is configured for Thomasville, North Carolina.
+Back up Kodi before installing over an existing setup. Both choices replace packaged add-on files and remove XStream Player, Estuary MOD V2, and the OnePlay repository, then enable 78 add-ons. The public choice leaves other add-on account profiles in place; the private choice replaces matching profile data for its 34 included add-ons. Private Kodi 22 Build 1.0.22 clears IPTV Simple's saved profile because its settings schema does not match the TV's Kodi-managed add-on; configure IPTV Simple and its provider again after restoring. Kodi libraries remain on the device. Gismeteo is configured for Thomasville, North Carolina.
 
 ## What both builds include
 
@@ -43,7 +43,7 @@ The repository was assembled from Windows Kodi 22 files. Windows-specific native
 
 - Build list: https://kingblap.github.io/builds.txt
 - Kodi 22 public build 1.0.21: choose Public Builds in KingBlap Wizard; the Wizard downloads it from the repository and verifies the ZIP.
-- Kodi 22 private build 1.0.21: choose Private Builds after entering the 16-digit access code; the Wizard lists and downloads it through the protected build service.
+- Kodi 22 private build 1.0.22: choose Private Builds after entering the 16-digit access code; the Wizard lists and downloads it through the protected build service. Configure IPTV Simple again after restoring.
 - Kodi 21.3 private build 1.0.20: choose Private Builds after entering the access code, then select its compatible ZIP.
 - KingBlap repository installer: https://kingblap.github.io/repository.kingblap-1.0.0.zip
 - Kodi add-on catalog: https://kingblap.github.io/repo/zips/addons.xml
@@ -53,6 +53,7 @@ The repository was assembled from Windows Kodi 22 files. Windows-specific native
 
 | Build | Changes |
 | --- | --- |
+| **Wizard 1.0.35** | Lists Kodi 22 private build 1.0.22, which resets incompatible saved IPTV Simple settings. |
 | **Wizard 1.0.34** | Lists Kodi 22 private builds from the access-code-protected service and downloads the selected private archive from that service. |
 | **Wizard 1.0.33** | Downloads Kodi 22 Public Build 1.0.21 from the repository and verifies the archive checksum. |
 | **Wizard 1.0.32** | Fixes local archive installation on Kodi 22 and keeps Kodi 21.3/Kodi 22 ZIP selection. |
@@ -98,7 +99,7 @@ The list below describes all 121 packages available in the repository. 78 are bu
 - In Build 1.0.18 — metadata.generic.artists — 1.0.20
 - In Build 1.0.18 — metadata.tvshows.themoviedb.org.python — 2.0.9
 - Repository only — One.repo — 1.16
-- Repository only — plugin.program.kingblapwizard — 1.0.34
+- Repository only — plugin.program.kingblapwizard — 1.0.35
 - In Build 1.0.18 — plugin.video.absolution — 4.4.1
 - In Build 1.0.18 — plugin.video.cosmos — 4.3.26
 - In Build 1.0.18 — plugin.video.dailymotion_com — 2.4.5

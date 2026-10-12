@@ -1,0 +1,4 @@
+KingBlap Wizard 1.0.35
+
+- Lists and downloads the repaired Kodi 22 private build 1.0.22.
+- The build resets incompatible IPTV Simple profile settings; configure IPTV Simple again after restoring.

@@ -54,13 +54,13 @@
 </ol>
 <h2 id="install-the-complete-wizard-build">Install the complete Wizard build</h2>
 <ol>
-<li>Install or update KingBlap Wizard 1.0.34 from Install from repository → KingBlap Kodi Repository → Program add-ons. If needed, install the Wizard 1.0.34 ZIP from https://kingblap.github.io/repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.34.zip.</li>
-<li>Open the Wizard and choose <strong>Public Builds</strong> or <strong>Private Builds</strong>. On Kodi 22, Public Build 1.0.21 downloads from the public repository and the Wizard verifies its SHA-256 checksum. Private Build 1.0.21 appears after the access code is accepted and downloads through the protected build service. Kodi 21.3 public and private builds still require selecting a compatible ZIP from local or network storage. Use a Kodi 21.3 archive only on Kodi 21.3, and a Kodi 22 archive only on Kodi 22.</li>
+<li>Install or update KingBlap Wizard 1.0.35 from Install from repository → KingBlap Kodi Repository → Program add-ons. If needed, install the Wizard 1.0.35 ZIP from https://kingblap.github.io/repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.35.zip.</li>
+<li>Open the Wizard and choose <strong>Public Builds</strong> or <strong>Private Builds</strong>. On Kodi 22, Public Build 1.0.21 downloads from the public repository and the Wizard verifies its SHA-256 checksum. Private Build 1.0.22 appears after the access code is accepted and downloads through the protected build service. Kodi 21.3 public and private builds still require selecting a compatible ZIP from local or network storage. Use a Kodi 21.3 archive only on Kodi 21.3, and a Kodi 22 archive only on Kodi 22.</li>
 <li>Private builds require the shared 16-digit numeric access code. Review the confirmation before installing: a private archive can replace saved add-on settings and login data for included add-ons. Keep private archives and the access code private. The Wizard&#x27;s own API URL and access code remain saved on the device.</li>
 <li>Leave Kodi open while the build installs, close the completion notice, and restart Kodi once.</li>
 </ol>
 <p>The public archive is built without add-on account profile data. Its only user-data files are the sanitized Xonfluence and Gismeteo preferences needed for the visual setup and weather location. It does not include the backup&#x27;s saved API keys or service credentials. The private build restores saved add-on profile data from the October 11 backup for 34 add-ons, including credentials stored by those add-ons. Anyone with the shared access code can download that private profile data, so share the code and private build only with intended recipients.</p>
-<p>Back up Kodi before installing over an existing setup. Both choices replace packaged add-on files and remove XStream Player, Estuary MOD V2, and the OnePlay repository, then enable 78 add-ons. The public choice leaves other add-on account profiles in place; the private choice replaces matching profile data for its 34 included add-ons. Kodi libraries remain on the device. Gismeteo is configured for Thomasville, North Carolina.</p>
+<p>Back up Kodi before installing over an existing setup. Both choices replace packaged add-on files and remove XStream Player, Estuary MOD V2, and the OnePlay repository, then enable 78 add-ons. The public choice leaves other add-on account profiles in place; the private choice replaces matching profile data for its 34 included add-ons. Private Kodi 22 Build 1.0.22 clears IPTV Simple&#x27;s saved profile because its settings schema does not match the TV&#x27;s Kodi-managed add-on; configure IPTV Simple and its provider again after restoring. Kodi libraries remain on the device. Gismeteo is configured for Thomasville, North Carolina.</p>
 <h2 id="what-both-builds-include">What both builds include</h2>
 <ul>
 <li>78 pre-enabled add-ons, including 18 video add-ons, supporting modules, artwork tools, Up Next, Gismeteo, and the KingBlap repository. The build archive records the exact add-on IDs.</li>
@@ -79,7 +79,7 @@
 <ul>
 <li>Build list: https://kingblap.github.io/builds.txt</li>
 <li>Kodi 22 public build 1.0.21: choose Public Builds in KingBlap Wizard; the Wizard downloads it from the repository and verifies the ZIP.</li>
-<li>Kodi 22 private build 1.0.21: choose Private Builds after entering the 16-digit access code; the Wizard lists and downloads it through the protected build service.</li>
+<li>Kodi 22 private build 1.0.22: choose Private Builds after entering the 16-digit access code; the Wizard lists and downloads it through the protected build service. Configure IPTV Simple again after restoring.</li>
 <li>Kodi 21.3 private build 1.0.20: choose Private Builds after entering the access code, then select its compatible ZIP.</li>
 <li>KingBlap repository installer: https://kingblap.github.io/repository.kingblap-1.0.0.zip</li>
 <li>Kodi add-on catalog: https://kingblap.github.io/repo/zips/addons.xml</li>
@@ -87,6 +87,7 @@
 </ul>
 <h2 id="wizard-build-release-history">Wizard build release history</h2>
 <div class="table-scroll"><table><thead><tr><th>Build</th><th>Changes</th></tr></thead><tbody>
+<tr><td><strong>Wizard 1.0.35</strong></td><td>Lists Kodi 22 private build 1.0.22, which resets incompatible saved IPTV Simple settings.</td></tr>
 <tr><td><strong>Wizard 1.0.34</strong></td><td>Lists Kodi 22 private builds from the access-code-protected service and downloads the selected private archive from that service.</td></tr>
 <tr><td><strong>Wizard 1.0.33</strong></td><td>Downloads Kodi 22 Public Build 1.0.21 from the repository and verifies the archive checksum.</td></tr>
 <tr><td><strong>Wizard 1.0.32</strong></td><td>Fixes local archive installation on Kodi 22 and keeps Kodi 21.3/Kodi 22 ZIP selection.</td></tr>
@@ -130,7 +131,7 @@
 <li>In Build 1.0.18 — metadata.generic.artists — 1.0.20</li>
 <li>In Build 1.0.18 — metadata.tvshows.themoviedb.org.python — 2.0.9</li>
 <li>Repository only — One.repo — 1.16</li>
-<li>Repository only — plugin.program.kingblapwizard — 1.0.34</li>
+<li>Repository only — plugin.program.kingblapwizard — 1.0.35</li>
 <li>In Build 1.0.18 — plugin.video.absolution — 4.4.1</li>
 <li>In Build 1.0.18 — plugin.video.cosmos — 4.3.26</li>
 <li>In Build 1.0.18 — plugin.video.dailymotion_com — 2.4.5</li>
