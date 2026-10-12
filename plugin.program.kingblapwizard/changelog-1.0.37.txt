@@ -1,0 +1,3 @@
+KingBlap Wizard 1.0.37
+- Verifies Kodi reports each packaged add-on enabled after build installation.
+- Accepts the repaired GIPTV 3.1.1 package in the Kodi 22 private build.

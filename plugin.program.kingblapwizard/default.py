@@ -54,9 +54,10 @@ KODI21_PRIVATE_BUILD_ID = "kingblap-private-kodi21.3-1.0.20"
 KODI21_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 21.3 (choose ZIP)"
 KODI21_PRIVATE_BUILD_NAME = "Private KingBlap Build for Kodi 21.3 (choose ZIP)"
 KODI22_PUBLIC_BUILD_ID = "kingblap-public-kodi22-1.0.21"
-KODI22_PRIVATE_BUILD_ID = "kingblap-private-kodi22-1.0.22"
+KODI22_PRIVATE_BUILD_ID = "kingblap-private-kodi22-1.0.24"
 KODI22_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 22 (download)"
-KODI22_PRIVATE_BUILD_NAME = "Private KingBlap Build for Kodi 22 1.0.22 (download)"
+KODI22_PRIVATE_BUILD_NAME = "Private KingBlap Build for Kodi 22 1.0.24 (download)"
+KODI22_PRIVATE_BUILD_PREFIX = "kingblap-private-kodi22-"
 PUBLIC_BUILD_PARTS = (
     ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-1.0.19.zip.part001", 83886080),
     ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-1.0.19.zip.part002", 83886080),
@@ -145,7 +146,7 @@ def _api_url(path):
 
 def _fetch(url, max_bytes, access_code=None):
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.36 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.37 Kodi",
         "Accept": "application/json",
     }
     if access_code:
@@ -199,7 +200,11 @@ def _get_builds(access_code=None, public_build=False):
         seen.add(build_id)
         builds.append((build_id, name.strip()))
     if KODI_MAJOR == 22 and not public_build:
-        builds = [build for build in builds if build[0] == KODI22_PRIVATE_BUILD_ID]
+        builds = [
+            build
+            for build in builds
+            if build[0].startswith(KODI22_PRIVATE_BUILD_PREFIX)
+        ]
     return builds
 
 
@@ -439,7 +444,7 @@ def _validate_archive(archive, expected_public=None):
         parts = path.split("/")
         if any("/".join(parts[:index]) in file_paths for index in range(1, len(parts))):
             raise ValueError("The build archive uses a file as a directory.")
-    if packages.get("plugin.video.giptv") != "3.1.0":
+    if packages.get("plugin.video.giptv") != "3.1.1":
         raise ValueError("The build archive does not contain the expected GIPTV package.")
     if packages.get(SKIN_ID) != SKIN_VERSION:
         raise ValueError("The build archive does not contain the Xonfluence skin for Kodi {}.".format(KODI_MAJOR))
@@ -566,7 +571,7 @@ def _download_public_archive(destination, progress, build_id):
             request = urllib.request.Request(
                 url,
                 headers={
-                    "User-Agent": "KingBlap-Wizard/1.0.36 Kodi",
+                    "User-Agent": "KingBlap-Wizard/1.0.37 Kodi",
                     "Accept": "application/octet-stream",
                 },
             )
@@ -625,7 +630,7 @@ def _download_archive(build_id, destination, progress, access_code=None, public_
         "{}/{}/download".format(route, urllib.parse.quote(build_id, safe=""))
     )
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.36 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.37 Kodi",
         "Accept": "application/zip",
     }
     if access_code:
@@ -728,6 +733,12 @@ def _enable_addon(addon_id):
     })
     if result not in (True, "OK"):
         raise RuntimeError("Kodi could not enable the {} add-on.".format(addon_id))
+    details = _jsonrpc("Addons.GetAddonDetails", {
+        "addonid": addon_id,
+        "properties": ["enabled"],
+    }).get("addon", {})
+    if details.get("enabled") is not True:
+        raise RuntimeError("Kodi did not confirm that the {} add-on is enabled.".format(addon_id))
 
 
 def _confirm_skin_keep_prompt():
@@ -1238,6 +1249,7 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
         xbmc.executebuiltin("UpdateLocalAddons", True)
         _wait_for_addon_registration(packages.keys(), progress)
         _enable_build_addons(packages.keys(), progress)
+        _log("Verified all {} packaged add-ons are enabled.".format(len(packages)))
         _write_weather_addon_settings(WEATHER_ADDON_SETTINGS)
         _set_setting("weather.addon", WEATHER_ID)
         _set_setting("weather.currentlocation", 1)

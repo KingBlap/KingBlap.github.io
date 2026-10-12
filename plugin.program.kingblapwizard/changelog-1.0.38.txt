@@ -1,0 +1,1 @@
+- Kodi 22 private listings now follow the current private build manifest, so new releases are not hidden by an old hard-coded ID.
