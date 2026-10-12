@@ -1,5 +1,5 @@
 # Choose a build category in KingBlap Wizard before installing.
-Public KingBlap Kodi 22 Build 1.0.21 | Downloaded and checksum-verified by KingBlap Wizard 1.0.35; settings-only public archive; no access code required.
-Private KingBlap Kodi 22 Build 1.0.22 | Listed and downloaded through the access-code-protected build service by Wizard 1.0.35; IPTV Simple settings reset and need reconfiguration.
+Public KingBlap Kodi 22 Build 1.0.21 | Downloaded and checksum-verified by KingBlap Wizard 1.0.36; settings-only public archive; no access code required.
+Private KingBlap Kodi 22 Build 1.0.22 | Listed and downloaded through the access-code-protected build service by Wizard 1.0.36; IPTV Simple settings reset and need reconfiguration.
 Private KingBlap Kodi 21.3 Build 1.0.20 | Selected from local or network storage in KingBlap Wizard; a private access code is required.
 Legacy Public Build 1.0.19 and Private Build 1.0.18 remain documented in the README.

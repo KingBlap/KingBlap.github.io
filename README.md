@@ -14,7 +14,7 @@ Build 1.0.18 uses the Kodi 22 backup snapshot dated October 11, 2026. Compatibil
 
 ## Install the complete Wizard build
 
-1. Install or update KingBlap Wizard 1.0.35 from Install from repository → KingBlap Kodi Repository → Program add-ons. If needed, install the Wizard 1.0.35 ZIP from https://kingblap.github.io/repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.35.zip.
+1. Install or update KingBlap Wizard 1.0.36 from Install from repository → KingBlap Kodi Repository → Program add-ons. If needed, install the Wizard 1.0.36 ZIP from https://kingblap.github.io/repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.36.zip.
 2. Open the Wizard and choose **Public Builds** or **Private Builds**. On Kodi 22, Public Build 1.0.21 downloads from the public repository and the Wizard verifies its SHA-256 checksum. Private Build 1.0.22 appears after the access code is accepted and downloads through the protected build service. Kodi 21.3 public and private builds still require selecting a compatible ZIP from local or network storage. Use a Kodi 21.3 archive only on Kodi 21.3, and a Kodi 22 archive only on Kodi 22.
 3. Private builds require the shared 16-digit numeric access code. Review the confirmation before installing: a private archive can replace saved add-on settings and login data for included add-ons. Keep private archives and the access code private. The Wizard's own API URL and access code remain saved on the device.
 4. Leave Kodi open while the build installs, close the completion notice, and restart Kodi once.
@@ -53,6 +53,7 @@ The repository was assembled from Windows Kodi 22 files. Windows-specific native
 
 | Build | Changes |
 | --- | --- |
+| **Wizard 1.0.36** | Fixes the missing English translation catalog header reported in Kodi's log. |
 | **Wizard 1.0.35** | Lists Kodi 22 private build 1.0.22, which resets incompatible saved IPTV Simple settings. |
 | **Wizard 1.0.34** | Lists Kodi 22 private builds from the access-code-protected service and downloads the selected private archive from that service. |
 | **Wizard 1.0.33** | Downloads Kodi 22 Public Build 1.0.21 from the repository and verifies the archive checksum. |
@@ -99,7 +100,7 @@ The list below describes all 121 packages available in the repository. 78 are bu
 - In Build 1.0.18 — metadata.generic.artists — 1.0.20
 - In Build 1.0.18 — metadata.tvshows.themoviedb.org.python — 2.0.9
 - Repository only — One.repo — 1.16
-- Repository only — plugin.program.kingblapwizard — 1.0.35
+- Repository only — plugin.program.kingblapwizard — 1.0.36
 - In Build 1.0.18 — plugin.video.absolution — 4.4.1
 - In Build 1.0.18 — plugin.video.cosmos — 4.3.26
 - In Build 1.0.18 — plugin.video.dailymotion_com — 2.4.5

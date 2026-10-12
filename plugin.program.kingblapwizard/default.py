@@ -145,7 +145,7 @@ def _api_url(path):
 
 def _fetch(url, max_bytes, access_code=None):
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.35 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.36 Kodi",
         "Accept": "application/json",
     }
     if access_code:
@@ -566,7 +566,7 @@ def _download_public_archive(destination, progress, build_id):
             request = urllib.request.Request(
                 url,
                 headers={
-                    "User-Agent": "KingBlap-Wizard/1.0.35 Kodi",
+                    "User-Agent": "KingBlap-Wizard/1.0.36 Kodi",
                     "Accept": "application/octet-stream",
                 },
             )
@@ -625,7 +625,7 @@ def _download_archive(build_id, destination, progress, access_code=None, public_
         "{}/{}/download".format(route, urllib.parse.quote(build_id, safe=""))
     )
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.35 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.36 Kodi",
         "Accept": "application/zip",
     }
     if access_code:
