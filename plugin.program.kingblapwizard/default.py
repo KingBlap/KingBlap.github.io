@@ -54,9 +54,9 @@ KODI21_PRIVATE_BUILD_ID = "kingblap-private-kodi21.3-1.0.20"
 KODI21_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 21.3 (choose ZIP)"
 KODI21_PRIVATE_BUILD_NAME = "Private KingBlap Build for Kodi 21.3 (choose ZIP)"
 KODI22_PUBLIC_BUILD_ID = "kingblap-public-kodi22-1.0.21"
-KODI22_PRIVATE_BUILD_ID = "kingblap-private-kodi22-1.0.25"
+KODI22_PRIVATE_BUILD_ID = "kingblap-private-kodi22-1.0.26"
 KODI22_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 22 (download)"
-KODI22_PRIVATE_BUILD_NAME = "Private KingBlap Build for Kodi 22 1.0.25 (download)"
+KODI22_PRIVATE_BUILD_NAME = "Private KingBlap Build for Kodi 22 1.0.26 (download)"
 KODI22_PRIVATE_BUILD_PREFIX = "kingblap-private-kodi22-"
 PUBLIC_BUILD_PARTS = (
     ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-1.0.19.zip.part001", 83886080),
@@ -444,8 +444,11 @@ def _validate_archive(archive, expected_public=None):
         parts = path.split("/")
         if any("/".join(parts[:index]) in file_paths for index in range(1, len(parts))):
             raise ValueError("The build archive uses a file as a directory.")
-    if packages.get("plugin.video.giptv") not in ("3.1.0", "3.1.1"):
-        raise ValueError("The build archive does not contain a supported GIPTV package.")
+    if (
+        packages.get("plugin.video.giptv") not in ("3.1.0", "3.1.1")
+        and packages.get("plugin.video.xstream-pro") != "1.1.2"
+    ):
+        raise ValueError("The build archive does not contain a supported IPTV add-on.")
     if packages.get(SKIN_ID) != SKIN_VERSION:
         raise ValueError("The build archive does not contain the Xonfluence skin for Kodi {}.".format(KODI_MAJOR))
     if packages.get(WEATHER_ID) != WEATHER_VERSION:
@@ -545,6 +548,37 @@ def _validate_archive(archive, expected_public=None):
             raise ValueError("The build profile data list does not match the archived add-on data.")
     elif profile_addon_data_ids != {SKIN_ID, WEATHER_ID} or declared_profile_ids:
         raise ValueError("The settings-only build contains unexpected add-on profile data.")
+    if (
+        build_info.get("kodi_major") == 22
+        and build_info.get("distribution") == "private"
+        and build_info.get("version") == "1.0.26"
+    ):
+        xstream_id = "plugin.video.xstream-pro"
+        giptv_id = "plugin.video.giptv"
+        if (
+            packages.get(xstream_id) != "1.1.2"
+            or giptv_id in packages
+            or giptv_id not in removed_addons
+            or xstream_id not in profile_addon_data_ids
+            or giptv_id in profile_addon_data_ids
+        ):
+            raise ValueError("The private 1.0.26 build does not contain the expected XStream Pro migration.")
+        try:
+            xstream_settings = ET.fromstring(
+                archive.read("userdata/addon_data/{}/settings.xml".format(xstream_id))
+            )
+        except (KeyError, ET.ParseError):
+            raise ValueError("The private 1.0.26 build is missing valid XStream Pro settings.")
+        xstream_values = {
+            setting.get("id"): (setting.text or "").strip()
+            for setting in xstream_settings.findall("setting")
+        } if xstream_settings.tag == "settings" else {}
+        if not all(xstream_values.get(setting) for setting in (
+            "profile_1_xtream_url",
+            "profile_1_xtream_username",
+            "profile_1_xtream_password",
+        )) or xstream_values.get("profile_1_source_type") != "Xtream Codes":
+            raise ValueError("The private 1.0.26 build is missing its migrated Xtream Profile 1 credentials.")
     return (
         total,
         packages,
@@ -739,6 +773,34 @@ def _enable_addon(addon_id):
     }).get("addon", {})
     if details.get("enabled") is not True:
         raise RuntimeError("Kodi did not confirm that the {} add-on is enabled.".format(addon_id))
+
+
+def _get_addon_enabled(addon_id):
+    result = _jsonrpc("Addons.GetAddons", {
+        "properties": ["enabled"],
+        "enabled": "all",
+    })
+    for addon in result.get("addons", []):
+        if addon.get("addonid") == addon_id:
+            enabled = addon.get("enabled")
+            if isinstance(enabled, bool):
+                return enabled
+            raise RuntimeError("Kodi could not read the {} add-on state.".format(addon_id))
+    return None
+
+
+def _set_addon_enabled(addon_id, enabled):
+    result = _jsonrpc("Addons.SetAddonEnabled", {
+        "addonid": addon_id,
+        "enabled": enabled,
+    })
+    action = "enable" if enabled else "disable"
+    if result not in (True, "OK"):
+        raise RuntimeError("Kodi could not {} the {} add-on.".format(action, addon_id))
+    state = _get_addon_enabled(addon_id)
+    if state is not enabled:
+        action = "enabled" if enabled else "disabled"
+        raise RuntimeError("Kodi did not confirm that the {} add-on is {}.".format(addon_id, action))
 
 
 def _confirm_skin_keep_prompt():
@@ -1060,6 +1122,7 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
     progress.create("KingBlap Wizard", "Downloading build…")
     changes = []
     original_skin = None
+    original_giptv_enabled = None
     original_weather_settings = None
     original_weather_addon_settings = None
     committed = False
@@ -1071,7 +1134,12 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                 21: (KODI21_PUBLIC_BUILD_ID, KODI21_PRIVATE_BUILD_ID),
                 22: (KODI22_PUBLIC_BUILD_ID, KODI22_PRIVATE_BUILD_ID),
             }.get(KODI_MAJOR, ())
-            if build_id not in allowed_build_ids:
+            kodi22_private_release = (
+                KODI_MAJOR == 22
+                and isinstance(build_id, str)
+                and build_id.startswith(KODI22_PRIVATE_BUILD_PREFIX)
+            )
+            if build_id not in allowed_build_ids and not kodi22_private_release:
                 raise ValueError("This local archive is not an available build for this Kodi release.")
             _copy_local_archive(local_archive, archive_path, progress)
         else:
@@ -1191,6 +1259,13 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
             "weather.currentlocation": _get_setting("weather.currentlocation"),
         }
         original_weather_addon_settings = _read_weather_addon_settings()
+        giptv_id = "plugin.video.giptv"
+        if giptv_id in packages or giptv_id in removed_addons:
+            original_giptv_enabled = _get_addon_enabled(giptv_id)
+            if original_giptv_enabled:
+                # Stop the provider service before replacing or removing its profile files.
+                _set_addon_enabled(giptv_id, False)
+                xbmc.sleep(1500)
         if original_skin in (SKIN_ID, LEGACY_SKIN_ID):
             # Unload either skin before replacing or removing its files.
             _activate_skin("skin.estuary")
@@ -1329,6 +1404,15 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                 _log("Could not refresh Kodi's add-on list during rollback: {}".format(
                     restore_exc
                 ), xbmc.LOGERROR)
+            if original_giptv_enabled is not None:
+                try:
+                    if _get_addon_enabled("plugin.video.giptv") is not None:
+                        _set_addon_enabled("plugin.video.giptv", original_giptv_enabled)
+                except Exception as restore_exc:
+                    rollback_complete = False
+                    _log("Could not restore the previous GIPTV enabled state: {}".format(
+                        restore_exc
+                    ), xbmc.LOGERROR)
             if original_weather_addon_settings is not None:
                 try:
                     _write_weather_addon_settings(original_weather_addon_settings)

@@ -1,0 +1,4 @@
+- Replace GIPTV in private Kodi 22 build 1.0.26 with XStream Pro 1.1.2 and migrate the saved Xtream server login into Profile 1.
+- Keep Kodi-managed IPTV Simple available for native Live TV; select Profile 1 and sync provider content in XStream Pro after restore.
+- Stop GIPTV before the wizard removes its package or profile data, and restore its previous enabled state if installation rolls back.
+- Keep support for the existing Kodi 21 and public builds that still package GIPTV.
