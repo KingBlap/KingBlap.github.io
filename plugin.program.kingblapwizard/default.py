@@ -56,7 +56,7 @@ KODI21_PRIVATE_BUILD_NAME = "Private KingBlap Build for Kodi 21.3 (choose ZIP)"
 KODI22_PUBLIC_BUILD_ID = "kingblap-public-kodi22-1.0.21"
 KODI22_PRIVATE_BUILD_ID = "kingblap-private-kodi22-1.0.21"
 KODI22_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 22 (download)"
-KODI22_PRIVATE_BUILD_NAME = "Private KingBlap Build for Kodi 22 (choose ZIP)"
+KODI22_PRIVATE_BUILD_NAME = "Private KingBlap Build for Kodi 22 (download)"
 PUBLIC_BUILD_PARTS = (
     ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-1.0.19.zip.part001", 83886080),
     ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-1.0.19.zip.part002", 83886080),
@@ -145,7 +145,7 @@ def _api_url(path):
 
 def _fetch(url, max_bytes, access_code=None):
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.33 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.34 Kodi",
         "Accept": "application/json",
     }
     if access_code:
@@ -167,13 +167,12 @@ def _fetch(url, max_bytes, access_code=None):
 
 
 def _get_builds(access_code=None, public_build=False):
-    if KODI_MAJOR in (21, 22):
-        if KODI_MAJOR == 21:
-            build = (KODI21_PUBLIC_BUILD_ID, KODI21_PUBLIC_BUILD_NAME) if public_build else (KODI21_PRIVATE_BUILD_ID, KODI21_PRIVATE_BUILD_NAME)
-        else:
-            build = (KODI22_PUBLIC_BUILD_ID, KODI22_PUBLIC_BUILD_NAME) if public_build else (KODI22_PRIVATE_BUILD_ID, KODI22_PRIVATE_BUILD_NAME)
+    if KODI_MAJOR == 21:
+        build = (KODI21_PUBLIC_BUILD_ID, KODI21_PUBLIC_BUILD_NAME) if public_build else (KODI21_PRIVATE_BUILD_ID, KODI21_PRIVATE_BUILD_NAME)
         return [build]
-    if public_build:
+    if KODI_MAJOR == 22 and public_build:
+        return [(KODI22_PUBLIC_BUILD_ID, KODI22_PUBLIC_BUILD_NAME)]
+    if KODI_MAJOR not in (21, 22) and public_build:
         return [(PUBLIC_BUILD_ID, PUBLIC_BUILD_NAME)]
     label = "public" if public_build else "private"
     content = _fetch(_api_url(BUILDS_PATH), 1024 * 1024, access_code).decode("utf-8-sig")
@@ -199,6 +198,8 @@ def _get_builds(access_code=None, public_build=False):
             raise ValueError("The {} build list contains an invalid entry.".format(label))
         seen.add(build_id)
         builds.append((build_id, name.strip()))
+    if KODI_MAJOR == 22 and not public_build:
+        builds = [build for build in builds if build[0] == KODI22_PRIVATE_BUILD_ID]
     return builds
 
 
@@ -624,7 +625,7 @@ def _download_archive(build_id, destination, progress, access_code=None, public_
         "{}/{}/download".format(route, urllib.parse.quote(build_id, safe=""))
     )
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.33 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.34 Kodi",
         "Accept": "application/zip",
     }
     if access_code:
@@ -1423,7 +1424,7 @@ def main():
             xbmcgui.Dialog().ok("KingBlap Wizard", "The selected build is invalid.")
         else:
             local_archive = None
-            if KODI_MAJOR == 21 or (KODI_MAJOR == 22 and not public_build):
+            if KODI_MAJOR == 21:
                 kodi_label = "21.3" if KODI_MAJOR == 21 else "22"
                 local_archive = xbmcgui.Dialog().browse(
                     1,

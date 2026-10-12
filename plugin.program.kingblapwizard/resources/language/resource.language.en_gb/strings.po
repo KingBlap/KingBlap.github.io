@@ -23,5 +23,5 @@ msgid "Build service URL"
 msgstr "Build service URL"
 
 msgctxt "#30006"
-msgid "HTTPS API base URL. Kodi 21 and 22 local build installs do not use this field."
-msgstr "HTTPS API base URL. Kodi 21 and 22 local build installs do not use this field."
+msgid "HTTPS API base URL used to list and download private builds. Change only if you were given a different service URL."
+msgstr "HTTPS API base URL used to list and download private builds. Change only if you were given a different service URL."

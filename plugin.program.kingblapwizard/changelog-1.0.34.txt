@@ -1,0 +1,5 @@
+KingBlap Wizard 1.0.34
+
+- Lists Kodi 22 private builds from the access-code-protected build service.
+- Downloads the Kodi 22 private build through the protected service instead of prompting for a local ZIP.
+- Keeps the Kodi 21.3 public and private build choices on local ZIP selection.
