@@ -1,3 +1,4 @@
 # Choose a build category in KingBlap Wizard before installing.
-Public KingBlap Kodi Build 1.0.19 | No saved account profiles or credentials from the backup; no access code required.
-Private KingBlap Kodi Build 1.0.18 | Restores saved account profiles; Worker access code required.
+Public KingBlap Kodi 22 Build 1.0.21 | Downloaded and checksum-verified by KingBlap Wizard 1.0.33; settings-only public archive; no access code required.
+Private builds | Kodi 21.3 and Kodi 22 private archives are selected from local or network storage in KingBlap Wizard; a private access code is required.
+Legacy Public Build 1.0.19 and Private Build 1.0.18 remain documented in the README.

@@ -1,0 +1,5 @@
+KingBlap Wizard 1.0.33
+
+- Adds the Kodi 22 public build 1.0.21 download from the KingBlap repository.
+- Verifies the downloaded archive SHA-256 before installation.
+- Keeps Kodi 21 and private builds available through local ZIP selection.

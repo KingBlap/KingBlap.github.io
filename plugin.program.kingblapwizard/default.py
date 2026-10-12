@@ -1,5 +1,6 @@
 """KingBlap Kodi build installer for Kodi 21 Omega and Kodi 22 Piers."""
 import json
+import hashlib
 import os
 import re
 import shutil
@@ -54,13 +55,20 @@ KODI21_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 21.3 (choose ZIP)"
 KODI21_PRIVATE_BUILD_NAME = "Private KingBlap Build for Kodi 21.3 (choose ZIP)"
 KODI22_PUBLIC_BUILD_ID = "kingblap-public-kodi22-1.0.21"
 KODI22_PRIVATE_BUILD_ID = "kingblap-private-kodi22-1.0.21"
-KODI22_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 22 (choose ZIP)"
+KODI22_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 22 (download)"
 KODI22_PRIVATE_BUILD_NAME = "Private KingBlap Build for Kodi 22 (choose ZIP)"
 PUBLIC_BUILD_PARTS = (
     ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-1.0.19.zip.part001", 83886080),
     ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-1.0.19.zip.part002", 83886080),
     ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-1.0.19.zip.part003", 10645365),
 )
+KODI22_PUBLIC_BUILD_PARTS = (
+    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-22-1.0.21.zip.part001", 83886080),
+    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-22-1.0.21.zip.part002", 83886080),
+    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-22-1.0.21.zip.part003", 83886080),
+    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-22-1.0.21.zip.part004", 33986378),
+)
+KODI22_PUBLIC_BUILD_SHA256 = "CFFB99C9F4C1C0D0380E53EDFAD3EDF228FC20345B560F4F307743382B0BAC97"
 WEATHER_VERSION = "0.6.4+matrix.1"
 SKIN_SETTINGS_ARCHIVE_PATH = "userdata/addon_data/{}/settings.xml".format(SKIN_ID)
 LEGACY_SKIN_ID = "skin.estuary.modv2"
@@ -137,7 +145,7 @@ def _api_url(path):
 
 def _fetch(url, max_bytes, access_code=None):
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.32 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.33 Kodi",
         "Accept": "application/json",
     }
     if access_code:
@@ -541,15 +549,23 @@ def _validate_archive(archive, expected_public=None):
     )
 
 
-def _download_public_archive(destination, progress):
-    total_expected = sum(size for _, size in PUBLIC_BUILD_PARTS)
+def _download_public_archive(destination, progress, build_id):
+    if build_id == KODI22_PUBLIC_BUILD_ID:
+        parts = KODI22_PUBLIC_BUILD_PARTS
+        expected_sha256 = KODI22_PUBLIC_BUILD_SHA256
+    elif build_id == PUBLIC_BUILD_ID:
+        parts = PUBLIC_BUILD_PARTS
+        expected_sha256 = None
+    else:
+        raise ValueError("The selected public build is not valid.")
+    total_expected = sum(size for _, size in parts)
     total_written = 0
     with open(destination, "wb") as output:
-        for part_index, (url, expected_part_size) in enumerate(PUBLIC_BUILD_PARTS):
+        for part_index, (url, expected_part_size) in enumerate(parts):
             request = urllib.request.Request(
                 url,
                 headers={
-                    "User-Agent": "KingBlap-Wizard/1.0.32 Kodi",
+                    "User-Agent": "KingBlap-Wizard/1.0.33 Kodi",
                     "Accept": "application/octet-stream",
                 },
             )
@@ -574,7 +590,7 @@ def _download_public_archive(destination, progress):
                         progress.update(
                             min(percent, 99),
                             "Downloading public build part {} of {}…".format(
-                                part_index + 1, len(PUBLIC_BUILD_PARTS)
+                                part_index + 1, len(parts)
                             ),
                         )
             except urllib.error.HTTPError as exc:
@@ -585,20 +601,30 @@ def _download_public_archive(destination, progress):
                 raise IOError("A public build part was incomplete.")
     if total_written != total_expected:
         raise IOError("The public build download was incomplete.")
+    if expected_sha256:
+        digest = hashlib.sha256()
+        with open(destination, "rb") as downloaded:
+            while True:
+                block = downloaded.read(CHUNK_SIZE)
+                if not block:
+                    break
+                digest.update(block)
+        if digest.hexdigest().upper() != expected_sha256:
+            raise IOError("The Kodi 22 public build download failed its integrity check.")
 
 
 def _download_archive(build_id, destination, progress, access_code=None, public_build=False):
     if public_build:
-        if build_id != PUBLIC_BUILD_ID:
+        if build_id not in (PUBLIC_BUILD_ID, KODI22_PUBLIC_BUILD_ID):
             raise ValueError("The selected public build is not valid.")
-        _download_public_archive(destination, progress)
+        _download_public_archive(destination, progress, build_id)
         return
     route = "/v1/builds"
     url = _api_url(
         "{}/{}/download".format(route, urllib.parse.quote(build_id, safe=""))
     )
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.32 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.33 Kodi",
         "Accept": "application/zip",
     }
     if access_code:
@@ -1397,7 +1423,7 @@ def main():
             xbmcgui.Dialog().ok("KingBlap Wizard", "The selected build is invalid.")
         else:
             local_archive = None
-            if KODI_MAJOR in (21, 22):
+            if KODI_MAJOR == 21 or (KODI_MAJOR == 22 and not public_build):
                 kodi_label = "21.3" if KODI_MAJOR == 21 else "22"
                 local_archive = xbmcgui.Dialog().browse(
                     1,
