@@ -54,10 +54,10 @@
 </ol>
 <h2 id="install-the-complete-wizard-build">Install the complete Wizard build</h2>
 <ol>
-<li>Install or update KingBlap Wizard 1.0.28 from Install from repository → KingBlap Kodi Repository → Program add-ons. If needed, install the Wizard 1.0.28 ZIP from https://kingblap.github.io/repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.28.zip.</li>
-<li>Open the Wizard. It shows separate <strong>Public Builds</strong> and <strong>Private Builds</strong> folders before listing a build. The public 1.0.19 build does not require an access code and excludes saved add-on profile data and credentials from the backup. The private 1.0.18 build requires the shared 16-digit numeric access code and restores saved profile data for 34 add-ons.</li>
-<li>Select the intended build and review the confirmation message before installing. The private build can replace matching saved add-on settings and login data. The Wizard&#x27;s own API URL and access code are excluded and remain saved locally.</li>
-<li>Let the download and installation finish, close the completion notice, and restart Kodi once.</li>
+<li>Install or update KingBlap Wizard 1.0.32 from Install from repository → KingBlap Kodi Repository → Program add-ons. If needed, install the Wizard 1.0.32 ZIP from https://kingblap.github.io/repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.32.zip.</li>
+<li>Open the Wizard and choose <strong>Public Builds</strong> or <strong>Private Builds</strong>. On Kodi 21.3 and Kodi 22, the Wizard asks you to select a compatible build ZIP from local or network storage. Use a Kodi 21.3 archive only on Kodi 21.3, and a Kodi 22 archive only on Kodi 22.</li>
+<li>Private builds require the shared 16-digit numeric access code. Review the confirmation before installing: a private archive can replace saved add-on settings and login data for included add-ons. Keep private archives and the access code private. The Wizard&#x27;s own API URL and access code remain saved on the device.</li>
+<li>Leave Kodi open while the build installs, close the completion notice, and restart Kodi once.</li>
 </ol>
 <p>The public archive is built without add-on account profile data. Its only user-data files are the sanitized Xonfluence and Gismeteo preferences needed for the visual setup and weather location. It does not include the backup&#x27;s saved API keys or service credentials. The private build restores saved add-on profile data from the October 11 backup for 34 add-ons, including credentials stored by those add-ons. Anyone with the shared access code can download that private profile data, so share the code and private build only with intended recipients.</p>
 <p>Back up Kodi before installing over an existing setup. Both choices replace packaged add-on files and remove XStream Player, Estuary MOD V2, and the OnePlay repository, then enable 78 add-ons. The public choice leaves other add-on account profiles in place; the private choice replaces matching profile data for its 34 included add-ons. Kodi libraries remain on the device. Gismeteo is configured for Thomasville, North Carolina.</p>
@@ -86,6 +86,10 @@
 </ul>
 <h2 id="wizard-build-release-history">Wizard build release history</h2>
 <div class="table-scroll"><table><thead><tr><th>Build</th><th>Changes</th></tr></thead><tbody>
+<tr><td><strong>Wizard 1.0.32</strong></td><td>Fixes local archive installation on Kodi 22 and keeps Kodi 21.3/Kodi 22 ZIP selection.</td></tr>
+<tr><td><strong>Wizard 1.0.31</strong></td><td>Adds Wizard settings for the private access code and service URL; offers local Public and Private archives on Kodi 21/22.</td></tr>
+<tr><td><strong>Wizard 1.0.30</strong></td><td>Adds Kodi 21.3 support and separate Omega/Piers skin packages.</td></tr>
+<tr><td><strong>Wizard 1.0.29</strong></td><td>Uses Kodi&#x27;s add-on manager for device-specific native components and avoids the 93% install stall.</td></tr>
 <tr><td><strong>Wizard 1.0.28</strong></td><td>Requires exactly 16 numeric digits for private build access codes.</td></tr>
 <tr><td><strong>Wizard 1.0.27</strong></td><td>Adds separate Public Builds and Private Builds folders; public downloads do not send an access code and reject credential-bearing archives.</td></tr>
 <tr><td><strong>Public Build 1.0.19</strong></td><td>Built without backup account profiles, API keys, or saved service credentials.</td></tr>
@@ -123,7 +127,7 @@
 <li>In Build 1.0.18 — metadata.generic.artists — 1.0.20</li>
 <li>In Build 1.0.18 — metadata.tvshows.themoviedb.org.python — 2.0.9</li>
 <li>Repository only — One.repo — 1.16</li>
-<li>Repository only — plugin.program.kingblapwizard — 1.0.26</li>
+<li>Repository only — plugin.program.kingblapwizard — 1.0.32</li>
 <li>In Build 1.0.18 — plugin.video.absolution — 4.4.1</li>
 <li>In Build 1.0.18 — plugin.video.cosmos — 4.3.26</li>
 <li>In Build 1.0.18 — plugin.video.dailymotion_com — 2.4.5</li>

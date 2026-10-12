@@ -1,0 +1,4 @@
+KingBlap Wizard 1.0.32
+
+- Fixes build installation on Kodi 22 by using the supported DialogProgress.update(percent, message) signature for local archive preparation.
+- Keeps Kodi 21 and Kodi 22 local ZIP selection.

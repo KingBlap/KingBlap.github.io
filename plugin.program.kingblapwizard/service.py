@@ -1,6 +1,7 @@
 """Finish applying Xonfluence after the installer window closes and on Kodi startup."""
 import json
 import os
+import time
 
 import xbmc
 import xbmcaddon
@@ -9,7 +10,8 @@ import xbmcvfs
 
 
 ADDON_ID = "plugin.program.kingblapwizard"
-SKIN_ID = "skin.xonfluence"
+SUPPORTED_SKINS = {"skin.xonfluence", "skin.xonfluence.skinbase"}
+SKIN_ID = None
 MARKER_PATH = xbmcvfs.translatePath(
     "special://profile/addon_data/{}/skin-reapply.json".format(ADDON_ID)
 )
@@ -21,7 +23,24 @@ def _log(message, level=xbmc.LOGINFO):
     xbmc.log("[KingBlap Wizard] {}".format(message), level)
 
 
+def _load_requested_skin():
+    global SKIN_ID
+    try:
+        with open(MARKER_PATH, "r", encoding="utf-8") as marker_file:
+            request = json.load(marker_file)
+        skin_id = request.get("skin") if isinstance(request, dict) else None
+        if skin_id in SUPPORTED_SKINS:
+            SKIN_ID = skin_id
+            return True
+    except (OSError, TypeError, ValueError):
+        pass
+    _log("The skin reapply marker is missing a supported skin ID.", xbmc.LOGWARNING)
+    return False
+
+
 def _skin_selected():
+    if SKIN_ID not in SUPPORTED_SKINS:
+        return False
     request = json.dumps({
         "jsonrpc": "2.0",
         "id": 1,
@@ -35,6 +54,8 @@ def _skin_selected():
 
 
 def _set_skin():
+    if SKIN_ID not in SUPPORTED_SKINS:
+        raise RuntimeError("The Wizard has no supported skin selected.")
     already_selected = _skin_selected()
     try:
         xbmcaddon.Addon(SKIN_ID)
@@ -146,7 +167,8 @@ def main():
             marker_time = None
         if marker_time is not None and marker_time != last_marker_time:
             last_marker_time = marker_time
-            _apply_pending_skin(monitor)
+            if _load_requested_skin():
+                _apply_pending_skin(monitor)
         if monitor.waitForAbort(2):
             break
 

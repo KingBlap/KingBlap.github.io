@@ -1,0 +1,6 @@
+KingBlap Wizard 1.0.31
+
+- Adds a Kodi settings form for the private access code and build service URL.
+- Offers local Kodi-compatible Public and Private archives on Kodi 21 and Kodi 22.
+- Uses separate skin/package versions for Kodi Omega and Piers.
+- Removes legacy KingBlap installer add-ons when applying a build.

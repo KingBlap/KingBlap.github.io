@@ -14,10 +14,10 @@ Build 1.0.18 uses the Kodi 22 backup snapshot dated October 11, 2026. Compatibil
 
 ## Install the complete Wizard build
 
-1. Install or update KingBlap Wizard 1.0.28 from Install from repository → KingBlap Kodi Repository → Program add-ons. If needed, install the Wizard 1.0.28 ZIP from https://kingblap.github.io/repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.28.zip.
-2. Open the Wizard. It shows separate **Public Builds** and **Private Builds** folders before listing a build. The public 1.0.19 build does not require an access code and excludes saved add-on profile data and credentials from the backup. The private 1.0.18 build requires the shared 16-digit numeric access code and restores saved profile data for 34 add-ons.
-3. Select the intended build and review the confirmation message before installing. The private build can replace matching saved add-on settings and login data. The Wizard's own API URL and access code are excluded and remain saved locally.
-4. Let the download and installation finish, close the completion notice, and restart Kodi once.
+1. Install or update KingBlap Wizard 1.0.32 from Install from repository → KingBlap Kodi Repository → Program add-ons. If needed, install the Wizard 1.0.32 ZIP from https://kingblap.github.io/repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.32.zip.
+2. Open the Wizard and choose **Public Builds** or **Private Builds**. On Kodi 21.3 and Kodi 22, the Wizard asks you to select a compatible build ZIP from local or network storage. Use a Kodi 21.3 archive only on Kodi 21.3, and a Kodi 22 archive only on Kodi 22.
+3. Private builds require the shared 16-digit numeric access code. Review the confirmation before installing: a private archive can replace saved add-on settings and login data for included add-ons. Keep private archives and the access code private. The Wizard's own API URL and access code remain saved on the device.
+4. Leave Kodi open while the build installs, close the completion notice, and restart Kodi once.
 
 The public archive is built without add-on account profile data. Its only user-data files are the sanitized Xonfluence and Gismeteo preferences needed for the visual setup and weather location. It does not include the backup's saved API keys or service credentials. The private build restores saved add-on profile data from the October 11 backup for 34 add-ons, including credentials stored by those add-ons. Anyone with the shared access code can download that private profile data, so share the code and private build only with intended recipients.
 
@@ -52,6 +52,10 @@ The repository was assembled from Windows Kodi 22 files. Windows-specific native
 
 | Build | Changes |
 | --- | --- |
+| **Wizard 1.0.32** | Fixes local archive installation on Kodi 22 and keeps Kodi 21.3/Kodi 22 ZIP selection. |
+| **Wizard 1.0.31** | Adds Wizard settings for the private access code and service URL; offers local Public and Private archives on Kodi 21/22. |
+| **Wizard 1.0.30** | Adds Kodi 21.3 support and separate Omega/Piers skin packages. |
+| **Wizard 1.0.29** | Uses Kodi's add-on manager for device-specific native components and avoids the 93% install stall. |
 | **Wizard 1.0.28** | Requires exactly 16 numeric digits for private build access codes. |
 | **Wizard 1.0.27** | Adds separate Public Builds and Private Builds folders; public downloads do not send an access code and reject credential-bearing archives. |
 | **Public Build 1.0.19** | Built without backup account profiles, API keys, or saved service credentials. |
@@ -91,7 +95,7 @@ The list below describes all 121 packages available in the repository. 78 are bu
 - In Build 1.0.18 — metadata.generic.artists — 1.0.20
 - In Build 1.0.18 — metadata.tvshows.themoviedb.org.python — 2.0.9
 - Repository only — One.repo — 1.16
-- Repository only — plugin.program.kingblapwizard — 1.0.26
+- Repository only — plugin.program.kingblapwizard — 1.0.32
 - In Build 1.0.18 — plugin.video.absolution — 4.4.1
 - In Build 1.0.18 — plugin.video.cosmos — 4.3.26
 - In Build 1.0.18 — plugin.video.dailymotion_com — 2.4.5

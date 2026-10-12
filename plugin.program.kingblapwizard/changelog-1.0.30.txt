@@ -1,0 +1,5 @@
+1.0.30
+- Add Kodi 21.3 Omega build support with a Kodi 21-compatible Xonfluence skin and add-on dependencies.
+- Let Kodi 21.3 users install validated Public or Private build ZIPs from local or network storage.
+- Keep Kodi 22 Piers downloads and use the matching Xonfluence skin for each Kodi major version.
+- Confirm the requested skin ID in the startup service and import the missing time module.

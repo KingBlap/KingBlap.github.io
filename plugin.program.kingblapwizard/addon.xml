@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.program.kingblapwizard" name="KingBlap Wizard" version="1.0.28" provider-name="KingBlap">
+<addon id="plugin.program.kingblapwizard" name="KingBlap Wizard" version="1.0.32" provider-name="KingBlap">
   <requires>
     <import addon="xbmc.python" version="3.0.0" />
   </requires>
@@ -8,8 +8,8 @@
   </extension>
   <extension point="xbmc.service" library="service.py" start="startup" />
   <extension point="xbmc.addon.metadata">
-    <summary lang="en_GB">Install the KingBlap Kodi build.</summary>
-    <description lang="en_GB">Shows separate public and private KingBlap Kodi build choices. Public builds omit saved account profile data; private builds require an access code and may restore saved service credentials. The Wizard enables packaged add-ons, sets Gismeteo for Thomasville, removes the OnePlay repository, and applies Xonfluence 6.0.7.</description>
+    <summary lang="en_GB">Install KingBlap Kodi builds across Kodi-supported platforms.</summary>
+    <description lang="en_GB">Shows separate public and private KingBlap build choices for Kodi 21 Omega and Kodi 22 Piers. Kodi 21 and Kodi 22 use compatible local build archives selected on the device. Public builds omit saved add-on profile data; private builds may restore saved service credentials. The Wizard includes a visible settings page for the private access code and build service URL, enables packaged add-ons, asks Kodi to install device-compatible native dependencies, sets Gismeteo for Thomasville, removes duplicate legacy installers and OnePlay, and applies the compatible Xonfluence skin.</description>
     <disclaimer lang="en_GB">Public builds do not include saved add-on account profile data from the backup. Private builds may include service credentials saved in add-on profile data and require a shared access code. Review the selected build before installing it.</disclaimer>
     <platform>all</platform>
     <license>GPL-2.0-or-later</license>

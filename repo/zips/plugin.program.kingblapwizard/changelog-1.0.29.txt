@@ -1,0 +1,4 @@
+1.0.29
+- Use Kodi's add-on manager to resolve device-specific native components across Kodi-supported platforms.
+- Start native component installs without blocking so the wizard can handle Kodi's add-on confirmation prompt instead of appearing stuck at 93%.
+- Show the detected Kodi platform in install guidance for both public and private builds.

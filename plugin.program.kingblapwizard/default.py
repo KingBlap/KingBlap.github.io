@@ -1,4 +1,4 @@
-"""KingBlap Kodi build installer for Kodi 22 and Android-based Kodi devices."""
+"""KingBlap Kodi build installer for Kodi 21 Omega and Kodi 22 Piers."""
 import json
 import os
 import re
@@ -24,15 +24,43 @@ ADDON = xbmcaddon.Addon()
 ADDON_ID = ADDON.getAddonInfo("id")
 DEFAULT_API_URL = "https://kingblap-api.tyshawncalvin243.workers.dev"
 BUILDS_PATH = "/v1/builds"
+def _detect_kodi_major():
+    """Read Kodi's major version without relying on platform-specific paths."""
+    try:
+        match = re.match(r"\s*(\d+)", xbmc.getInfoLabel("System.BuildVersion"))
+        return int(match.group(1)) if match else 0
+    except (AttributeError, TypeError, ValueError):
+        return 0
+
+
+KODI_MAJOR = _detect_kodi_major()
+if KODI_MAJOR == 21:
+    SKIN_ID = "skin.xonfluence.skinbase"
+    SKIN_VERSION = "5"
+    PREVIOUS_SKIN_ID = "skin.xonfluence"
+elif KODI_MAJOR == 22:
+    SKIN_ID = "skin.xonfluence"
+    SKIN_VERSION = "6.0.7"
+    PREVIOUS_SKIN_ID = None
+else:
+    SKIN_ID = "skin.xonfluence"
+    SKIN_VERSION = "6.0.7"
+    PREVIOUS_SKIN_ID = None
 PUBLIC_BUILD_ID = "kingblap-public-1.0.19"
 PUBLIC_BUILD_NAME = "Public KingBlap Kodi Build 1.0.19"
+KODI21_PUBLIC_BUILD_ID = "kingblap-public-kodi21.3-1.0.20"
+KODI21_PRIVATE_BUILD_ID = "kingblap-private-kodi21.3-1.0.20"
+KODI21_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 21.3 (choose ZIP)"
+KODI21_PRIVATE_BUILD_NAME = "Private KingBlap Build for Kodi 21.3 (choose ZIP)"
+KODI22_PUBLIC_BUILD_ID = "kingblap-public-kodi22-1.0.21"
+KODI22_PRIVATE_BUILD_ID = "kingblap-private-kodi22-1.0.21"
+KODI22_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 22 (choose ZIP)"
+KODI22_PRIVATE_BUILD_NAME = "Private KingBlap Build for Kodi 22 (choose ZIP)"
 PUBLIC_BUILD_PARTS = (
     ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-1.0.19.zip.part001", 83886080),
     ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-1.0.19.zip.part002", 83886080),
     ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-1.0.19.zip.part003", 10645365),
 )
-SKIN_ID = "skin.xonfluence"
-SKIN_VERSION = "6.0.7"
 WEATHER_VERSION = "0.6.4+matrix.1"
 SKIN_SETTINGS_ARCHIVE_PATH = "userdata/addon_data/{}/settings.xml".format(SKIN_ID)
 LEGACY_SKIN_ID = "skin.estuary.modv2"
@@ -54,6 +82,30 @@ CHUNK_SIZE = 1024 * 1024
 ADDON_REGISTRATION_TIMEOUT = 600
 SKIN_LOAD_TIMEOUT = 120
 SKIN_CONFIRMATION_GRACE = 13
+
+
+def _platform_name():
+    """Return the platform Kodi is running on for install guidance."""
+    checks = (
+        ("Android (phones / Android TV / Fire TV)", "System.Platform.Android"),
+        ("Windows", "System.Platform.Windows"),
+        ("macOS", "System.Platform.OSX"),
+        ("iOS / tvOS", "System.Platform.IOS"),
+        ("Linux / LibreELEC", "System.Platform.Linux"),
+    )
+    for name, condition in checks:
+        try:
+            if xbmc.getCondVisibility(condition):
+                return name
+        except Exception:
+            pass
+    if sys.platform.startswith("win"):
+        return "Windows"
+    if sys.platform == "darwin":
+        return "macOS"
+    if sys.platform.startswith("linux"):
+        return "Linux"
+    return "this Kodi device"
 
 
 class AccessDenied(ValueError):
@@ -85,7 +137,7 @@ def _api_url(path):
 
 def _fetch(url, max_bytes, access_code=None):
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.28 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.32 Kodi",
         "Accept": "application/json",
     }
     if access_code:
@@ -107,6 +159,12 @@ def _fetch(url, max_bytes, access_code=None):
 
 
 def _get_builds(access_code=None, public_build=False):
+    if KODI_MAJOR in (21, 22):
+        if KODI_MAJOR == 21:
+            build = (KODI21_PUBLIC_BUILD_ID, KODI21_PUBLIC_BUILD_NAME) if public_build else (KODI21_PRIVATE_BUILD_ID, KODI21_PRIVATE_BUILD_NAME)
+        else:
+            build = (KODI22_PUBLIC_BUILD_ID, KODI22_PUBLIC_BUILD_NAME) if public_build else (KODI22_PRIVATE_BUILD_ID, KODI22_PRIVATE_BUILD_NAME)
+        return [build]
     if public_build:
         return [(PUBLIC_BUILD_ID, PUBLIC_BUILD_NAME)]
     label = "public" if public_build else "private"
@@ -285,7 +343,7 @@ def _validate_archive(archive, expected_public=None):
             part.rstrip(" .").casefold() for part in name.split("/")
         )
         if portable in folded_paths:
-            raise ValueError("The build archive contains paths that collide on Android or Windows.")
+            raise ValueError("The build archive contains paths that collide on case-insensitive filesystems.")
         folded_paths.add(portable)
         parts = portable.split("/")
         if any("/".join(parts[:index]) in file_paths for index in range(1, len(parts))):
@@ -335,7 +393,13 @@ def _validate_archive(archive, expected_public=None):
             if (
                 len(parts) < 2
                 or not re.fullmatch(r"[A-Za-z0-9_.-]+", parts[0])
-                or parts[0] in (ADDON_ID, "plugin.video.xstream-player", ONEPLAY_REPO_ID, LEGACY_SKIN_ID)
+        or parts[0] in (
+            ADDON_ID,
+            "plugin.video.xstream-player",
+            ONEPLAY_REPO_ID,
+            LEGACY_SKIN_ID,
+            PREVIOUS_SKIN_ID,
+        )
             ):
                 raise ValueError("The build archive contains an invalid add-on profile path.")
             _safe_target("/build/userdata/addon_data", relative)
@@ -369,7 +433,7 @@ def _validate_archive(archive, expected_public=None):
     if packages.get("plugin.video.giptv") != "3.1.0":
         raise ValueError("The build archive does not contain the expected GIPTV package.")
     if packages.get(SKIN_ID) != SKIN_VERSION:
-        raise ValueError("The build archive does not contain Xonfluence {} for Kodi 22.".format(SKIN_VERSION))
+        raise ValueError("The build archive does not contain the Xonfluence skin for Kodi {}.".format(KODI_MAJOR))
     if packages.get(WEATHER_ID) != WEATHER_VERSION:
         raise ValueError("The build archive is missing the Gismeteo weather add-on.")
     if LEGACY_SKIN_ID in packages:
@@ -388,6 +452,14 @@ def _validate_archive(archive, expected_public=None):
             raise ValueError("The build archive is missing the skin dependency: {}.".format(dependency_id))
     if build_info is None:
         raise ValueError("The build archive is missing its build information.")
+    if build_info.get("kodi_major") != KODI_MAJOR:
+        raise ValueError(
+            "This build is for Kodi {}, but this device is running Kodi {}.".format(
+                build_info.get("kodi_major", "unknown"), KODI_MAJOR
+            )
+        )
+    if build_info.get("skin") != SKIN_ID:
+        raise ValueError("The build archive selects a skin that does not match this Kodi release.")
     distribution = build_info.get("distribution")
     if expected_public is True and (
         distribution != "public"
@@ -440,7 +512,13 @@ def _validate_archive(archive, expected_public=None):
     if not isinstance(declared_profile_ids, list) or any(
         not isinstance(addon_id, str)
         or not re.fullmatch(r"[A-Za-z0-9_.-]+", addon_id)
-        or addon_id in (ADDON_ID, "plugin.video.xstream-player", ONEPLAY_REPO_ID, LEGACY_SKIN_ID)
+        or addon_id in (
+            ADDON_ID,
+            "plugin.video.xstream-player",
+            ONEPLAY_REPO_ID,
+            LEGACY_SKIN_ID,
+            PREVIOUS_SKIN_ID,
+        )
         for addon_id in declared_profile_ids
     ):
         raise ValueError("The build information contains an invalid profile add-on ID.")
@@ -471,7 +549,7 @@ def _download_public_archive(destination, progress):
             request = urllib.request.Request(
                 url,
                 headers={
-                    "User-Agent": "KingBlap-Wizard/1.0.28 Kodi",
+                    "User-Agent": "KingBlap-Wizard/1.0.32 Kodi",
                     "Accept": "application/octet-stream",
                 },
             )
@@ -520,7 +598,7 @@ def _download_archive(build_id, destination, progress, access_code=None, public_
         "{}/{}/download".format(route, urllib.parse.quote(build_id, safe=""))
     )
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.28 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.32 Kodi",
         "Accept": "application/zip",
     }
     if access_code:
@@ -688,7 +766,7 @@ def _confirm_kodi_addon_prompt(addon_id, progress):
     progress.update(
         93,
         "KingBlap Wizard",
-        "Approving Kodi's installer for {}…".format(addon_id),
+        "Confirming Kodi's compatible component for {}…".format(addon_id),
     )
     xbmc.executebuiltin("SendClick(10100,11)", True)
     _log("Accepted Kodi's required add-on prompt for {}.".format(addon_id))
@@ -700,6 +778,10 @@ def _wait_for_addon_registration(addon_ids, progress, confirm_required_addon=Fal
     started = time.monotonic()
     deadline = started + ADDON_REGISTRATION_TIMEOUT
     while pending and time.monotonic() < deadline:
+        # Handle Kodi's confirmation dialog before querying JSON-RPC. A modal
+        # dialog can block Kodi's add-on work while the wizard waits here.
+        if confirm_required_addon:
+            _confirm_kodi_addon_prompt(sorted(pending)[0], progress)
         for addon_id in tuple(pending):
             try:
                 details = _jsonrpc("Addons.GetAddonDetails", {
@@ -711,8 +793,6 @@ def _wait_for_addon_registration(addon_ids, progress, confirm_required_addon=Fal
             if details.get("version"):
                 pending.remove(addon_id)
         if pending:
-            if confirm_required_addon:
-                _confirm_kodi_addon_prompt(next(iter(pending)), progress)
             elapsed = int(time.monotonic() - started)
             progress.update(
                 94 + min(2, elapsed // 15),
@@ -761,8 +841,14 @@ def _ensure_kodi_managed_addon(addon_id, progress):
         })
     except RuntimeError:
         _log("Installing required Kodi repository dependency {}.".format(addon_id))
-        progress.update(93, "KingBlap Wizard", "Installing required component: {}".format(addon_id))
-        xbmc.executebuiltin("InstallAddon({})".format(addon_id), True)
+        progress.update(
+            93,
+            "KingBlap Wizard",
+            "Requesting a {} compatible component: {}".format(_platform_name(), addon_id),
+        )
+        # Do not wait inside InstallAddon: Kodi can present a required-add-on
+        # prompt, and the wizard must keep polling to recognize and confirm it.
+        xbmc.executebuiltin("InstallAddon({})".format(addon_id), False)
         _wait_for_addon_registration((addon_id,), progress, confirm_required_addon=True)
     _enable_addon(addon_id)
 
@@ -851,7 +937,46 @@ def _request_skin_reapply():
     os.replace(temporary, marker)
 
 
-def _install(name, build_id, access_code, public_build=False):
+def _copy_local_archive(source_path, destination, progress):
+    """Copy a user-selected build ZIP from a local path or Kodi VFS source."""
+    source_path = (source_path or "").strip()
+    if not source_path.lower().endswith(".zip"):
+        raise ValueError("Choose a Kodi build .zip archive.")
+    translated = xbmcvfs.translatePath(source_path)
+    if os.path.isfile(translated):
+        size = os.path.getsize(translated)
+        if size > DOWNLOAD_LIMIT:
+            raise ValueError("The selected build archive is larger than the wizard limit.")
+        shutil.copyfile(translated, destination)
+        progress.update(5, "Reading the selected build archive…")
+        return
+    source = xbmcvfs.File(source_path)
+    if not source:
+        raise OSError("Kodi could not read the selected build archive.")
+    written = 0
+    try:
+        expected = source.size()
+        if expected and expected > DOWNLOAD_LIMIT:
+            raise ValueError("The selected build archive is larger than the wizard limit.")
+        with open(destination, "wb") as output:
+            while True:
+                block = source.read(CHUNK_SIZE)
+                if not block:
+                    break
+                if isinstance(block, str):
+                    block = block.encode("utf-8")
+                written += len(block)
+                if written > DOWNLOAD_LIMIT:
+                    raise ValueError("The selected build archive is larger than the wizard limit.")
+                output.write(block)
+        if expected and written != expected:
+            raise IOError("Kodi copied an incomplete build archive.")
+    finally:
+        source.close()
+    progress.update(5, "Reading the selected build archive…")
+
+
+def _install(name, build_id, access_code, public_build=False, local_archive=None):
     if public_build:
         profile_notice = (
             "This public build contains no saved add-on profile data, API keys, or account credentials from the backup. "
@@ -861,10 +986,12 @@ def _install(name, build_id, access_code, public_build=False):
         profile_notice = (
             "Saved settings and login data for add-ons included in this private build may replace the matching add-on data on this device."
         )
+        if local_archive:
+            profile_notice += " The selected private ZIP is not encrypted; keep it in private storage and delete any extra copies after transfer."
     if not xbmcgui.Dialog().yesno(
         "Install {}?".format(name),
-        "This installs and enables all packaged add-ons, fetches Android-compatible "
-        "native components through Kodi, replaces matching add-on files, and installs Xonfluence {} for Kodi 22. ".format(SKIN_VERSION) +
+        "This installs and enables all packaged add-ons, fetches device-compatible "
+        "native components through Kodi, replaces matching add-on files, and installs the Xonfluence skin for Kodi {}. ".format(KODI_MAJOR) +
         "It also sets Gismeteo to Thomasville, North Carolina, installs the Xonfluence skin settings, and removes Estuary MOD V2 and the OnePlay repository.\n\n"
         "It also removes XStream Player and its saved settings from this Kodi profile.\n\n" +
         profile_notice + " The KingBlap Wizard's own settings and access code will stay saved here. "
@@ -901,9 +1028,18 @@ def _install(name, build_id, access_code, public_build=False):
     rollback_complete = True
     preserve_transaction = False
     try:
-        _download_archive(
-            build_id, archive_path, progress, access_code, public_build=public_build
-        )
+        if local_archive:
+            allowed_build_ids = {
+                21: (KODI21_PUBLIC_BUILD_ID, KODI21_PRIVATE_BUILD_ID),
+                22: (KODI22_PUBLIC_BUILD_ID, KODI22_PRIVATE_BUILD_ID),
+            }.get(KODI_MAJOR, ())
+            if build_id not in allowed_build_ids:
+                raise ValueError("This local archive is not an available build for this Kodi release.")
+            _copy_local_archive(local_archive, archive_path, progress)
+        else:
+            _download_archive(
+                build_id, archive_path, progress, access_code, public_build=public_build
+            )
         with zipfile.ZipFile(archive_path, "r") as archive:
             (
                 expanded_size,
@@ -1112,13 +1248,14 @@ def _install(name, build_id, access_code, public_build=False):
             "finish applying Xonfluence.\n\n"
             "Kodi will recreate add-on logos and skin artwork when it displays them.\n"
             "Show and channel thumbnails need each add-on's own data and account settings.\n"
-            "Keep Kodi's official repository enabled for Android-specific binary dependencies.\n"
+            "Keep Kodi's official repository enabled so Kodi can install native dependencies for {}.\n"
             "Gismeteo is set to Thomasville, North Carolina. The OnePlay repository was removed.\n"
             "{} The Wizard access code remains saved locally."
         ).format(
             len(packages),
             len(platform_addons),
             refreshed_art,
+            _platform_name(),
             (
                 "No saved add-on API keys or account credentials were imported."
                 if public_build
@@ -1223,9 +1360,9 @@ def _add_directory_item(handle, name, build_id, public_build=False):
     item = xbmcgui.ListItem(label=name)
     tier = "public" if public_build else "private"
     description = (
-        "Public build: no saved add-on profile data or account credentials from the backup."
+        "Public build: no saved add-on profile data or account credentials from the backup. On Kodi 21.3, select the public build ZIP copied to this device."
         if public_build
-        else "Private build: contains saved add-on profile data; the access code is required."
+        else "Private build: contains saved add-on profile data. On Kodi 21.3, select the private ZIP copied to this device; keep that ZIP private."
     )
     item.setInfo("video", {"title": name, "plot": description})
     item_url = "{}?action=install&name={}&build={}&tier={}".format(
@@ -1259,11 +1396,26 @@ def main():
         elif not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,79}", build_id):
             xbmcgui.Dialog().ok("KingBlap Wizard", "The selected build is invalid.")
         else:
+            local_archive = None
+            if KODI_MAJOR in (21, 22):
+                kodi_label = "21.3" if KODI_MAJOR == 21 else "22"
+                local_archive = xbmcgui.Dialog().browse(
+                    1,
+                    "Select the {} Kodi {} build ZIP".format(
+                        "Public" if public_build else "Private", kodi_label
+                    ),
+                    "files",
+                    ".zip",
+                )
+                if not local_archive:
+                    xbmcplugin.endOfDirectory(handle, succeeded=True, cacheToDisc=False)
+                    return
             _install(
                 name,
                 build_id,
                 access_code if not public_build else None,
                 public_build=public_build,
+                local_archive=local_archive,
             )
         xbmcplugin.endOfDirectory(handle, succeeded=True, cacheToDisc=False)
         return
