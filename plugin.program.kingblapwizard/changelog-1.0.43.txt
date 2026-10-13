@@ -1,0 +1,3 @@
+- Applies the Fire color palette and Massive font when installing a private build that declares those Xonfluence appearance settings.
+- Keeps the active Xonfluence skin loaded during routine installs when the installed skin version matches the build, avoiding a temporary Estuary switch.
+- The Kodi 22 private build removes Aeon Nox: SiLVO and its saved skin settings.

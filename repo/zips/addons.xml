@@ -610,7 +610,7 @@
       <screenshot>resources/screenshot-3.jpg</screenshot>
     </assets>
   </extension>
-</addon><addon id="plugin.program.kingblapwizard" name="KingBlap Wizard" version="1.0.41" provider-name="KingBlap">
+</addon><addon id="plugin.program.kingblapwizard" name="KingBlap Wizard" version="1.0.43" provider-name="KingBlap">
   <requires>
     <import addon="xbmc.python" version="3.0.0" />
   </requires>

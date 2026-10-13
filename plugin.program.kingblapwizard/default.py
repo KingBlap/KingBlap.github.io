@@ -129,6 +129,18 @@ def _path(special):
     return os.path.abspath(xbmcvfs.translatePath(special))
 
 
+def _installed_addon_version(addon_root, addon_id):
+    manifest_path = os.path.join(addon_root, addon_id, "addon.xml")
+    try:
+        with open(manifest_path, "rb") as manifest_file:
+            manifest = ET.parse(manifest_file).getroot()
+    except (OSError, ET.ParseError):
+        return None
+    if manifest.get("id") != addon_id:
+        return None
+    return manifest.get("version")
+
+
 def _api_url(path):
     base = ADDON.getSetting("api_url").strip() or DEFAULT_API_URL
     parsed = urllib.parse.urlsplit(base)
@@ -522,6 +534,30 @@ def _validate_archive(archive, expected_public=None):
         or build_info.get("weather_location_id") != WEATHER_LOCATION_ID
     ):
         raise ValueError("The build information does not identify the Thomasville, North Carolina weather setup.")
+    skin_colors = None
+    skin_font = None
+    if distribution == "private":
+        skin_colors = build_info.get("skin_colors")
+        skin_font = build_info.get("skin_font")
+        if (
+            not isinstance(skin_colors, str)
+            or not re.fullmatch(r"[A-Za-z0-9_. -]+", skin_colors)
+            or "addons/{}/colors/{}.xml".format(SKIN_ID, skin_colors).casefold() not in file_paths
+        ):
+            raise ValueError("The private build does not include its selected Xonfluence color palette.")
+        if not isinstance(skin_font, str) or not re.fullmatch(r"[A-Za-z0-9_. -]+", skin_font):
+            raise ValueError("The private build does not identify a valid Xonfluence font.")
+        try:
+            font_xml = ET.fromstring(archive.read("addons/{}/xml/Font.xml".format(SKIN_ID)))
+        except (KeyError, ET.ParseError):
+            raise ValueError("The private build is missing its Xonfluence font definitions.")
+        font_ids = {
+            fontset.get("id")
+            for fontset in font_xml.findall("fontset")
+            if fontset.get("id")
+        } if font_xml.tag == "fonts" else set()
+        if skin_font not in font_ids:
+            raise ValueError("The private build's selected font is not defined by Xonfluence.")
     profile_mode = build_info.get("profile_data_mode", "settings-only")
     if profile_mode not in ("settings-only", PROFILE_DATA_MODE):
         raise ValueError("The build information contains an unsupported add-on profile mode.")
@@ -590,6 +626,8 @@ def _validate_archive(archive, expected_public=None):
         sorted(set(removed_addons)),
         profile_mode,
         sorted(profile_addon_data_ids) if profile_mode == PROFILE_DATA_MODE else [],
+        skin_colors,
+        skin_font,
     )
 
 
@@ -1096,7 +1134,7 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
         "Install {}?".format(name),
         "This installs and enables all packaged add-ons, fetches device-compatible "
         "native components through Kodi, replaces matching add-on files, and installs the Xonfluence skin for Kodi {}. ".format(KODI_MAJOR) +
-        "It also sets Gismeteo to Thomasville, North Carolina, installs the Xonfluence skin settings, and removes Estuary MOD V2 and the OnePlay repository.\n\n"
+        "It also sets Gismeteo to Thomasville, North Carolina, installs the Xonfluence skin settings, and removes Aeon Nox: SiLVO, Estuary MOD V2, and the OnePlay repository.\n\n"
         "It also removes XStream Player and its saved settings from this Kodi profile.\n\n" +
         profile_notice + " The KingBlap Wizard's own settings and access code will stay saved here. "
         "Libraries and Kodi databases are not in the build.",
@@ -1129,6 +1167,7 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
     original_giptv_enabled = None
     original_weather_settings = None
     original_weather_addon_settings = None
+    original_skin_appearance = None
     committed = False
     rollback_complete = True
     preserve_transaction = False
@@ -1158,6 +1197,8 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                 removed_addons,
                 profile_mode,
                 profile_addon_data_ids,
+                skin_colors,
+                skin_font,
             ) = _validate_archive(archive, expected_public=public_build)
             required_dependencies = _required_external_dependencies(archive, packages)
             free_space = shutil.disk_usage(home).free
@@ -1258,11 +1299,31 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
             if manifest.get("id") != addon_id or manifest.get("version") != version:
                 raise ValueError("The staged {} add-on failed its manifest check.".format(addon_id))
         original_skin = _get_setting("lookandfeel.skin")
+        if skin_colors is not None or skin_font is not None:
+            original_skin_appearance = {}
+            if skin_colors is not None:
+                original_skin_appearance["lookandfeel.skincolors"] = _get_setting(
+                    "lookandfeel.skincolors"
+                )
+            if skin_font is not None:
+                original_skin_appearance["lookandfeel.font"] = _get_setting(
+                    "lookandfeel.font"
+                )
         original_weather_settings = {
             "weather.addon": _get_setting("weather.addon"),
             "weather.currentlocation": _get_setting("weather.currentlocation"),
         }
         original_weather_addon_settings = _read_weather_addon_settings()
+        keep_active_skin = (
+            original_skin == SKIN_ID
+            and _installed_addon_version(addon_root, SKIN_ID) == packages.get(SKIN_ID)
+        )
+        if keep_active_skin:
+            _log(
+                "Keeping the active {} skin in place because its installed and build versions match ({}).".format(
+                    SKIN_ID, packages[SKIN_ID]
+                )
+            )
         giptv_id = "plugin.video.giptv"
         if giptv_id in packages or giptv_id in removed_addons:
             original_giptv_enabled = _get_addon_enabled(giptv_id)
@@ -1270,13 +1331,17 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                 # Stop the provider service before replacing or removing its profile files.
                 _set_addon_enabled(giptv_id, False)
                 xbmc.sleep(1500)
-        if original_skin in (SKIN_ID, LEGACY_SKIN_ID):
+        if original_skin in (SKIN_ID, LEGACY_SKIN_ID) and not keep_active_skin:
             # Unload either skin before replacing or removing its files.
             _activate_skin("skin.estuary")
 
         progress.update(92, "KingBlap Wizard", "Replacing add-ons safely…")
         removed_addons = set(removed_addons) | {"plugin.video.xstream-player", LEGACY_SKIN_ID}
-        for addon_id in sorted(set(packages) | removed_addons):
+        addon_ids_to_replace = set(packages) | removed_addons
+        if keep_active_skin:
+            # Keep Kodi's currently rendered skin loaded when the build already has that version.
+            addon_ids_to_replace.discard(SKIN_ID)
+        for addon_id in sorted(addon_ids_to_replace):
             staged = os.path.join(staged_addons, addon_id) if addon_id in packages else None
             backup = os.path.join(rollback_root, "addons", addon_id)
             _swap_child(addon_root, addon_id, staged, backup, changes)
@@ -1343,6 +1408,18 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
 
         progress.update(97, "KingBlap Wizard", "Loading Xonfluence…")
         _apply_skin_settings()
+        if skin_colors is not None:
+            _set_setting("lookandfeel.skincolors", skin_colors)
+            if _get_setting("lookandfeel.skincolors") != skin_colors:
+                raise RuntimeError("Kodi did not apply the selected Xonfluence color palette.")
+        if skin_font is not None:
+            _set_setting("lookandfeel.font", skin_font)
+            if _get_setting("lookandfeel.font") != skin_font:
+                raise RuntimeError("Kodi did not apply the selected Xonfluence font.")
+        if skin_colors is not None or skin_font is not None:
+            _log("Applied private Xonfluence appearance: colors={!r}, font={!r}.".format(
+                skin_colors, skin_font
+            ))
         committed = True
         try:
             refreshed_art = _refresh_addon_art_cache(
@@ -1373,6 +1450,11 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                 else "Saved profile data for add-ons in this private build has been restored."
             ),
         )
+        if skin_colors is not None or skin_font is not None:
+            success_message += "\nThe Xonfluence interface uses the {} color palette and {} font.".format(
+                skin_colors or "current",
+                skin_font or "current",
+            )
         xbmcgui.Dialog().ok(
             "KingBlap build installed",
             success_message,
@@ -1431,6 +1513,13 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                     _log("Could not restore the previous skin: {}".format(
                         restore_exc
                     ), xbmc.LOGERROR)
+            if original_skin_appearance is not None:
+                for setting, value in original_skin_appearance.items():
+                    try:
+                        _set_setting(setting, value)
+                    except Exception as restore_exc:
+                        rollback_complete = False
+                        _log("Could not restore {}: {}".format(setting, restore_exc), xbmc.LOGERROR)
         if not committed and rollback_complete and not preserve_transaction:
             try:
                 _remove_path(transaction)
