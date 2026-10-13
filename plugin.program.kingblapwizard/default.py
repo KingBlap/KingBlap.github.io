@@ -211,18 +211,21 @@ def _get_builds(access_code=None, public_build=False):
             raise ValueError("The {} build list contains an invalid entry.".format(label))
         seen.add(build_id)
         builds.append((build_id, name.strip()))
-    if not public_build and KODI_MAJOR in (21, 22):
-        private_prefix = (
-            KODI21_PRIVATE_BUILD_PREFIX
-            if KODI_MAJOR == 21
-            else KODI22_PRIVATE_BUILD_PREFIX
-        )
-        builds = [build for build in builds if build[0].startswith(private_prefix)]
     return builds
 
 
 def _valid_access_code(access_code):
     return bool(ACCESS_CODE_PATTERN.fullmatch(access_code))
+
+
+def _private_build_kodi_major(build_id):
+    if not isinstance(build_id, str):
+        return None
+    if build_id.startswith(KODI21_PRIVATE_BUILD_PREFIX):
+        return 21
+    if build_id.startswith(KODI22_PRIVATE_BUILD_PREFIX):
+        return 22
+    return None
 
 
 def _safe_target(root, relative):
@@ -1120,6 +1123,17 @@ def _copy_local_archive(source_path, destination, progress):
 
 
 def _install(name, build_id, access_code, public_build=False, local_archive=None):
+    target_kodi_major = _private_build_kodi_major(build_id) if not public_build else None
+    if target_kodi_major is not None and target_kodi_major != KODI_MAJOR:
+        target_version = "21.3" if target_kodi_major == 21 else str(target_kodi_major)
+        device_version = "21.3" if KODI_MAJOR == 21 else str(KODI_MAJOR)
+        xbmcgui.Dialog().ok(
+            "Kodi version mismatch",
+            "This build is for Kodi {}. Install it on a device running Kodi {}, not Kodi {}.".format(
+                target_version, target_version, device_version
+            ),
+        )
+        return
     if public_build:
         profile_notice = (
             "This public build contains no saved add-on profile data, API keys, or account credentials from the backup. "
@@ -1581,7 +1595,7 @@ def _add_directory_item(handle, name, build_id, public_build=False):
     description = (
         "Public build: no saved add-on profile data or account credentials from the backup. On Kodi 21.3, select the public build ZIP copied to this device."
         if public_build
-        else "Private build: contains saved add-on profile data and downloads through the access-code-protected service. Keep private build files and account data private."
+        else "Private build: Kodi 21.3 and Kodi 22 builds are listed here. Choose the build matching this device; downloads use the access-code-protected service."
     )
     item.setInfo("video", {"title": name, "plot": description})
     item_url = "{}?action=install&name={}&build={}&tier={}".format(

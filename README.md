@@ -14,8 +14,8 @@ Build 1.0.18 uses the Kodi 22 backup snapshot dated October 11, 2026. Compatibil
 
 ## Install the complete Wizard build
 
-1. Install or update KingBlap Wizard 1.0.44 from Install from repository → KingBlap Kodi Repository → Program add-ons. If needed, install the Wizard 1.0.44 ZIP from https://kingblap.github.io/repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.44.zip.
-2. Open the Wizard and choose **Public Builds** or **Private Builds**. On Kodi 22, Public Build 1.0.21 downloads from the public repository and the Wizard verifies its SHA-256 checksum. Private Build 1.0.34 is downloaded through the protected build service. Kodi 21.3 Private Build 1.0.21 now downloads through that same protected service; Kodi 21.3 public builds still require choosing a local ZIP. Use a Kodi 21.3 archive only on Kodi 21.3, and a Kodi 22 archive only on Kodi 22.
+1. Install or update KingBlap Wizard 1.0.45 from Install from repository → KingBlap Kodi Repository → Program add-ons. If needed, install the Wizard 1.0.45 ZIP from https://kingblap.github.io/repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.45.zip.
+2. Open the Wizard and choose **Public Builds** or **Private Builds**. Private Builds lists both Kodi 21.3 Build 1.0.21 and Kodi 22 Build 1.0.34 on either Kodi version; select the one matching the device. The Wizard blocks installation if the selected private build targets a different Kodi version. Kodi 22 Public Build 1.0.21 downloads from the public repository and the Wizard verifies its SHA-256 checksum. Kodi 21.3 public builds still require choosing a local ZIP.
 3. Private builds require the shared 16-digit numeric access code. Review the confirmation before installing: a private archive can replace saved add-on settings and login data for included add-ons. Keep private archives and the access code private. The Wizard's own API URL and access code remain saved on the device.
 4. Leave Kodi open while the build installs, close the completion notice, and restart Kodi once.
 
@@ -54,6 +54,7 @@ The repository was assembled from Windows Kodi 22 files. Windows-specific native
 
 | Build | Changes |
 | --- | --- |
+| **Wizard 1.0.45** | Shows Kodi 21.3 and Kodi 22 private builds together, and blocks installing a build for the wrong Kodi version. |
 | **Wizard 1.0.44** | Lists Kodi 21.3 private builds from the protected service and downloads them directly; Kodi 21.3 public builds remain local ZIP installs. |
 | **Wizard 1.0.43** | Applies the private build's Fire color palette and Massive font; keeps the matching Xonfluence skin loaded during routine updates. |
 | **Wizard 1.0.42** | Keeps Xonfluence active during installs when the installed skin version matches the build; removes Aeon Nox: SiLVO from the private build. |
