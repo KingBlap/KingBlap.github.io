@@ -1,0 +1,3 @@
+- Lists Kodi 21.3 private builds from the access-code-protected service and downloads them directly in the Wizard.
+- Kodi 21.3 public builds remain compatible local ZIP installs.
+- Keeps Kodi 22 private build listings and download behavior intact.
