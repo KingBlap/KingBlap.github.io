@@ -1,6 +1,6 @@
 # KingBlap Kodi Repository
 
-This project provides two ways to install Kodi add-ons: the KingBlap Kodi Repository lets you choose add-ons individually, while KingBlap Wizard offers separate public and private builds. The repository catalog lists 121 packages. The Kodi 22 private build 1.0.34 and Kodi 21.3 private build 1.0.21 restore selected saved profiles, limit GIPTV live groups to USA and 24/7, and configure Xonfluence with Fire colors and the Massive font. They configure Gismeteo for Thomasville, North Carolina.
+This project provides two ways to install Kodi add-ons: the KingBlap Kodi Repository lets you choose add-ons individually, while KingBlap Wizard offers separate public and private builds. The repository catalog lists 121 packages. Kodi 22 Public Build 1.0.22 contains the same 79 add-on packages as Kodi 22 Private Build 1.0.34, with the Fire palette and Massive font, but no saved account profiles, API keys, or credentials. The private builds restore selected saved profiles, limit GIPTV live groups to USA and 24/7, and configure Xonfluence with Fire colors and the Massive font. They configure Gismeteo for Thomasville, North Carolina.
 
 Build 1.0.18 uses the Kodi 22 backup snapshot dated October 11, 2026. Compatibility and available features vary by Kodi version, device, add-on, and service provider.
 
@@ -14,14 +14,14 @@ Build 1.0.18 uses the Kodi 22 backup snapshot dated October 11, 2026. Compatibil
 
 ## Install the complete Wizard build
 
-1. Install or update KingBlap Wizard 1.0.45 from Install from repository → KingBlap Kodi Repository → Program add-ons. If needed, install the Wizard 1.0.45 ZIP from https://kingblap.github.io/repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.45.zip.
-2. Open the Wizard and choose **Public Builds** or **Private Builds**. Private Builds lists both Kodi 21.3 Build 1.0.21 and Kodi 22 Build 1.0.34 on either Kodi version; select the one matching the device. The Wizard blocks installation if the selected private build targets a different Kodi version. Kodi 22 Public Build 1.0.21 downloads from the public repository and the Wizard verifies its SHA-256 checksum. Kodi 21.3 public builds still require choosing a local ZIP.
+1. Install or update KingBlap Wizard 1.0.46 from Install from repository → KingBlap Kodi Repository → Program add-ons. If needed, install the Wizard 1.0.46 ZIP from https://kingblap.github.io/repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.46.zip.
+2. Open the Wizard and choose **Public Builds** or **Private Builds**. Private Builds lists both Kodi 21.3 Build 1.0.21 and Kodi 22 Build 1.0.34 on either Kodi version; select the one matching the device. The Wizard blocks installation if the selected private build targets a different Kodi version. Kodi 22 Public Build 1.0.22 downloads from the public repository and the Wizard verifies its SHA-256 checksum. Kodi 21.3 public builds still require choosing a local ZIP.
 3. Private builds require the shared 16-digit numeric access code. Review the confirmation before installing: a private archive can replace saved add-on settings and login data for included add-ons. Keep private archives and the access code private. The Wizard's own API URL and access code remain saved on the device.
 4. Leave Kodi open while the build installs, close the completion notice, and restart Kodi once.
 
-The public archive is built without add-on account profile data. Its only user-data files are the sanitized Xonfluence and Gismeteo preferences needed for appearance and weather. Private builds restore selected add-on profile data from the October 11 backup, including credentials stored by those add-ons. Anyone with the shared access code can download that private profile data, so share the code and private builds only with intended recipients.
+The Kodi 22 public archive is built from the same add-on packages as its private counterpart, without copying any saved add-on account profiles, API keys, credentials, IPTV playlists, or guides. Its only user-data files are sanitized Xonfluence appearance and Gismeteo weather preferences. Private builds restore selected add-on profile data from the October 11 backup, including credentials stored by those add-ons. Anyone with the shared access code can download that private profile data, so share the code and private builds only with intended recipients.
 
-Back up Kodi before installing over an existing setup. Both choices replace packaged add-on files and remove XStream Player, Estuary MOD V2, and the OnePlay repository, then enable the add-ons listed in their archives. The private choice also removes Aeon Nox: SiLVO and its saved settings, and replaces matching profile data for its included add-ons. The public choice leaves other add-on account profiles in place. Kodi 22 Private Build 1.0.34 and Kodi 21.3 Private Build 1.0.21 apply the Fire palette and Massive font to Xonfluence. Kodi libraries remain on the device. Gismeteo is configured for Thomasville, North Carolina.
+Back up Kodi before installing over an existing setup. Both choices replace packaged add-on files and remove XStream Player, Estuary MOD V2, Aeon Nox: SiLVO, and the OnePlay repository, then enable the add-ons listed in their archives. Kodi 22 Public Build 1.0.22 and Kodi 22 Private Build 1.0.34 use the same 79 add-on packages and apply the Fire palette and Massive font to Xonfluence. The private choice also replaces matching profile data for its included add-ons; the public choice leaves other account profiles already on the device in place. Kodi 21.3 Private Build 1.0.21 also applies Fire and Massive. Kodi libraries remain on the device. Gismeteo is configured for Thomasville, North Carolina.
 
 ## What both builds include
 
@@ -32,18 +32,18 @@ Back up Kodi before installing over an existing setup. Both choices replace pack
 - Eight supplied Demon Women pictures packaged with Xonfluence as a randomized, crossfading background slideshow.
 - Sanitized, portable Xonfluence presentation settings.
 - Gismeteo set to Thomasville, North Carolina (location ID 8771), with the active location refreshed after installation.
-- **Public Build 1.0.19:** sanitized Xonfluence and Gismeteo settings only. No saved API keys, account credentials, or other add-on profile data from the backup.
+- **Kodi 22 Public Build 1.0.22:** same 79 add-on packages as Kodi 22 Private Build 1.0.34; Fire palette and Massive font; sanitized Xonfluence and Gismeteo settings only; no saved API keys, account credentials, IPTV playlists, or other add-on profiles from the backup.
 - **Kodi 22 Private Build 1.0.34 and Kodi 21.3 Private Build 1.0.21:** selected saved profile data, with Xonfluence's Fire palette and Massive font.
 - Both archives exclude the KingBlap Wizard settings and access code; the installer preserves the Wizard settings already on the device.
 
-Builds exclude Kodi media databases, library records, texture thumbnails, and platform-specific native binaries. Private archives include the filtered GIPTV playlist and an empty local EPG for IPTV Simple. Keep the shared access code private because it grants access to saved account data in private builds.
+Builds exclude Kodi media databases, library records, texture thumbnails, and platform-specific native binaries. Private archives include the filtered GIPTV playlist and an empty local EPG for IPTV Simple. The public archive omits those private IPTV files. Keep the shared access code private because it grants access to saved account data in private builds.
 
 The repository was assembled from Windows Kodi 22 files. Windows-specific native packages are omitted from the portable build. Keep Kodi's official repository enabled so Kodi can install compatible platform dependencies where available.
 
 ## Current downloads
 
 - Build list: https://kingblap.github.io/builds.txt
-- Kodi 22 public build 1.0.21: choose Public Builds in KingBlap Wizard; the Wizard downloads it from the repository and verifies the ZIP.
+- Kodi 22 public build 1.0.22: same add-on packages and appearance as private build 1.0.34, without saved account profiles, API keys, or credentials; choose Public Builds in KingBlap Wizard.
 - Kodi 22 private build 1.0.34: choose Private Builds after entering the 16-digit access code; the Wizard lists and downloads it through the protected build service.
 - Kodi 21.3 private build 1.0.21: choose Private Builds after entering the 16-digit access code; it downloads through the protected build service.
 - KingBlap repository installer: https://kingblap.github.io/repository.kingblap-1.0.0.zip
@@ -54,6 +54,7 @@ The repository was assembled from Windows Kodi 22 files. Windows-specific native
 
 | Build | Changes |
 | --- | --- |
+| **Wizard 1.0.46 / Kodi 22 Public Build 1.0.22** | Matches the Kodi 22 private build's 79 add-on packages, Fire palette, and Massive font while excluding saved account profiles, credentials, keys, IPTV playlists, and guides. |
 | **Wizard 1.0.45** | Shows Kodi 21.3 and Kodi 22 private builds together, and blocks installing a build for the wrong Kodi version. |
 | **Wizard 1.0.44** | Lists Kodi 21.3 private builds from the protected service and downloads them directly; Kodi 21.3 public builds remain local ZIP installs. |
 | **Wizard 1.0.43** | Applies the private build's Fire color palette and Massive font; keeps the matching Xonfluence skin loaded during routine updates. |

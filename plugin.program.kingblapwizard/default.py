@@ -54,9 +54,9 @@ KODI21_PRIVATE_BUILD_ID = "kingblap-private-kodi21.3-1.0.21"
 KODI21_PRIVATE_BUILD_PREFIX = "kingblap-private-kodi21.3-"
 KODI21_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 21.3 (choose ZIP)"
 KODI21_PRIVATE_BUILD_NAME = "Private KingBlap Build for Kodi 21.3 (download)"
-KODI22_PUBLIC_BUILD_ID = "kingblap-public-kodi22-1.0.21"
+KODI22_PUBLIC_BUILD_ID = "kingblap-public-kodi22-1.0.22"
 KODI22_PRIVATE_BUILD_ID = "kingblap-private-kodi22-1.0.26"
-KODI22_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 22 (download)"
+KODI22_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 22 1.0.22 (download)"
 KODI22_PRIVATE_BUILD_NAME = "Private KingBlap Build for Kodi 22 1.0.28 (download)"
 KODI22_PRIVATE_BUILD_PREFIX = "kingblap-private-kodi22-"
 PUBLIC_BUILD_PARTS = (
@@ -65,12 +65,11 @@ PUBLIC_BUILD_PARTS = (
     ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-1.0.19.zip.part003", 10645365),
 )
 KODI22_PUBLIC_BUILD_PARTS = (
-    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-22-1.0.21.zip.part001", 83886080),
-    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-22-1.0.21.zip.part002", 83886080),
-    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-22-1.0.21.zip.part003", 83886080),
-    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-22-1.0.21.zip.part004", 33986378),
+    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-22-1.0.22.zip.part001", 83886080),
+    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-22-1.0.22.zip.part002", 83886080),
+    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-22-1.0.22.zip.part003", 29489906),
 )
-KODI22_PUBLIC_BUILD_SHA256 = "CFFB99C9F4C1C0D0380E53EDFAD3EDF228FC20345B560F4F307743382B0BAC97"
+KODI22_PUBLIC_BUILD_SHA256 = "B78D4A8DAC1EEA01A90437CDDFAAEBE3273AD686E0BB28AD55FDD5356DBBD860"
 WEATHER_VERSION = "0.6.4+matrix.1"
 SKIN_SETTINGS_ARCHIVE_PATH = "userdata/addon_data/{}/settings.xml".format(SKIN_ID)
 LEGACY_SKIN_ID = "skin.estuary.modv2"
@@ -159,7 +158,7 @@ def _api_url(path):
 
 def _fetch(url, max_bytes, access_code=None):
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.44 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.46 Kodi",
         "Accept": "application/json",
     }
     if access_code:
@@ -538,30 +537,29 @@ def _validate_archive(archive, expected_public=None):
         or build_info.get("weather_location_id") != WEATHER_LOCATION_ID
     ):
         raise ValueError("The build information does not identify the Thomasville, North Carolina weather setup.")
-    skin_colors = None
-    skin_font = None
-    if distribution == "private":
-        skin_colors = build_info.get("skin_colors")
-        skin_font = build_info.get("skin_font")
+    skin_colors = build_info.get("skin_colors")
+    skin_font = build_info.get("skin_font")
+    appearance_declared = skin_colors is not None or skin_font is not None
+    if distribution == "private" or appearance_declared:
         if (
             not isinstance(skin_colors, str)
             or not re.fullmatch(r"[A-Za-z0-9_. -]+", skin_colors)
             or "addons/{}/colors/{}.xml".format(SKIN_ID, skin_colors).casefold() not in file_paths
         ):
-            raise ValueError("The private build does not include its selected Xonfluence color palette.")
+            raise ValueError("The build does not include its selected Xonfluence color palette.")
         if not isinstance(skin_font, str) or not re.fullmatch(r"[A-Za-z0-9_. -]+", skin_font):
-            raise ValueError("The private build does not identify a valid Xonfluence font.")
+            raise ValueError("The build does not identify a valid Xonfluence font.")
         try:
             font_xml = ET.fromstring(archive.read("addons/{}/xml/Font.xml".format(SKIN_ID)))
         except (KeyError, ET.ParseError):
-            raise ValueError("The private build is missing its Xonfluence font definitions.")
+            raise ValueError("The build is missing its Xonfluence font definitions.")
         font_ids = {
             fontset.get("id")
             for fontset in font_xml.findall("fontset")
             if fontset.get("id")
         } if font_xml.tag == "fonts" else set()
         if skin_font not in font_ids:
-            raise ValueError("The private build's selected font is not defined by Xonfluence.")
+            raise ValueError("The build's selected font is not defined by Xonfluence.")
     profile_mode = build_info.get("profile_data_mode", "settings-only")
     if profile_mode not in ("settings-only", PROFILE_DATA_MODE):
         raise ValueError("The build information contains an unsupported add-on profile mode.")
@@ -651,7 +649,7 @@ def _download_public_archive(destination, progress, build_id):
             request = urllib.request.Request(
                 url,
                 headers={
-                    "User-Agent": "KingBlap-Wizard/1.0.44 Kodi",
+                    "User-Agent": "KingBlap-Wizard/1.0.46 Kodi",
                     "Accept": "application/octet-stream",
                 },
             )
@@ -710,7 +708,7 @@ def _download_archive(build_id, destination, progress, access_code=None, public_
         "{}/{}/download".format(route, urllib.parse.quote(build_id, safe=""))
     )
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.44 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.46 Kodi",
         "Accept": "application/zip",
     }
     if access_code:

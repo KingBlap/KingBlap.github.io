@@ -1,0 +1,3 @@
+- Updates Kodi 22 Public Build to 1.0.22 with the same add-on packages as Private Build 1.0.34.
+- Keeps the Fire palette and Massive font while including only sanitized skin and weather settings.
+- Public Kodi 22 build excludes saved account profiles, API keys, credentials, IPTV playlists, and guides.
