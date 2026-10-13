@@ -56,7 +56,7 @@ KODI21_PRIVATE_BUILD_NAME = "Private KingBlap Build for Kodi 21.3 (choose ZIP)"
 KODI22_PUBLIC_BUILD_ID = "kingblap-public-kodi22-1.0.21"
 KODI22_PRIVATE_BUILD_ID = "kingblap-private-kodi22-1.0.26"
 KODI22_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 22 (download)"
-KODI22_PRIVATE_BUILD_NAME = "Private KingBlap Build for Kodi 22 1.0.26 (download)"
+KODI22_PRIVATE_BUILD_NAME = "Private KingBlap Build for Kodi 22 1.0.28 (download)"
 KODI22_PRIVATE_BUILD_PREFIX = "kingblap-private-kodi22-"
 PUBLIC_BUILD_PARTS = (
     ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-1.0.19.zip.part001", 83886080),
@@ -446,7 +446,7 @@ def _validate_archive(archive, expected_public=None):
             raise ValueError("The build archive uses a file as a directory.")
     if (
         packages.get("plugin.video.giptv") not in ("3.1.0", "3.1.1")
-        and packages.get("plugin.video.xstream-pro") != "1.1.2"
+        and packages.get("plugin.video.xstream-pro") not in ("1.1.2", "1.1.4")
     ):
         raise ValueError("The build archive does not contain a supported IPTV add-on.")
     if packages.get(SKIN_ID) != SKIN_VERSION:
@@ -551,24 +551,28 @@ def _validate_archive(archive, expected_public=None):
     if (
         build_info.get("kodi_major") == 22
         and build_info.get("distribution") == "private"
-        and build_info.get("version") == "1.0.26"
+        and build_info.get("version") in ("1.0.26", "1.0.28")
     ):
         xstream_id = "plugin.video.xstream-pro"
         giptv_id = "plugin.video.giptv"
+        expected_xstream_version = {
+            "1.0.26": "1.1.2",
+            "1.0.28": "1.1.4",
+        }.get(build_info.get("version"))
         if (
-            packages.get(xstream_id) != "1.1.2"
+            packages.get(xstream_id) != expected_xstream_version
             or giptv_id in packages
             or giptv_id not in removed_addons
             or xstream_id not in profile_addon_data_ids
             or giptv_id in profile_addon_data_ids
         ):
-            raise ValueError("The private 1.0.26 build does not contain the expected XStream Pro migration.")
+            raise ValueError("The private build does not contain the expected XStream Pro package and migration.")
         try:
             xstream_settings = ET.fromstring(
                 archive.read("userdata/addon_data/{}/settings.xml".format(xstream_id))
             )
         except (KeyError, ET.ParseError):
-            raise ValueError("The private 1.0.26 build is missing valid XStream Pro settings.")
+            raise ValueError("The private build is missing valid XStream Pro settings.")
         xstream_values = {
             setting.get("id"): (setting.text or "").strip()
             for setting in xstream_settings.findall("setting")
@@ -578,7 +582,7 @@ def _validate_archive(archive, expected_public=None):
             "profile_1_xtream_username",
             "profile_1_xtream_password",
         )) or xstream_values.get("profile_1_source_type") != "Xtream Codes":
-            raise ValueError("The private 1.0.26 build is missing its migrated Xtream Profile 1 credentials.")
+            raise ValueError("The private build is missing its migrated Xtream Profile 1 credentials.")
     return (
         total,
         packages,
