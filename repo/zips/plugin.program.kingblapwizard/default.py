@@ -1029,16 +1029,34 @@ def _wait_for_addon_registration(addon_ids, progress, confirm_required_addon=Fal
         # dialog can block Kodi's add-on work while the wizard waits here.
         if confirm_required_addon:
             _confirm_kodi_addon_prompt(sorted(pending)[0], progress)
-        for addon_id in tuple(pending):
+        start_index = 0
+        page_size = 250
+        while pending:
             try:
-                details = _jsonrpc("Addons.GetAddonDetails", {
-                    "addonid": addon_id,
+                result = _jsonrpc("Addons.GetAddons", {
+                    "enabled": "all",
                     "properties": ["version"],
-                }).get("addon", {})
+                    "limits": {"start": start_index, "end": start_index + page_size},
+                })
             except RuntimeError:
-                continue
-            if details.get("version"):
-                pending.remove(addon_id)
+                break
+            addons = result.get("addons", []) if isinstance(result, dict) else []
+            limits = result.get("limits", {}) if isinstance(result, dict) else {}
+            total = limits.get("total") if isinstance(limits, dict) else None
+            for addon in addons:
+                if addon.get("addonid") in pending and addon.get("version"):
+                    pending.discard(addon["addonid"])
+            if (
+                not pending
+                or not addons
+                or (
+                    isinstance(total, int)
+                    and start_index + len(addons) >= total
+                )
+                or (total is None and len(addons) < page_size)
+            ):
+                break
+            start_index += len(addons)
         if pending:
             elapsed = int(time.monotonic() - started)
             progress.update(
@@ -1098,75 +1116,6 @@ def _ensure_kodi_managed_addon(addon_id, progress):
         xbmc.executebuiltin("InstallAddon({})".format(addon_id), False)
         _wait_for_addon_registration((addon_id,), progress, confirm_required_addon=True)
     _enable_addon(addon_id)
-
-
-def _texture_source_path(url):
-    """Resolve a cached texture URL to a local path when it refers to an add-on file."""
-    value = str(url or "").strip()
-    if not value:
-        return None
-
-    if value.lower().startswith("special://"):
-        value = _path(value)
-    elif value.lower().startswith("file://"):
-        value = urllib.parse.unquote(urllib.parse.urlsplit(value).path)
-    elif value.lower().startswith("image://"):
-        value = urllib.parse.unquote(value[8:]).rstrip("/")
-        if value.lower().startswith(("http://", "https://", "plugin://")):
-            return None
-    elif value.lower().startswith(("http://", "https://", "plugin://")):
-        return None
-    else:
-        value = urllib.parse.unquote(value)
-
-    if not os.path.isabs(value):
-        return None
-    return os.path.realpath(value)
-
-
-def _refresh_addon_art_cache(addon_root, addon_ids):
-    """Drop stale texture records for add-on files that this build replaced."""
-    addon_root = os.path.realpath(addon_root)
-    roots = []
-    for addon_id in addon_ids:
-        candidate = os.path.realpath(os.path.join(addon_root, addon_id))
-        try:
-            if os.path.commonpath((addon_root, candidate)) == addon_root and candidate != addon_root:
-                roots.append(candidate)
-        except ValueError:
-            continue
-    if not roots:
-        return 0
-
-    try:
-        result = _jsonrpc("Textures.GetTextures", {"properties": ["url", "textureid"]})
-    except (RuntimeError, ValueError, TypeError) as exc:
-        _log("Could not inspect the add-on artwork cache: {}".format(exc), xbmc.LOGWARNING)
-        return 0
-
-    entries = result.get("textures", []) if isinstance(result, dict) else []
-    stale_ids = set()
-    for entry in entries:
-        source = _texture_source_path(entry.get("url"))
-        texture_id = entry.get("textureid")
-        if source is None or texture_id is None:
-            continue
-        for root in roots:
-            try:
-                if os.path.commonpath((root, source)) == root and source != root:
-                    stale_ids.add(int(texture_id))
-                    break
-            except ValueError:
-                continue
-
-    removed = 0
-    for texture_id in stale_ids:
-        try:
-            _jsonrpc("Textures.RemoveTexture", {"textureid": texture_id})
-            removed += 1
-        except (RuntimeError, ValueError, TypeError):
-            continue
-    return removed
 
 
 def _apply_skin_settings():
@@ -1339,6 +1288,9 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
             count = 0
             last_percent = -1
             files = [info for info in archive.infolist() if not info.is_dir()]
+            _log("Preparing {} build files ({} add-ons, {} expanded bytes).".format(
+                len(files), len(packages), expanded_size
+            ))
             for info in files:
                 if info.filename.startswith("addons/"):
                     relative = info.filename[len("addons/"):]
@@ -1380,13 +1332,17 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                     raise
                 count += 1
                 percent = int(count * 90 / max(1, len(files)))
-                if percent != last_percent:
+                if percent != last_percent or count % 50 == 0 or count == len(files):
                     progress.update(
                         percent,
                         "KingBlap Wizard",
-                        "Preparing add-ons without changing the current installation…",
+                        "Preparing files ({:,} of {:,}); your current setup is unchanged…".format(
+                            count, len(files)
+                        ),
                     )
                     last_percent = percent
+                if count % 50 == 0:
+                    xbmc.sleep(1)
 
         staged_skin_settings = os.path.join(
             staged_userdata,
@@ -1514,13 +1470,14 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
             )
         xbmc.executebuiltin("UpdateLocalAddons", True)
         xbmc.executebuiltin("UpdateAddonRepos", True)
-        kodi_managed_addons = sorted(set(required_dependencies) | set(platform_addons))
+        kodi_managed_addons = set(required_dependencies) | set(platform_addons)
+        if PVR_ADDON_ID in profile_addon_data_ids:
+            # Do not start importing thousands of IPTV channels while Kodi is
+            # still registering and enabling the rest of the build.
+            kodi_managed_addons.discard(PVR_ADDON_ID)
+        kodi_managed_addons = sorted(kodi_managed_addons)
         for addon_id in kodi_managed_addons:
             _ensure_kodi_managed_addon(addon_id, progress)
-        if PVR_ADDON_ID in profile_addon_data_ids:
-            if _get_addon_enabled(PVR_ADDON_ID) is not True:
-                _enable_addon(PVR_ADDON_ID)
-            xbmc.sleep(1500)
         xbmc.executebuiltin("UpdateLocalAddons", True)
         _wait_for_addon_registration(packages.keys(), progress)
         _enable_build_addons(packages.keys(), progress)
@@ -1554,23 +1511,20 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
             _set_setting("lookandfeel.font", skin_font)
             if _get_setting("lookandfeel.font") != skin_font:
                 raise RuntimeError("Kodi did not apply the selected Xonfluence font.")
+        if PVR_ADDON_ID in profile_addon_data_ids:
+            progress.update(98, "KingBlap Wizard", "Starting GIPTV Live TV…")
+            if _get_addon_enabled(PVR_ADDON_ID) is not True:
+                _enable_addon(PVR_ADDON_ID)
+            xbmc.sleep(1500)
         if skin_colors is not None or skin_font is not None:
             _log("Applied private Xonfluence appearance: colors={!r}, font={!r}.".format(
                 skin_colors, skin_font
             ))
         committed = True
-        try:
-            refreshed_art = _refresh_addon_art_cache(
-                addon_root, set(packages) | removed_addons
-            )
-        except Exception as cache_exc:
-            refreshed_art = 0
-            _log("Could not refresh the add-on artwork cache: {}".format(cache_exc), xbmc.LOGWARNING)
         progress.close()
         success_message = (
             "Kodi registered and enabled all {} add-ons in the build and checked {} "
-            "platform-specific add-ons through Kodi's add-on manager. It also refreshed "
-            "{} cached add-on images. After you close this message, the wizard will "
+            "platform-specific add-ons through Kodi's add-on manager. After you close this message, the wizard will "
             "finish applying Xonfluence.\n\n"
             "Kodi will recreate add-on logos and skin artwork when it displays them.\n"
             "Show and channel thumbnails need each add-on's own data and account settings.\n"
@@ -1580,7 +1534,6 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
         ).format(
             len(packages),
             len(platform_addons),
-            refreshed_art,
             _platform_name(),
             (
                 "No saved add-on API keys or account credentials were imported."

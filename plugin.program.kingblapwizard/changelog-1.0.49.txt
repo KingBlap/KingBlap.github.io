@@ -1,0 +1,5 @@
+KingBlap Wizard 1.0.49
+
+- Keep Kodi responsive while preparing large builds and check newly installed add-ons in batches.
+- Start GIPTV's IPTV Simple channel import after the rest of the build and skin setup is complete.
+- Remove a synchronous artwork-cache sweep from the installation path.
