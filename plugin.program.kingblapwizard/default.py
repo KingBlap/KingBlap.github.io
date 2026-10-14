@@ -94,6 +94,8 @@ WEATHER_SETTINGS_ARCHIVE_PATH = "userdata/addon_data/{}/settings.xml".format(WEA
 PROFILE_DATA_MODE = "replace-addon-data-except-wizard"
 BUILD_LIMIT = 1024 * 1024 * 1024
 DOWNLOAD_LIMIT = 512 * 1024 * 1024
+PRE_DOWNLOAD_EXPANSION_RESERVE = 512 * 1024 * 1024
+INSTALL_SAFETY_RESERVE = 64 * 1024 * 1024
 ACCESS_CODE_PATTERN = re.compile(r"[0-9]{16}\Z")
 CHUNK_SIZE = 1024 * 1024
 ADDON_REGISTRATION_TIMEOUT = 600
@@ -204,7 +206,7 @@ def _api_url(path):
 
 def _fetch(url, max_bytes, access_code=None):
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.52 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.53 Kodi",
         "Accept": "application/json",
     }
     if access_code:
@@ -291,6 +293,42 @@ def _remove_path(path):
         os.remove(path)
     elif os.path.isdir(path):
         shutil.rmtree(path)
+
+
+def _format_storage_size(size):
+    if size >= 1024 * 1024 * 1024:
+        return "{:.1f} GB".format(size / float(1024 * 1024 * 1024))
+    return "{} MB".format(max(1, int(size / float(1024 * 1024) + 0.5)))
+
+
+def _check_pre_download_space(archive_bytes, local_archive=False):
+    """Fail before writing a large archive when Kodi's storage is too full."""
+    archive_bytes = max(0, int(archive_bytes))
+    archive_copies = 3 if local_archive else 2
+    required = (
+        archive_copies * archive_bytes
+        + PRE_DOWNLOAD_EXPANSION_RESERVE
+        + INSTALL_SAFETY_RESERVE
+    )
+    free_space = shutil.disk_usage(_path("special://home")).free
+    if free_space < required:
+        raise OSError(
+            "This device has {} free, but the installer needs about {} free to install safely. "
+            "Free storage on the TV, then try again. No build files were downloaded.".format(
+                _format_storage_size(free_space), _format_storage_size(required)
+            )
+        )
+
+
+def _remove_stale_download(path):
+    """Remove only the Wizard's own interrupted build archive before measuring space."""
+    if not os.path.lexists(path):
+        return
+    if os.path.islink(path) or os.path.isfile(path):
+        os.remove(path)
+        _log("Removed an incomplete build archive left in the Wizard download folder.")
+        return
+    raise OSError("The Wizard download path is not a regular file; it was left untouched.")
 
 
 def _remove_child(root, name):
@@ -829,13 +867,14 @@ def _download_public_archive(destination, progress, build_id):
     else:
         raise ValueError("The selected public build is not valid.")
     total_expected = sum(size for _, size in parts)
+    _check_pre_download_space(total_expected)
     total_written = 0
     with open(destination, "wb") as output:
         for part_index, (url, expected_part_size) in enumerate(parts):
             request = urllib.request.Request(
                 url,
                 headers={
-                    "User-Agent": "KingBlap-Wizard/1.0.52 Kodi",
+                    "User-Agent": "KingBlap-Wizard/1.0.53 Kodi",
                     "Accept": "application/octet-stream",
                 },
             )
@@ -894,7 +933,7 @@ def _download_archive(build_id, destination, progress, access_code=None, public_
         "{}/{}/download".format(route, urllib.parse.quote(build_id, safe=""))
     )
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.52 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.53 Kodi",
         "Accept": "application/zip",
     }
     if access_code:
@@ -906,6 +945,7 @@ def _download_archive(build_id, destination, progress, access_code=None, public_
             expected = int(length) if length else None
             if expected and expected > DOWNLOAD_LIMIT:
                 raise ValueError("The build download is larger than the wizard limit.")
+            _check_pre_download_space(expected if expected is not None else DOWNLOAD_LIMIT)
             written = 0
             with open(destination, "wb") as output:
                 while True:
@@ -1313,6 +1353,7 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
     rollback_root = os.path.join(transaction, "rollback")
     os.makedirs(downloads, exist_ok=True)
     os.makedirs(addon_root, exist_ok=True)
+    _remove_stale_download(archive_path)
 
     progress = xbmcgui.DialogProgress()
     progress.create("KingBlap Wizard", "Downloading build…")
@@ -1354,6 +1395,7 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                 and not kodi22_private_release
             ):
                 raise ValueError("This local archive is not an available build for this Kodi release.")
+            _check_pre_download_space(os.path.getsize(local_archive), local_archive=True)
             _copy_local_archive(local_archive, archive_path, progress)
         else:
             _download_archive(

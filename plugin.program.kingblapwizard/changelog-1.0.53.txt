@@ -1,0 +1,5 @@
+KingBlap Wizard 1.0.53
+- Check available Kodi storage before downloading a build or copying a local archive.
+- Stop early with the estimated space needed so low-storage devices avoid incomplete installs and skin damage.
+- Remove a stale Wizard-owned build download left by a Kodi crash before checking available storage.
+- Keep the exact archive-size check before unpacking as a second safeguard.
