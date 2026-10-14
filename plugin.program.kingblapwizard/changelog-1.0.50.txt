@@ -1,0 +1,5 @@
+KingBlap Wizard 1.0.50
+
+- Recover or roll back an install interrupted by a Kodi shutdown, so the next launch does not leave add-ons or the skin half-installed.
+- Pause background add-on services while their files and settings are replaced; start IPTV Simple and GIPTV only after the install commits.
+- Keep transaction recovery data in the persistent Wizard profile and recover older incomplete installs from Kodi's temporary transaction folder.
