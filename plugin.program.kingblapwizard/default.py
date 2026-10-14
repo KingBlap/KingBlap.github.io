@@ -149,6 +149,44 @@ def _installed_addon_version(addon_root, addon_id):
     return manifest.get("version")
 
 
+def _addon_directory_fingerprint(path):
+    """Return a content signature for an add-on tree, or None if it is incomplete."""
+    if not os.path.isdir(path) or os.path.islink(path):
+        return None
+    files = {}
+
+    def raise_walk_error(error):
+        raise error
+
+    try:
+        for current, directories, filenames in os.walk(path, onerror=raise_walk_error):
+            if any(os.path.islink(os.path.join(current, name)) for name in directories):
+                return None
+            for filename in filenames:
+                file_path = os.path.join(current, filename)
+                if os.path.islink(file_path) or not os.path.isfile(file_path):
+                    return None
+                relative = os.path.relpath(file_path, path).replace(os.sep, "/")
+                digest = hashlib.sha256()
+                with open(file_path, "rb") as source:
+                    while True:
+                        block = source.read(CHUNK_SIZE)
+                        if not block:
+                            break
+                        digest.update(block)
+                files[relative] = (os.path.getsize(file_path), digest.hexdigest())
+    except OSError:
+        return None
+    return files or None
+
+
+def _addon_directories_match(first, second):
+    """Check all packaged add-on files and contents before keeping an active skin."""
+    first_files = _addon_directory_fingerprint(first)
+    second_files = _addon_directory_fingerprint(second)
+    return first_files is not None and first_files == second_files
+
+
 def _api_url(path):
     base = ADDON.getSetting("api_url").strip() or DEFAULT_API_URL
     parsed = urllib.parse.urlsplit(base)
@@ -166,7 +204,7 @@ def _api_url(path):
 
 def _fetch(url, max_bytes, access_code=None):
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.48 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.52 Kodi",
         "Accept": "application/json",
     }
     if access_code:
@@ -797,7 +835,7 @@ def _download_public_archive(destination, progress, build_id):
             request = urllib.request.Request(
                 url,
                 headers={
-                    "User-Agent": "KingBlap-Wizard/1.0.48 Kodi",
+                    "User-Agent": "KingBlap-Wizard/1.0.52 Kodi",
                     "Accept": "application/octet-stream",
                 },
             )
@@ -856,7 +894,7 @@ def _download_archive(build_id, destination, progress, access_code=None, public_
         "{}/{}/download".format(route, urllib.parse.quote(build_id, safe=""))
     )
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.48 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.52 Kodi",
         "Accept": "application/zip",
     }
     if access_code:
@@ -1460,15 +1498,26 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
             "weather.currentlocation": _get_setting("weather.currentlocation"),
         }
         original_weather_addon_settings = _read_weather_addon_settings()
-        keep_active_skin = (
+        same_skin_version = (
             original_skin == SKIN_ID
             and _installed_addon_version(addon_root, SKIN_ID) == packages.get(SKIN_ID)
         )
+        keep_active_skin = same_skin_version and _addon_directories_match(
+            os.path.join(addon_root, SKIN_ID),
+            os.path.join(staged_addons, SKIN_ID),
+        )
         if keep_active_skin:
             _log(
-                "Keeping the active {} skin in place because its installed and build versions match ({}).".format(
+                "Keeping the active {} skin in place because its installed files and build package match ({}).".format(
                     SKIN_ID, packages[SKIN_ID]
                 )
+            )
+        elif same_skin_version:
+            _log(
+                "Replacing the active {} skin because installed files differ from the staged build package.".format(
+                    SKIN_ID
+                ),
+                xbmc.LOGWARNING,
             )
         giptv_id = "plugin.video.giptv"
         for service_addon_id in sorted(service_addon_ids):

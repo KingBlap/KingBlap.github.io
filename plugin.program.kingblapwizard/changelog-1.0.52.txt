@@ -1,0 +1,4 @@
+KingBlap Wizard 1.0.52
+
+- Detect incomplete or altered Xonfluence files even when the installed version number matches the build.
+- Replace a damaged active skin safely, then confirm Kodi loads Xonfluence before committing the install.

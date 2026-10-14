@@ -1,5 +1,5 @@
 {
-  "generated_from": "Kodi 22 backup snapshot 2026-10-11 plus GIPTV 3.1.0, Kodi Up Next, Skin Shortcuts 3.0.4, fresh Xonfluence 6.0.7 with the eight supplied Demon Women background images (BadIDMan commit 827ace3b3de32f28682fca7cf1c48ac4cd19a76b), Estuary MOD V2 22.0+piers, and KingBlap Wizard 1.0.49",
+  "generated_from": "Kodi 22 backup snapshot 2026-10-11 plus GIPTV 3.1.0, Kodi Up Next, Skin Shortcuts 3.0.4, fresh Xonfluence 6.0.7 with the eight supplied Demon Women background images (BadIDMan commit 827ace3b3de32f28682fca7cf1c48ac4cd19a76b), Estuary MOD V2 22.0+piers, and KingBlap Wizard 1.0.52",
   "addons": [
     {
       "id": "context.otaku",
@@ -93,12 +93,12 @@
     },
     {
       "id": "plugin.program.kingblapwizard",
-      "version": "1.0.51",
+      "version": "1.0.52",
       "name": "KingBlap Wizard",
       "provider": "KingBlap",
       "license": "GPL-2.0-or-later",
-      "zip": "repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.51.zip",
-      "bytes": 108985
+      "zip": "repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.52.zip",
+      "bytes": 109602
     },
     {
       "id": "plugin.video.absolution",
@@ -581,7 +581,7 @@
       "id": "repository.thelab",
       "version": "25.3.27",
       "name": "TheLab Repository",
-      "provider": "[COLORpurple]\u2022 [COLORorchid]Tech [COLORdarkorchid]E [COLORplum]Coyote [COLORpurple]\u2022[/COLOR]",
+      "provider": "[COLORpurple]• [COLORorchid]Tech [COLORdarkorchid]E [COLORplum]Coyote [COLORpurple]•[/COLOR]",
       "license": "",
       "zip": "repo/zips/repository.thelab/repository.thelab-25.3.27.zip",
       "bytes": 2714540
@@ -743,7 +743,7 @@
       "id": "script.module.dateutil",
       "version": "2.8.2",
       "name": "python-dateutil",
-      "provider": "Paul Ganssle, Gustavo Niemeyer, Tomi Pievil\u00e4inen, Yaron de Leeuw",
+      "provider": "Paul Ganssle, Gustavo Niemeyer, Tomi Pieviläinen, Yaron de Leeuw",
       "license": "Apache-2.0, BSD-3-Clause",
       "zip": "repo/zips/script.module.dateutil/script.module.dateutil-2.8.2.zip",
       "bytes": 332201
