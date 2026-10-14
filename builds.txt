@@ -1,5 +1,5 @@
 # Choose a build category in KingBlap Wizard before installing.
-Public KingBlap Kodi 21.3 Build 1.0.22 | Direct checksum-verified Wizard download; same 81 Kodi-compatible add-on packages and Fire/Massive appearance as Private Build 1.0.22; no saved account profiles, API keys, or credentials.
-Public KingBlap Kodi 22 Build 1.0.22 | Same add-on packages and Fire/Massive appearance as Private Build 1.0.35; sanitized skin and weather settings only; no saved account profiles, API keys, or credentials.
+Public KingBlap Kodi 21.3 Build 1.0.22 | Direct checksum-verified Wizard download; Fire/Massive appearance; no saved account profiles, API keys, or credentials.
+Public KingBlap Kodi 22 Build 1.0.22 | Sanitized skin and weather settings only; no saved account profiles, API keys, or credentials.
 Private KingBlap Kodi 22 Build 1.0.35 | Listed and downloaded through the access-code-protected build service by KingBlap Wizard; GIPTV USA/24/7 group filter and lightweight IPTV Simple setup.
 Private KingBlap Kodi 21.3 Build 1.0.22 | Listed and downloaded through the access-code-protected build service by KingBlap Wizard; Fire/Massive appearance and GIPTV USA/24/7 group filter.
