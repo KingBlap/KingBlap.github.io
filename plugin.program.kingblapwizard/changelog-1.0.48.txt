@@ -1,0 +1,5 @@
+KingBlap Wizard 1.0.48
+
+- Stop IPTV Simple before replacing its saved instances, then install the private build's single GIPTV profile.
+- Validate that private GIPTV builds contain the filtered USA/24/7 playlist, empty guide, and matching sync state.
+- Refresh Kodi 21.3 and Kodi 22 private builds with a current sync state so they can use the packaged playlist at startup.

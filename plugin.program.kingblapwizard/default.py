@@ -81,6 +81,7 @@ SKIN_SETTINGS_ARCHIVE_PATH = "userdata/addon_data/{}/settings.xml".format(SKIN_I
 LEGACY_SKIN_ID = "skin.estuary.modv2"
 ONEPLAY_REPO_ID = "One.repo"
 WEATHER_ID = "weather.gismeteo"
+PVR_ADDON_ID = "pvr.iptvsimple"
 WEATHER_LOCATION = "Thomasville"
 WEATHER_LOCATION_ID = "8771"
 WEATHER_ADDON_SETTINGS = {
@@ -164,7 +165,7 @@ def _api_url(path):
 
 def _fetch(url, max_bytes, access_code=None):
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.47 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.48 Kodi",
         "Accept": "application/json",
     }
     if access_code:
@@ -592,6 +593,76 @@ def _validate_archive(archive, expected_public=None):
             raise ValueError("The build profile data list does not match the archived add-on data.")
     elif profile_addon_data_ids != {SKIN_ID, WEATHER_ID} or declared_profile_ids:
         raise ValueError("The settings-only build contains unexpected add-on profile data.")
+    giptv_id = "plugin.video.giptv"
+    if (
+        build_info.get("distribution") == "private"
+        and profile_mode == PROFILE_DATA_MODE
+        and giptv_id in packages
+    ):
+        if PVR_ADDON_ID not in profile_addon_data_ids or PVR_ADDON_ID not in platform_addons:
+            raise ValueError("The private GIPTV build is missing IPTV Simple profile or platform data.")
+        pvr_prefix = "userdata/addon_data/{}/".format(PVR_ADDON_ID)
+        pvr_instances = [
+            name for name in archive.namelist()
+            if re.fullmatch(re.escape(pvr_prefix) + r"instance-settings-\d+\.xml", name)
+        ]
+        if len(pvr_instances) != 1:
+            raise ValueError("The private build must contain one IPTV Simple GIPTV instance.")
+        try:
+            pvr_settings = ET.fromstring(archive.read(pvr_instances[0]))
+        except ET.ParseError:
+            raise ValueError("The private IPTV Simple settings are not valid XML.")
+        pvr_values = {
+            setting.get("id"): (setting.text or "").strip()
+            for setting in pvr_settings.findall("setting")
+        } if pvr_settings.tag == "settings" else {}
+        expected_playlist_path = (
+            "special://profile/addon_data/{}/iptv_simple/playlist.m3u8".format(giptv_id)
+        )
+        if (
+            pvr_values.get("kodi_addon_instance_name") != "GIPTV"
+            or pvr_values.get("kodi_addon_instance_enabled", "true").casefold() != "true"
+            or pvr_values.get("m3uPathType") != "0"
+            or pvr_values.get("m3uPath") != expected_playlist_path
+        ):
+            raise ValueError("The private IPTV Simple instance does not use GIPTV's local playlist.")
+        export_prefix = "userdata/addon_data/{}/iptv_simple/".format(giptv_id)
+        export_paths = {
+            "playlist": export_prefix + "playlist.m3u8",
+            "epg": export_prefix + "epg.xml",
+            "state": export_prefix + "sync_state.json",
+        }
+        if any(path not in seen_names for path in export_paths.values()):
+            raise ValueError("The private build is missing a GIPTV startup export file.")
+        try:
+            playlist_text = archive.read(export_paths["playlist"]).decode("utf-8")
+            epg_text = archive.read(export_paths["epg"]).decode("utf-8")
+            sync_state = json.loads(archive.read(export_paths["state"]).decode("utf-8-sig"))
+            epg_root = ET.fromstring(epg_text)
+        except (UnicodeDecodeError, ValueError, ET.ParseError):
+            raise ValueError("The private GIPTV startup exports are not valid text data.")
+        group_titles = re.findall(
+            r'(?im)^#EXTINF:[^\r\n]*?group-title="([^"]*)"', playlist_text
+        )
+        playlist_entries = len(re.findall(r"(?im)^#EXTINF:", playlist_text))
+        if (
+            playlist_entries < 1
+            or len(group_titles) != playlist_entries
+            or any(
+                not re.match(r"^(usa|24/7)\s*\|", title.strip(), re.I)
+                for title in group_titles
+            )
+            or epg_root.tag != "tv"
+            or list(epg_root)
+        ):
+            raise ValueError("The private GIPTV exports must contain only USA/24/7 groups and an empty guide.")
+        if (
+            not isinstance(sync_state, dict)
+            or sync_state.get("playlist_sha256") != hashlib.sha256(playlist_text.encode("utf-8")).hexdigest()
+            or sync_state.get("epg_sha256") != hashlib.sha256(epg_text.encode("utf-8")).hexdigest()
+            or not isinstance(sync_state.get("last_sync"), int)
+        ):
+            raise ValueError("The private GIPTV sync state does not match its packaged playlist and guide.")
     if (
         build_info.get("kodi_major") == 22
         and build_info.get("distribution") == "private"
@@ -639,6 +710,26 @@ def _validate_archive(archive, expected_public=None):
     )
 
 
+def _prime_giptv_startup_state(staged_userdata):
+    """Use the packaged private lineup until its next scheduled provider sync."""
+    giptv_data = os.path.join(staged_userdata, "addon_data", "plugin.video.giptv", "iptv_simple")
+    playlist_path = os.path.join(giptv_data, "playlist.m3u8")
+    epg_path = os.path.join(giptv_data, "epg.xml")
+    state_path = os.path.join(giptv_data, "sync_state.json")
+    with open(playlist_path, "rb") as source:
+        playlist_text = source.read().decode("utf-8")
+    with open(epg_path, "rb") as source:
+        epg_text = source.read().decode("utf-8")
+    state = {
+        "last_sync": int(time.time()),
+        "playlist_sha256": hashlib.sha256(playlist_text.encode("utf-8")).hexdigest(),
+        "epg_sha256": hashlib.sha256(epg_text.encode("utf-8")).hexdigest(),
+    }
+    with open(state_path, "w", encoding="utf-8") as destination:
+        json.dump(state, destination, separators=(",", ":"))
+        destination.write("\n")
+
+
 def _download_public_archive(destination, progress, build_id):
     if build_id == KODI21_PUBLIC_BUILD_ID:
         parts = KODI21_PUBLIC_BUILD_PARTS
@@ -661,7 +752,7 @@ def _download_public_archive(destination, progress, build_id):
             request = urllib.request.Request(
                 url,
                 headers={
-                    "User-Agent": "KingBlap-Wizard/1.0.47 Kodi",
+                    "User-Agent": "KingBlap-Wizard/1.0.48 Kodi",
                     "Accept": "application/octet-stream",
                 },
             )
@@ -720,7 +811,7 @@ def _download_archive(build_id, destination, progress, access_code=None, public_
         "{}/{}/download".format(route, urllib.parse.quote(build_id, safe=""))
     )
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.47 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.48 Kodi",
         "Accept": "application/zip",
     }
     if access_code:
@@ -1190,6 +1281,7 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
     changes = []
     original_skin = None
     original_giptv_enabled = None
+    original_pvr_enabled = None
     original_weather_settings = None
     original_weather_addon_settings = None
     original_skin_appearance = None
@@ -1323,6 +1415,8 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
             for addon_id in profile_addon_data_ids:
                 if not os.path.isdir(os.path.join(staged_profile_root, addon_id)):
                     raise ValueError("The staged build is missing profile data for {}.".format(addon_id))
+            if "plugin.video.giptv" in packages:
+                _prime_giptv_startup_state(staged_userdata)
 
         for addon_id, version in packages.items():
             manifest_path = _safe_target(staged_addons, "{}/addon.xml".format(addon_id))
@@ -1364,6 +1458,12 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
             if original_giptv_enabled:
                 # Stop the provider service before replacing or removing its profile files.
                 _set_addon_enabled(giptv_id, False)
+                xbmc.sleep(1500)
+        if PVR_ADDON_ID in profile_addon_data_ids:
+            original_pvr_enabled = _get_addon_enabled(PVR_ADDON_ID)
+            if original_pvr_enabled:
+                # Unload every IPTV Simple instance before replacing its settings directory.
+                _set_addon_enabled(PVR_ADDON_ID, False)
                 xbmc.sleep(1500)
         if original_skin in (SKIN_ID, LEGACY_SKIN_ID) and not keep_active_skin:
             # Unload either skin before replacing or removing its files.
@@ -1417,6 +1517,10 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
         kodi_managed_addons = sorted(set(required_dependencies) | set(platform_addons))
         for addon_id in kodi_managed_addons:
             _ensure_kodi_managed_addon(addon_id, progress)
+        if PVR_ADDON_ID in profile_addon_data_ids:
+            if _get_addon_enabled(PVR_ADDON_ID) is not True:
+                _enable_addon(PVR_ADDON_ID)
+            xbmc.sleep(1500)
         xbmc.executebuiltin("UpdateLocalAddons", True)
         _wait_for_addon_registration(packages.keys(), progress)
         _enable_build_addons(packages.keys(), progress)
@@ -1524,6 +1628,15 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                 _log("Could not refresh Kodi's add-on list during rollback: {}".format(
                     restore_exc
                 ), xbmc.LOGERROR)
+            if original_pvr_enabled is not None:
+                try:
+                    if _get_addon_enabled(PVR_ADDON_ID) is not None:
+                        _set_addon_enabled(PVR_ADDON_ID, original_pvr_enabled)
+                except Exception as restore_exc:
+                    rollback_complete = False
+                    _log("Could not restore the previous IPTV Simple enabled state: {}".format(
+                        restore_exc
+                    ), xbmc.LOGERROR)
             if original_giptv_enabled is not None:
                 try:
                     if _get_addon_enabled("plugin.video.giptv") is not None:

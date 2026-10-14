@@ -1,0 +1,2 @@
+- Lists both Kodi 21.3 and Kodi 22 private builds on either version of Kodi.
+- Blocks installation of a private build that does not match the running Kodi version.

@@ -93,11 +93,11 @@
     },
     {
       "id": "plugin.program.kingblapwizard",
-      "version": "1.0.47",
+      "version": "1.0.43",
       "name": "KingBlap Wizard",
       "provider": "KingBlap",
       "license": "GPL-2.0-or-later",
-      "zip": "repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.47.zip",
+      "zip": "repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.43.zip",
       "bytes": 102709
     },
     {

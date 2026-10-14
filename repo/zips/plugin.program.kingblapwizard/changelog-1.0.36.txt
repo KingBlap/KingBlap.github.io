@@ -1,0 +1,4 @@
+KingBlap Wizard 1.0.36
+
+- Adds the required English PO catalog header to prevent Kodi's language parser error.
+- Keeps the Kodi 22 private build 1.0.22 profile reset for incompatible IPTV Simple settings.

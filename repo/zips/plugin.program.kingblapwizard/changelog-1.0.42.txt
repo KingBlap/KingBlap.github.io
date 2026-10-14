@@ -1,0 +1,2 @@
+- Keep the active Xonfluence skin loaded when its installed package matches the build, avoiding a temporary Estuary switch during routine installs.
+- Remove Aeon Nox: SiLVO and its saved settings from the private build when it is applied.

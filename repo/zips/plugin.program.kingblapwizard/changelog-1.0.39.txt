@@ -1,0 +1,4 @@
+- Kodi 22 private builds show the current manifest entries, including the latest private build.
+- Accept GIPTV 3.1.0 in the existing public build and 3.1.1 in the updated private build.
+- Preserve the packaged GIPTV IPTV Simple management preference during restore; the private 1.0.25 build keeps automatic management enabled.
+- Remove add-ons listed by a build, including their saved add-on profile data; private 1.0.25 removes PRISM and its context-menu companion.
