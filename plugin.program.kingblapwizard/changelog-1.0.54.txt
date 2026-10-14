@@ -1,0 +1,4 @@
+KingBlap Wizard 1.0.54
+- Install or enable IPTV Simple only after the build files and Xonfluence skin have committed.
+- Avoid Kodi's automatic PVR channel import while the Wizard is replacing add-ons and setting the skin.
+- Keep the private GIPTV profile and USA/24/7 group filter; public build archives stay separate.

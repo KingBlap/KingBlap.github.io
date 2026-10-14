@@ -206,7 +206,7 @@ def _api_url(path):
 
 def _fetch(url, max_bytes, access_code=None):
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.53 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.54 Kodi",
         "Accept": "application/json",
     }
     if access_code:
@@ -874,7 +874,7 @@ def _download_public_archive(destination, progress, build_id):
             request = urllib.request.Request(
                 url,
                 headers={
-                    "User-Agent": "KingBlap-Wizard/1.0.53 Kodi",
+                    "User-Agent": "KingBlap-Wizard/1.0.54 Kodi",
                     "Accept": "application/octet-stream",
                 },
             )
@@ -933,7 +933,7 @@ def _download_archive(build_id, destination, progress, access_code=None, public_
         "{}/{}/download".format(route, urllib.parse.quote(build_id, safe=""))
     )
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.53 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.54 Kodi",
         "Accept": "application/zip",
     }
     if access_code:
@@ -1641,10 +1641,10 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
         kodi_managed_addons = sorted(kodi_managed_addons)
         for addon_id in kodi_managed_addons:
             _ensure_kodi_managed_addon(addon_id, progress)
-        if PVR_ADDON_ID in profile_addon_data_ids:
-            # Make sure IPTV Simple exists now, but leave its channel import until
-            # the profile swap and Xonfluence setup have committed.
-            _ensure_kodi_managed_addon(PVR_ADDON_ID, progress, enable=False)
+        # Kodi automatically enables a newly installed IPTV Simple dependency.
+        # Installing it here starts a large channel import while the skin is
+        # changing, even when _ensure_kodi_managed_addon(enable=False) is used.
+        # Wait until after the file swap and skin activation have committed.
         xbmc.executebuiltin("UpdateLocalAddons", True)
         _wait_for_addon_registration(packages.keys(), progress)
         deferred_addons = service_addon_ids
@@ -1693,8 +1693,7 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
         if PVR_ADDON_ID in profile_addon_data_ids:
             progress.update(98, "KingBlap Wizard", "Starting IPTV Simple after setup…")
             try:
-                _enable_addon(PVR_ADDON_ID)
-                xbmc.sleep(1500)
+                _ensure_kodi_managed_addon(PVR_ADDON_ID, progress)
             except Exception as pvr_exc:
                 post_commit_failures.append("IPTV Simple: {}".format(pvr_exc))
         for service_addon_id in sorted(service_addon_ids - {"plugin.video.giptv"}):
