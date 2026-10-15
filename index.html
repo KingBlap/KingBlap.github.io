@@ -149,6 +149,7 @@
 <p>Kodi&#x27;s core media libraries, media databases, and texture thumbnails are excluded from the build archives. Selected private add-on profiles can contain their own databases, caches, bookmarks, and history.</p>
 <h2 id="recent-updates">Recent updates</h2>
 <div class="table-scroll"><table><thead><tr><th>Release or change</th><th>What was updated</th></tr></thead><tbody>
+<tr><td><strong>Wizard 1.0.56 / Private Builds 1.0.33 and 1.0.46</strong></td><td>Removes OptiKlean and its saved data, opens TV Channels in Xonfluence Preview List, and keeps IPTV Simple limited to USA/24/7 groups. GIPTV streams a filtered XMLTV guide for playlist channel IDs, limited to 2 hours past and 24 hours ahead. Public build ZIPs remain unchanged.</td></tr>
 <tr><td><strong>Wizard 1.0.55 / Private Builds 1.0.32 and 1.0.45</strong></td><td>Applies a 16 MB stream-buffer limit on low-memory TVs, removes replaced XStream Pro during install, and sets Zoro’s Movies, TV Shows, Seasons, and Episodes categories to Xonfluence thumbnail view. GIPTV controls playlist updates, avoiding an hourly full-lineup reimport. Public build ZIPs are unchanged.</td></tr>
 <tr><td><strong>Wizard 1.0.53</strong></td><td>Checks free storage before downloading or copying a build archive and explains how much space is needed, helping low-storage TVs avoid incomplete installs and damaged skins.</td></tr>
 <tr><td><strong>Wizard 1.0.52</strong></td><td>Checks installed Xonfluence files before preserving the active skin. If files are incomplete, the build replaces them and confirms the skin loads before committing.</td></tr>
@@ -161,16 +162,16 @@
 <tr><td><strong>Wizard 1.0.45</strong></td><td>Both Kodi 21.3 and Kodi 22 private builds appear together. Installation is blocked when the selected private build targets the wrong Kodi major version.</td></tr>
 <tr><td><strong>Wizard 1.0.44</strong></td><td>Kodi 21.3 private builds gained direct listing and downloads through the protected service.</td></tr>
 <tr><td><strong>Appearance updates in Wizard 1.0.42–1.0.43</strong></td><td>Aeon Nox: SiLVO was removed from the builds. Fire colors and the Massive font are applied, and an already active, matching Xonfluence version is kept loaded during routine updates.</td></tr>
-<tr><td><strong>Current private builds: Kodi 21.3 1.0.32 / Kodi 22 1.0.45</strong></td><td>GIPTV supplies the filtered USA/24/7 playlist for IPTV Simple with a lightweight local guide. The private builds apply Fire and Massive, restore selected saved add-on profiles, and set Zoro’s Movies, TV Shows, Seasons, and Episodes categories to thumbnail view.</td></tr>
-<tr><td><strong>Current bundled add-ons</strong></td><td>The packages include C.O.S.M.O.S 4.3.54, Mad Titan Sports 2.0.45, GIPTV 3.1.0, Up Next 1.1.9+matrix.1, and the Kodi-specific Xonfluence/Skin Shortcuts versions listed above.</td></tr>
+<tr><td><strong>Current private builds: Kodi 21.3 1.0.33 / Kodi 22 1.0.46</strong></td><td>GIPTV exports only USA/24/7 playlist groups and streams a filtered XMLTV guide for those playlist IDs. The private builds apply Fire and Massive, restore selected saved add-on profiles, remove OptiKlean, open TV Channels in Preview List, and keep Zoro’s Movies, TV Shows, Seasons, and Episodes categories on thumbnail view.</td></tr>
+<tr><td><strong>Current bundled add-ons</strong></td><td>The public packages include C.O.S.M.O.S 4.3.54, Mad Titan Sports 2.0.45, GIPTV 3.1.0, Up Next 1.1.9+matrix.1, and the Kodi-specific Xonfluence/Skin Shortcuts versions listed below. Private builds use GIPTV 3.1.2 with the filtered guide; OptiKlean is not bundled in either private build.</td></tr>
 </tbody></table></div>
 <p>To apply a newer full build, first update the Wizard, then reopen <strong>Public Builds</strong> or <strong>Private Builds</strong> and install the current build for your Kodi version. Updating the Wizard alone does not apply a new full build archive.</p>
 <h2 id="help-with-installation">Help with installation</h2>
 <ul>
-<li><strong>Wizard 1.0.55 is missing:</strong> open the Add-on browser&#x27;s side menu and choose <strong>Check for updates</strong>. Install the available KingBlap Wizard update, or use the linked Wizard ZIP below.</li>
-<li><strong>Kodi 21.3 public build is missing:</strong> update the Wizard to 1.0.55 and reopen <strong>Public Builds</strong> on Kodi 21.3. That menu shows the public build for the running Kodi version.</li>
+<li><strong>Wizard 1.0.56 is missing:</strong> open the Add-on browser&#x27;s side menu and choose <strong>Check for updates</strong>. Install the available KingBlap Wizard update, or use the linked Wizard ZIP below.</li>
+<li><strong>Kodi 21.3 public build is missing:</strong> update the Wizard to 1.0.56 and reopen <strong>Public Builds</strong> on Kodi 21.3. That menu shows the public build for the running Kodi version.</li>
 <li><strong>Private builds will not open:</strong> check that <strong>Private build access code</strong> contains exactly 16 numeric digits, then reopen the Wizard. Use the code you received privately.</li>
-<li><strong>Kodi was closed during installation:</strong> update the Wizard to 1.0.55 and start Kodi again. It will restore the last safe add-on state from an interrupted install; then reopen the build list and install again if the build did not finish.</li>
+<li><strong>Kodi was closed during installation:</strong> update the Wizard to 1.0.56 and start Kodi again. It will restore the last safe add-on state from an interrupted install; then reopen the build list and install again if the build did not finish.</li>
 <li><strong>Kodi version mismatch:</strong> select Kodi 21.3&#x27;s build on Kodi 21.3 or Kodi 22&#x27;s build on Kodi 22.</li>
 <li><strong>Build profile data list error:</strong> update the Wizard and select the current private release shown in the table above. If installation still fails, record the error and check the Kodi log.</li>
 <li><strong>A dependency cannot install:</strong> enable Kodi&#x27;s official repository and check the device&#x27;s internet connection and available storage.</li>
@@ -180,7 +181,7 @@
 <h2 id="downloads">Downloads</h2>
 <ul>
 <li><a href="https://kingblap.github.io/repository.kingblap-1.0.0.zip">Repository installer 1.0.0</a></li>
-<li><a href="https://kingblap.github.io/repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.55.zip">KingBlap Wizard 1.0.55</a></li>
+<li><a href="https://kingblap.github.io/repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.56.zip">KingBlap Wizard 1.0.56</a></li>
 <li><a href="https://kingblap.github.io/builds.txt">Current public and private build list</a></li>
 <li><a href="https://kingblap.github.io/repo/zips/addons.xml">Repository add-on catalog</a></li>
 <li><a href="https://kingblap.github.io/addon_catalog.json">Repository package inventory</a></li>
@@ -188,7 +189,7 @@
 </ul>
 <p>Public builds download through <strong>Wizard → Public Builds</strong>. Private builds download through <strong>Wizard → Private Builds</strong> after entering the private access code.</p>
 <h2 id="build-package-inventory">Build package inventory</h2>
-<p>These versions are read from the current released public archives. Each Kodi version&#x27;s private build has the same packaged add-on files as its public build. <strong>Not bundled</strong> means that package is absent from that Kodi version&#x27;s archive. The counts include supporting modules and the KingBlap repository; the Wizard is installed separately, and Kodi obtains native components for the device.</p>
+<p>These versions describe the public archives; private builds are separate and may use different add-on versions or omit packages. <strong>Not bundled</strong> means a package is absent from the public archive for that Kodi version. The counts include supporting modules and the KingBlap repository; the Wizard is installed separately, and Kodi obtains native components for the device.</p>
 <div class="table-scroll"><table><thead><tr><th>Add-on</th><th>Package ID</th><th>Kodi 21.3</th><th>Kodi 22</th></tr></thead><tbody>
 <tr><td>Otaku - Global Context Menu Items</td><td><code>context.otaku</code></td><td>1.0.35</td><td>1.0.35</td></tr>
 <tr><td>Prism - Global Context Menu Items</td><td><code>context.prism</code></td><td>4.0.2</td><td>Not bundled</td></tr>
@@ -202,7 +203,7 @@
 <tr><td>Forge</td><td><code>plugin.video.forge</code></td><td>0.2.13</td><td>0.2.13</td></tr>
 <tr><td>The Gears</td><td><code>plugin.video.gears</code></td><td>2.4.3</td><td>2.4.3</td></tr>
 <tr><td>Genocide</td><td><code>plugin.video.genocide</code></td><td>6.9.9</td><td>6.9.9</td></tr>
-<tr><td>GIPTV</td><td><code>plugin.video.giptv</code></td><td>3.1.0</td><td>3.1.0</td></tr>
+<tr><td>GIPTV</td><td><code>plugin.video.giptv</code></td><td>3.1.0 public / 3.1.2 private</td><td>3.1.0 public / 3.1.2 private</td></tr>
 <tr><td>Homelander</td><td><code>plugin.video.homelander</code></td><td>1.3.1</td><td>1.3.1</td></tr>
 <tr><td>TV Guide - Beta</td><td><code>plugin.video.jet_guide</code></td><td>0.0.21</td><td>0.0.21</td></tr>
 <tr><td>Loop Guide</td><td><code>plugin.video.loopguide</code></td><td>3.8.2</td><td>3.8.2</td></tr>
@@ -216,7 +217,7 @@
 <tr><td>Xstream Pro</td><td><code>plugin.video.xstream-pro</code></td><td>Not bundled</td><td>1.1.4</td></tr>
 <tr><td>Zoro</td><td><code>plugin.video.zoro</code></td><td>1.1.9</td><td>1.1.9</td></tr>
 <tr><td>Easy Player Switch</td><td><code>program.easyplayerswitch</code></td><td>1.1.0</td><td>1.1.0</td></tr>
-<tr><td>OptiKlean</td><td><code>program.optiklean</code></td><td>2.0.7</td><td>2.0.7</td></tr>
+<tr><td>OptiKlean</td><td><code>program.optiklean</code></td><td>2.0.7 public / Not bundled private</td><td>2.0.7 public / Not bundled private</td></tr>
 <tr><td>Recordlabel Icons - White</td><td><code>resource.images.recordlabels.white</code></td><td>0.0.7</td><td>0.0.7</td></tr>
 <tr><td>Studio Icons - White</td><td><code>resource.images.studios.white</code></td><td>0.0.34</td><td>0.0.34</td></tr>
 <tr><td>AppleTv UI Sounds</td><td><code>resource.uisounds.appletv</code></td><td>0.0.2</td><td>0.0.2</td></tr>

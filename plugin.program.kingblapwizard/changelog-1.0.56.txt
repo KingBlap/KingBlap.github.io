@@ -1,0 +1,4 @@
+KingBlap Wizard 1.0.56
+- Accepts the private GIPTV 3.1.2 and patched Xonfluence packages for the filtered USA/24/7 playlist and TV Channels Preview List.
+- Starts a background sync immediately when a private build installs with an empty seed guide.
+- Removes OptiKlean and its saved profile when the selected private archive marks it for removal.

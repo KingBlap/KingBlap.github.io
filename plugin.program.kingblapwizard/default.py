@@ -1,6 +1,7 @@
 """KingBlap Kodi build installer for Kodi 21 Omega and Kodi 22 Piers."""
 import json
 import hashlib
+import html
 import os
 import re
 import shutil
@@ -588,11 +589,18 @@ def _validate_archive(archive, expected_public=None):
         if any("/".join(parts[:index]) in file_paths for index in range(1, len(parts))):
             raise ValueError("The build archive uses a file as a directory.")
     if (
-        packages.get("plugin.video.giptv") not in ("3.1.0", "3.1.1")
+        packages.get("plugin.video.giptv") not in ("3.1.0", "3.1.1", "3.1.2")
         and packages.get("plugin.video.xstream-pro") not in ("1.1.2", "1.1.4")
     ):
         raise ValueError("The build archive does not contain a supported IPTV add-on.")
-    if packages.get(SKIN_ID) != SKIN_VERSION:
+    expected_skin_version = SKIN_VERSION
+    if (
+        build_info
+        and build_info.get("distribution") == "private"
+        and build_info.get("pvr_channel_view") == "preview-list"
+    ):
+        expected_skin_version = {21: "5.1", 22: "6.0.8"}.get(KODI_MAJOR, SKIN_VERSION)
+    if packages.get(SKIN_ID) != expected_skin_version:
         raise ValueError("The build archive does not contain the Xonfluence skin for Kodi {}.".format(KODI_MAJOR))
     if packages.get(WEATHER_ID) != WEATHER_VERSION:
         raise ValueError("The build archive is missing the Gismeteo weather add-on.")
@@ -766,17 +774,36 @@ def _validate_archive(archive, expected_public=None):
             r'(?im)^#EXTINF:[^\r\n]*?group-title="([^"]*)"', playlist_text
         )
         playlist_entries = len(re.findall(r"(?im)^#EXTINF:", playlist_text))
+        playlist_epg_ids = {
+            html.unescape(value).strip()
+            for value in re.findall(r'(?im)^#EXTINF:[^\r\n]*?tvg-id="([^"]*)"', playlist_text)
+            if value.strip()
+        }
+        guide_entries_valid = epg_root.tag == "tv"
+        if guide_entries_valid:
+            for element in epg_root:
+                element_name = element.tag.rsplit("}", 1)[-1]
+                if element_name == "channel":
+                    guide_id = (element.get("id") or "").strip()
+                elif element_name == "programme":
+                    guide_id = (element.get("channel") or "").strip()
+                else:
+                    guide_entries_valid = False
+                    break
+                if not guide_id or guide_id not in playlist_epg_ids:
+                    guide_entries_valid = False
+                    break
         if (
             playlist_entries < 1
             or len(group_titles) != playlist_entries
+            or len(playlist_epg_ids) < 1
             or any(
                 not re.match(r"^(usa|24/7)\s*\|", title.strip(), re.I)
                 for title in group_titles
             )
-            or epg_root.tag != "tv"
-            or list(epg_root)
+            or not guide_entries_valid
         ):
-            raise ValueError("The private GIPTV exports must contain only USA/24/7 groups and an empty guide.")
+            raise ValueError("The private GIPTV exports must contain only USA/24/7 groups and a guide limited to those channels.")
         if (
             not isinstance(sync_state, dict)
             or sync_state.get("playlist_sha256") != hashlib.sha256(playlist_text.encode("utf-8")).hexdigest()
@@ -832,7 +859,7 @@ def _validate_archive(archive, expected_public=None):
 
 
 def _prime_giptv_startup_state(staged_userdata):
-    """Use the packaged private lineup until its next scheduled provider sync."""
+    """Use packaged exports unless an empty guide needs its first background sync."""
     giptv_data = os.path.join(staged_userdata, "addon_data", "plugin.video.giptv", "iptv_simple")
     playlist_path = os.path.join(giptv_data, "playlist.m3u8")
     epg_path = os.path.join(giptv_data, "epg.xml")
@@ -841,8 +868,16 @@ def _prime_giptv_startup_state(staged_userdata):
         playlist_text = source.read().decode("utf-8")
     with open(epg_path, "rb") as source:
         epg_text = source.read().decode("utf-8")
+    has_programmes = False
+    try:
+        for _, element in ET.iterparse(epg_path, events=("end",)):
+            if element.tag.rsplit("}", 1)[-1] == "programme":
+                has_programmes = True
+                break
+    except (OSError, ET.ParseError):
+        has_programmes = False
     state = {
-        "last_sync": int(time.time()),
+        "last_sync": int(time.time()) if has_programmes else 0,
         "playlist_sha256": hashlib.sha256(playlist_text.encode("utf-8")).hexdigest(),
         "epg_sha256": hashlib.sha256(epg_text.encode("utf-8")).hexdigest(),
     }
