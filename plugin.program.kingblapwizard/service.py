@@ -26,6 +26,9 @@ LEGACY_TRANSACTION_ROOT = xbmcvfs.translatePath(
 )
 OPTIKLEAN_ID = "program.optiklean"
 WEATHER_ID = "weather.gismeteo"
+PRIVATE_MEMORY_POLICY_PATH = xbmcvfs.translatePath(
+    "special://profile/addon_data/plugin.video.giptv/.kingblap-low-memory.json"
+)
 LOAD_TIMEOUT = 60
 CONFIRMATION_GRACE = 13
 
@@ -174,6 +177,26 @@ def _jsonrpc(method, params):
     if "error" in response:
         raise RuntimeError(response["error"].get("message", "Kodi JSON-RPC request failed."))
     return response.get("result")
+
+
+def _apply_private_memory_policy():
+    try:
+        with open(PRIVATE_MEMORY_POLICY_PATH, "r", encoding="utf-8") as policy_file:
+            policy = json.load(policy_file)
+        memory_limit = policy.get("stream_buffer_memory_mb") if isinstance(policy, dict) else None
+        if type(memory_limit) is not int or memory_limit != 16:
+            return
+        current = _jsonrpc("Settings.GetSettingValue", {"setting": "filecache.memorysize"})
+        current_size = current.get("value") if isinstance(current, dict) else None
+        if type(current_size) is not int or current_size <= memory_limit:
+            return
+        _jsonrpc("Settings.SetSettingValue", {
+            "setting": "filecache.memorysize",
+            "value": memory_limit,
+        })
+        _log("Limited Kodi's stream-buffer memory to 16 MB for the private low-memory profile.")
+    except (OSError, TypeError, ValueError, RuntimeError) as exc:
+        _log("Could not apply the private low-memory setting: {}".format(exc), xbmc.LOGWARNING)
 
 
 def _addon_enabled(addon_id):
@@ -388,6 +411,7 @@ def _configured_supported_skin():
 def main():
     global SKIN_ID
     monitor = xbmc.Monitor()
+    _apply_private_memory_policy()
     last_marker_time = None
     if _recover_transactions():
         if os.path.isfile(MARKER_PATH) and _load_requested_skin():

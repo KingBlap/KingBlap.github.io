@@ -1327,7 +1327,7 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
         "This installs and enables all packaged add-ons, fetches device-compatible "
         "native components through Kodi, replaces matching add-on files, and installs the Xonfluence skin for Kodi {}. ".format(KODI_MAJOR) +
         "It also sets Gismeteo to Thomasville, North Carolina, installs the Xonfluence skin settings, and removes Aeon Nox: SiLVO, Estuary MOD V2, and the OnePlay repository.\n\n"
-        "It also removes XStream Player and its saved settings from this Kodi profile.\n\n" +
+        "It also removes XStream Pro, XStream Player, and their saved settings when the selected build marks them for removal.\n\n" +
         profile_notice + " The KingBlap Wizard's own settings and access code will stay saved here. "
         "Libraries and Kodi databases are not in the build.",
         yeslabel="Install build",
@@ -1363,6 +1363,7 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
     original_weather_settings = None
     original_weather_addon_settings = None
     original_skin_appearance = None
+    original_stream_buffer_memory = None
     original_service_states = {}
     service_addon_ids = set()
     optiklean_enable_warning = None
@@ -1371,6 +1372,16 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
     preserve_transaction = False
     packages = {}
     try:
+        if not public_build:
+            previous_buffer_memory = _get_setting("filecache.memorysize")
+            if type(previous_buffer_memory) is int and previous_buffer_memory > 16:
+                original_stream_buffer_memory = previous_buffer_memory
+                _set_setting("filecache.memorysize", 16)
+                _log(
+                    "Reduced Kodi's stream-buffer memory from {} MB to 16 MB for this private install.".format(
+                        previous_buffer_memory
+                    )
+                )
         os.makedirs(transaction, exist_ok=True)
         journal_state = {"transaction": transaction, "operations": []}
         _write_transaction_journal(transaction, "staging", journal_state["operations"])
@@ -1570,6 +1581,13 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                 # being swapped. IPTV and cleanup services get a little more time to stop.
                 _set_addon_enabled(service_addon_id, False)
                 xbmc.sleep(1500 if service_addon_id in (giptv_id, OPTIKLEAN_ID) else 300)
+        for removed_addon_id in sorted(set(removed_addons) - set(packages)):
+            enabled_state = _get_addon_enabled(removed_addon_id)
+            original_service_states[removed_addon_id] = enabled_state
+            if enabled_state is True:
+                # Stop removed add-on services before replacing their files and profile data.
+                _set_addon_enabled(removed_addon_id, False)
+                xbmc.sleep(1200 if removed_addon_id == "plugin.video.xstream-pro" else 300)
         if PVR_ADDON_ID in profile_addon_data_ids:
             original_pvr_enabled = _get_addon_enabled(PVR_ADDON_ID)
             if original_pvr_enabled:
@@ -1778,6 +1796,14 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                 except Exception:
                     pass
             rollback_complete = _restore_children(changes) and rollback_complete
+            if original_stream_buffer_memory is not None:
+                try:
+                    _set_setting("filecache.memorysize", original_stream_buffer_memory)
+                except Exception as restore_exc:
+                    rollback_complete = False
+                    _log("Could not restore Kodi's previous stream-buffer memory setting: {}".format(
+                        restore_exc
+                    ), xbmc.LOGERROR)
             if original_weather_settings is not None:
                 for setting, value in original_weather_settings.items():
                     try:

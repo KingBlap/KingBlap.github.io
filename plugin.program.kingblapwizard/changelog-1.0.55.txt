@@ -1,0 +1,3 @@
+KingBlap Wizard 1.0.55
+- Private builds limit Kodi's stream-buffer memory to 16 MB on low-memory devices, while leaving smaller existing limits unchanged.
+- Stops add-ons marked for removal before replacing their files and saved data, including the retired XStream Pro add-on.
