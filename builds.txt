@@ -1,5 +1,5 @@
 # Choose a build category in KingBlap Wizard before installing.
 Public KingBlap Kodi 21.3 Build 1.0.22 | Direct checksum-verified Wizard download; Fire/Massive appearance; no saved account profiles, API keys, or credentials.
 Public KingBlap Kodi 22 Build 1.0.22 | Sanitized skin and weather settings only; no saved account profiles, API keys, or credentials.
-Private KingBlap Kodi 22 Build 1.0.46 | Protected Wizard download; removes OptiKlean; TV Channels Preview List; GIPTV USA/24/7 playlist with filtered guide.
-Private KingBlap Kodi 21.3 Build 1.0.33 | Protected Wizard download; removes OptiKlean; TV Channels Preview List; GIPTV USA/24/7 playlist with filtered guide.
+Private KingBlap Kodi 22 Build 1.0.47 | Protected Wizard download; removes OptiKlean; TV Channels Preview List; GIPTV 3.1.3 USA/24/7 playlist with filtered guide.
+Private KingBlap Kodi 21.3 Build 1.0.34 | Protected Wizard download; removes OptiKlean; TV Channels Preview List; GIPTV 3.1.3 USA/24/7 playlist with filtered guide.

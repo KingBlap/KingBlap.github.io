@@ -589,7 +589,7 @@ def _validate_archive(archive, expected_public=None):
         if any("/".join(parts[:index]) in file_paths for index in range(1, len(parts))):
             raise ValueError("The build archive uses a file as a directory.")
     if (
-        packages.get("plugin.video.giptv") not in ("3.1.0", "3.1.1", "3.1.2")
+        packages.get("plugin.video.giptv") not in ("3.1.0", "3.1.1", "3.1.2", "3.1.3")
         and packages.get("plugin.video.xstream-pro") not in ("1.1.2", "1.1.4")
     ):
         raise ValueError("The build archive does not contain a supported IPTV add-on.")
