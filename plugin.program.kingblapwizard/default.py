@@ -207,7 +207,7 @@ def _api_url(path):
 
 def _fetch(url, max_bytes, access_code=None):
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.54 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.58 Kodi",
         "Accept": "application/json",
     }
     if access_code:
@@ -675,6 +675,22 @@ def _validate_archive(archive, expected_public=None):
         raise ValueError("The build information does not identify the Thomasville, North Carolina weather setup.")
     skin_colors = build_info.get("skin_colors")
     skin_font = build_info.get("skin_font")
+    screensaver_addon = build_info.get("screensaver_addon")
+    if screensaver_addon is not None and (
+        not isinstance(screensaver_addon, str)
+        or not re.fullmatch(r"[A-Za-z0-9_.-]+", screensaver_addon)
+        or screensaver_addon not in packages
+    ):
+        raise ValueError("The build information selects a screensaver that is not packaged.")
+    if screensaver_addon is not None:
+        screensaver_manifest = ET.fromstring(
+            archive.read("addons/{}/addon.xml".format(screensaver_addon))
+        )
+        if not any(
+            extension.get("point") == "xbmc.ui.screensaver"
+            for extension in screensaver_manifest.findall("extension")
+        ):
+            raise ValueError("The build's selected add-on is not a Kodi screensaver.")
     appearance_declared = skin_colors is not None or skin_font is not None
     if distribution == "private" or appearance_declared:
         if (
@@ -855,6 +871,7 @@ def _validate_archive(archive, expected_public=None):
         sorted(profile_addon_data_ids) if profile_mode == PROFILE_DATA_MODE else [],
         skin_colors,
         skin_font,
+        screensaver_addon,
     )
 
 
@@ -909,7 +926,7 @@ def _download_public_archive(destination, progress, build_id):
             request = urllib.request.Request(
                 url,
                 headers={
-                    "User-Agent": "KingBlap-Wizard/1.0.54 Kodi",
+                    "User-Agent": "KingBlap-Wizard/1.0.58 Kodi",
                     "Accept": "application/octet-stream",
                 },
             )
@@ -968,7 +985,7 @@ def _download_archive(build_id, destination, progress, access_code=None, public_
         "{}/{}/download".format(route, urllib.parse.quote(build_id, safe=""))
     )
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.54 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.58 Kodi",
         "Accept": "application/zip",
     }
     if access_code:
@@ -1398,6 +1415,7 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
     original_weather_settings = None
     original_weather_addon_settings = None
     original_skin_appearance = None
+    original_screensaver_mode = None
     original_stream_buffer_memory = None
     original_service_states = {}
     service_addon_ids = set()
@@ -1457,6 +1475,7 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                 profile_addon_data_ids,
                 skin_colors,
                 skin_font,
+                screensaver_addon,
             ) = _validate_archive(archive, expected_public=public_build)
             required_dependencies = _required_external_dependencies(archive, packages)
             free_space = shutil.disk_usage(home).free
@@ -1581,6 +1600,8 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                 original_skin_appearance["lookandfeel.font"] = _get_setting(
                     "lookandfeel.font"
                 )
+        if screensaver_addon is not None:
+            original_screensaver_mode = _get_setting("screensaver.mode")
         original_weather_settings = {
             "weather.addon": _get_setting("weather.addon"),
             "weather.currentlocation": _get_setting("weather.currentlocation"),
@@ -1736,6 +1757,11 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
             _set_setting("lookandfeel.font", skin_font)
             if _get_setting("lookandfeel.font") != skin_font:
                 raise RuntimeError("Kodi did not apply the selected Xonfluence font.")
+        if screensaver_addon is not None:
+            _set_setting("screensaver.mode", screensaver_addon)
+            if _get_setting("screensaver.mode") != screensaver_addon:
+                raise RuntimeError("Kodi did not select the build's screensaver add-on.")
+            _log("Selected the packaged screensaver add-on {}.".format(screensaver_addon))
         if skin_colors is not None or skin_font is not None:
             _log("Applied private Xonfluence appearance: colors={!r}, font={!r}.".format(
                 skin_colors, skin_font
@@ -1795,6 +1821,10 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                 skin_colors or "current",
                 skin_font or "current",
             )
+        if screensaver_addon is not None:
+            success_message += "\nThe {} screensaver is installed and selected.".format(
+                screensaver_addon
+            )
         if optiklean_enable_warning:
             success_message += "\nSome background add-ons did not start automatically: {}. You can enable them in Add-ons > My add-ons.".format(
                 optiklean_enable_warning
@@ -1853,6 +1883,14 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                 _log("Could not refresh Kodi's add-on list during rollback: {}".format(
                     restore_exc
                 ), xbmc.LOGERROR)
+            if original_screensaver_mode is not None:
+                try:
+                    _set_setting("screensaver.mode", original_screensaver_mode)
+                except Exception as restore_exc:
+                    rollback_complete = False
+                    _log("Could not restore the previous screensaver: {}".format(
+                        restore_exc
+                    ), xbmc.LOGERROR)
             if original_pvr_enabled is not None:
                 try:
                     if _get_addon_enabled(PVR_ADDON_ID) is not None:

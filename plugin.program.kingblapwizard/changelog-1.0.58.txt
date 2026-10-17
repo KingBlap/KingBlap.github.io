@@ -1,0 +1,2 @@
+- Allow private build metadata to select a packaged Kodi screensaver add-on.
+- Verify the selected add-on is a screensaver, apply it after package registration, and restore the previous choice if installation rolls back.
