@@ -1,0 +1,2 @@
+- Enable Kodi automatic updates for compatible add-ons from enabled repositories in private builds.
+- Verify and restore the previous update mode if a private build installation rolls back.

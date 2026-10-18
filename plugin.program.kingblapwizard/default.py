@@ -207,7 +207,7 @@ def _api_url(path):
 
 def _fetch(url, max_bytes, access_code=None):
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.58 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.59 Kodi",
         "Accept": "application/json",
     }
     if access_code:
@@ -691,6 +691,9 @@ def _validate_archive(archive, expected_public=None):
             for extension in screensaver_manifest.findall("extension")
         ):
             raise ValueError("The build's selected add-on is not a Kodi screensaver.")
+    auto_update_addons = build_info.get("auto_update_addons")
+    if auto_update_addons is not None and not isinstance(auto_update_addons, bool):
+        raise ValueError("The build information contains an invalid add-on update setting.")
     appearance_declared = skin_colors is not None or skin_font is not None
     if distribution == "private" or appearance_declared:
         if (
@@ -872,6 +875,7 @@ def _validate_archive(archive, expected_public=None):
         skin_colors,
         skin_font,
         screensaver_addon,
+        auto_update_addons is True,
     )
 
 
@@ -926,7 +930,7 @@ def _download_public_archive(destination, progress, build_id):
             request = urllib.request.Request(
                 url,
                 headers={
-                    "User-Agent": "KingBlap-Wizard/1.0.58 Kodi",
+                    "User-Agent": "KingBlap-Wizard/1.0.59 Kodi",
                     "Accept": "application/octet-stream",
                 },
             )
@@ -985,7 +989,7 @@ def _download_archive(build_id, destination, progress, access_code=None, public_
         "{}/{}/download".format(route, urllib.parse.quote(build_id, safe=""))
     )
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.58 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.59 Kodi",
         "Accept": "application/zip",
     }
     if access_code:
@@ -1416,6 +1420,7 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
     original_weather_addon_settings = None
     original_skin_appearance = None
     original_screensaver_mode = None
+    original_addon_update_mode = None
     original_stream_buffer_memory = None
     original_service_states = {}
     service_addon_ids = set()
@@ -1476,6 +1481,7 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                 skin_colors,
                 skin_font,
                 screensaver_addon,
+                auto_update_addons,
             ) = _validate_archive(archive, expected_public=public_build)
             required_dependencies = _required_external_dependencies(archive, packages)
             free_space = shutil.disk_usage(home).free
@@ -1602,6 +1608,8 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                 )
         if screensaver_addon is not None:
             original_screensaver_mode = _get_setting("screensaver.mode")
+        if auto_update_addons:
+            original_addon_update_mode = _get_setting("general.addonupdates")
         original_weather_settings = {
             "weather.addon": _get_setting("weather.addon"),
             "weather.currentlocation": _get_setting("weather.currentlocation"),
@@ -1762,6 +1770,11 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
             if _get_setting("screensaver.mode") != screensaver_addon:
                 raise RuntimeError("Kodi did not select the build's screensaver add-on.")
             _log("Selected the packaged screensaver add-on {}.".format(screensaver_addon))
+        if auto_update_addons:
+            _set_setting("general.addonupdates", 0)
+            if _get_setting("general.addonupdates") != 0:
+                raise RuntimeError("Kodi did not enable automatic add-on updates.")
+            _log("Enabled automatic updates for compatible add-ons from enabled repositories.")
         if skin_colors is not None or skin_font is not None:
             _log("Applied private Xonfluence appearance: colors={!r}, font={!r}.".format(
                 skin_colors, skin_font
@@ -1825,6 +1838,8 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
             success_message += "\nThe {} screensaver is installed and selected.".format(
                 screensaver_addon
             )
+        if auto_update_addons:
+            success_message += "\nAutomatic add-on updates are enabled for compatible add-ons from enabled repositories."
         if optiklean_enable_warning:
             success_message += "\nSome background add-ons did not start automatically: {}. You can enable them in Add-ons > My add-ons.".format(
                 optiklean_enable_warning
@@ -1889,6 +1904,14 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                 except Exception as restore_exc:
                     rollback_complete = False
                     _log("Could not restore the previous screensaver: {}".format(
+                        restore_exc
+                    ), xbmc.LOGERROR)
+            if original_addon_update_mode is not None:
+                try:
+                    _set_setting("general.addonupdates", original_addon_update_mode)
+                except Exception as restore_exc:
+                    rollback_complete = False
+                    _log("Could not restore the previous add-on update setting: {}".format(
                         restore_exc
                     ), xbmc.LOGERROR)
             if original_pvr_enabled is not None:
