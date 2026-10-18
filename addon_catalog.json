@@ -210,12 +210,12 @@
     },
     {
       "id": "plugin.video.otaku",
-      "version": "5.3.3",
+      "version": "5.3.6",
       "name": "Otaku",
       "provider": "TeamOtaku",
       "license": "GPL-3.0",
-      "zip": "repo/zips/plugin.video.otaku/plugin.video.otaku-5.3.3.zip",
-      "bytes": 2277247
+      "zip": "repo/zips/plugin.video.otaku/plugin.video.otaku-5.3.6.zip",
+      "bytes": 2277334
     },
     {
       "id": "plugin.video.prism",
