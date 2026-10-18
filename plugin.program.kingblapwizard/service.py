@@ -29,6 +29,9 @@ WEATHER_ID = "weather.gismeteo"
 PRIVATE_MEMORY_POLICY_PATH = xbmcvfs.translatePath(
     "special://profile/addon_data/plugin.video.giptv/.kingblap-low-memory.json"
 )
+PENDING_COMMIT_PATH = xbmcvfs.translatePath(
+    "special://profile/addon_data/{}/pending-commit-addons.json".format(ADDON_ID)
+)
 LOAD_TIMEOUT = 60
 CONFIRMATION_GRACE = 13
 
@@ -262,7 +265,7 @@ def _journal_backup(transaction, relative):
 
 
 def _restore_journal(transaction, journal):
-    if journal.get("version") != 1 or not isinstance(journal.get("operations"), list):
+    if journal.get("version") not in (1, 2) or not isinstance(journal.get("operations"), list):
         raise ValueError("The saved install transaction journal is not supported.")
     phase = journal.get("phase")
     if phase == "staging":
@@ -285,6 +288,83 @@ def _restore_journal(transaction, journal):
             _safe_remove(target)
             restored = True
     return restored
+
+
+def _restore_journal_addon_states(journal):
+    states = journal.get("addon_states", {})
+    if not isinstance(states, dict):
+        raise ValueError("The saved install transaction has invalid add-on states.")
+    for addon_id, enabled in states.items():
+        if (
+            not isinstance(addon_id, str)
+            or not re.fullmatch(r"[A-Za-z0-9_.-]+", addon_id)
+            or not isinstance(enabled, bool)
+        ):
+            raise ValueError("The saved install transaction has an invalid add-on state.")
+        current = _addon_enabled(addon_id)
+        if current is not enabled:
+            _set_addon_enabled(addon_id, enabled)
+            _log("Restored {} after an interrupted build install.".format(addon_id), xbmc.LOGWARNING)
+    return True
+
+
+def _save_pending_commit_addons(journal):
+    addon_ids = journal.get("post_commit_enable", [])
+    if not isinstance(addon_ids, list) or any(
+        not isinstance(addon_id, str)
+        or not re.fullmatch(r"[A-Za-z0-9_.-]+", addon_id)
+        for addon_id in addon_ids
+    ):
+        raise ValueError("The committed build has an invalid service list.")
+    if not addon_ids:
+        return False
+    os.makedirs(os.path.dirname(PENDING_COMMIT_PATH), exist_ok=True)
+    temporary = PENDING_COMMIT_PATH + ".tmp"
+    with open(temporary, "w", encoding="utf-8") as pending_file:
+        json.dump(sorted(set(addon_ids)), pending_file)
+        pending_file.flush()
+        os.fsync(pending_file.fileno())
+    os.replace(temporary, PENDING_COMMIT_PATH)
+    return True
+
+
+def _enable_pending_commit_addons():
+    try:
+        with open(PENDING_COMMIT_PATH, "r", encoding="utf-8") as pending_file:
+            addon_ids = json.load(pending_file)
+    except FileNotFoundError:
+        return
+    except (OSError, TypeError, ValueError) as exc:
+        _log("Could not read the saved post-install service list: {}".format(exc), xbmc.LOGWARNING)
+        return
+    if not isinstance(addon_ids, list) or any(
+        not isinstance(addon_id, str)
+        or not re.fullmatch(r"[A-Za-z0-9_.-]+", addon_id)
+        for addon_id in addon_ids
+    ):
+        _log("The saved post-install service list is invalid; it was left for inspection.", xbmc.LOGERROR)
+        return
+    failed = False
+    for addon_id in addon_ids:
+        try:
+            details = _jsonrpc("Addons.GetAddonDetails", {
+                "addonid": addon_id,
+                "properties": ["enabled"],
+            }).get("addon", {})
+            if not details:
+                raise RuntimeError("Kodi has not registered the add-on yet.")
+            if details.get("enabled") is not True:
+                _set_addon_enabled(addon_id, True)
+            xbmc.sleep(500)
+        except (RuntimeError, TypeError, ValueError) as exc:
+            failed = True
+            _log("Could not finish starting {} after build recovery: {}".format(addon_id, exc), xbmc.LOGWARNING)
+    if not failed:
+        try:
+            os.remove(PENDING_COMMIT_PATH)
+            _log("Finished starting the build services after Kodi restarted during installation.")
+        except OSError:
+            pass
 
 
 def _restore_legacy_backups(transaction):
@@ -355,6 +435,12 @@ def _recover_transactions():
             marker = transaction + ".committed"
             try:
                 if os.path.isfile(marker):
+                    journal_path = os.path.join(transaction, "journal.json")
+                    if os.path.isfile(journal_path):
+                        with open(journal_path, "r", encoding="utf-8") as journal_file:
+                            journal = json.load(journal_file)
+                        if _save_pending_commit_addons(journal):
+                            recovered = True
                     _cleanup_transaction(transaction)
                     _log("Cleaned up a committed build transaction.")
                     continue
@@ -363,6 +449,14 @@ def _recover_transactions():
                     with open(journal_path, "r", encoding="utf-8") as journal_file:
                         journal = json.load(journal_file)
                     if journal.get("phase") == "staging":
+                        try:
+                            _restore_journal_addon_states(journal)
+                        except (RuntimeError, TypeError, ValueError) as state_exc:
+                            _log(
+                                "Could not restore paused add-ons after an interrupted build install: {}".format(state_exc),
+                                xbmc.LOGERROR,
+                            )
+                            continue
                         _cleanup_transaction(transaction)
                         _log("Removed abandoned build staging files.", xbmc.LOGWARNING)
                         continue
@@ -388,6 +482,15 @@ def _recover_transactions():
                     xbmc.sleep(1000)
                     recovered = True
                     _log("Recovered Kodi add-ons and settings from an interrupted build install.", xbmc.LOGWARNING)
+                try:
+                    if journal is not None:
+                        _restore_journal_addon_states(journal)
+                except (RuntimeError, TypeError, ValueError) as state_exc:
+                    _log(
+                        "Could not restore paused add-ons after an interrupted build install: {}".format(state_exc),
+                        xbmc.LOGERROR,
+                    )
+                    continue
                 _cleanup_transaction(transaction)
                 if previous_optiklean_state is True:
                     try:
@@ -425,6 +528,8 @@ def main():
             last_marker_time = os.path.getmtime(MARKER_PATH)
         except OSError:
             pass
+    _enable_pending_commit_addons()
+    last_pending_commit_check = time.monotonic()
     while not monitor.abortRequested():
         try:
             marker_time = os.path.getmtime(MARKER_PATH)
@@ -434,6 +539,9 @@ def main():
             last_marker_time = marker_time
             if _load_requested_skin():
                 _apply_pending_skin(monitor)
+        if time.monotonic() - last_pending_commit_check >= 15:
+            _enable_pending_commit_addons()
+            last_pending_commit_check = time.monotonic()
         if monitor.waitForAbort(2):
             break
 

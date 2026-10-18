@@ -98,7 +98,7 @@ DOWNLOAD_LIMIT = 512 * 1024 * 1024
 PRE_DOWNLOAD_EXPANSION_RESERVE = 512 * 1024 * 1024
 INSTALL_SAFETY_RESERVE = 64 * 1024 * 1024
 ACCESS_CODE_PATTERN = re.compile(r"[0-9]{16}\Z")
-CHUNK_SIZE = 1024 * 1024
+CHUNK_SIZE = 256 * 1024
 ADDON_REGISTRATION_TIMEOUT = 600
 SKIN_LOAD_TIMEOUT = 120
 SKIN_CONFIRMATION_GRACE = 13
@@ -342,11 +342,19 @@ def _remove_child(root, name):
     _remove_path(target)
 
 
-def _write_transaction_journal(transaction, phase, operations):
+def _write_transaction_journal(
+    transaction, phase, operations, addon_states=None, post_commit_enable=None
+):
     journal = os.path.join(transaction, "journal.json")
     temporary = journal + ".tmp"
     with open(temporary, "w", encoding="utf-8") as journal_file:
-        json.dump({"version": 1, "phase": phase, "operations": operations}, journal_file)
+        json.dump({
+            "version": 2,
+            "phase": phase,
+            "operations": operations,
+            "addon_states": addon_states or {},
+            "post_commit_enable": post_commit_enable or [],
+        }, journal_file)
         journal_file.flush()
         os.fsync(journal_file.fileno())
     os.replace(temporary, journal)
@@ -392,7 +400,11 @@ def _swap_child(root, name, staged, backup, changes, journal_state=None, locatio
             "backup": backup_relative.replace(os.sep, "/"),
         })
         _write_transaction_journal(
-            journal_state["transaction"], "swapping", journal_state["operations"]
+            journal_state["transaction"],
+            "swapping",
+            journal_state["operations"],
+            journal_state.get("addon_states"),
+            journal_state.get("post_commit_enable"),
         )
     if had_target:
         os.makedirs(os.path.dirname(backup), exist_ok=True)
@@ -1129,6 +1141,26 @@ def _set_addon_enabled(addon_id, enabled):
         raise RuntimeError("Kodi did not confirm that the {} add-on is {}.".format(addon_id, action))
 
 
+def _pause_install_addon(addon_id, journal_state, original_states):
+    """Pause a heavy background add-on and save its prior state before changing it."""
+    enabled = _get_addon_enabled(addon_id)
+    if not isinstance(enabled, bool):
+        return None
+    original_states[addon_id] = enabled
+    journal_state["addon_states"][addon_id] = enabled
+    _write_transaction_journal(
+        journal_state["transaction"],
+        "staging",
+        journal_state["operations"],
+        journal_state["addon_states"],
+        journal_state.get("post_commit_enable"),
+    )
+    if enabled:
+        _set_addon_enabled(addon_id, False)
+        xbmc.sleep(1500)
+    return enabled
+
+
 def _confirm_skin_keep_prompt():
     if xbmcgui.getCurrentWindowDialogId() != 10100:
         return False
@@ -1380,7 +1412,7 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
             profile_notice += " The selected private ZIP is not encrypted; keep it in private storage and delete any extra copies after transfer."
     if not xbmcgui.Dialog().yesno(
         "Install {}?".format(name),
-        "This installs and enables all packaged add-ons, fetches device-compatible "
+        "This pauses IPTV during the large file preparation, installs and enables all packaged add-ons, fetches device-compatible "
         "native components through Kodi, replaces matching add-on files, and installs the Xonfluence skin for Kodi {}. ".format(KODI_MAJOR) +
         "It also sets Gismeteo to Thomasville, North Carolina, installs the Xonfluence skin settings, and removes Aeon Nox: SiLVO, Estuary MOD V2, and the OnePlay repository.\n\n"
         "It also removes XStream Pro, XStream Player, and their saved settings when the selected build marks them for removal.\n\n" +
@@ -1441,8 +1473,19 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                     )
                 )
         os.makedirs(transaction, exist_ok=True)
-        journal_state = {"transaction": transaction, "operations": []}
-        _write_transaction_journal(transaction, "staging", journal_state["operations"])
+        journal_state = {
+            "transaction": transaction,
+            "operations": [],
+            "addon_states": {},
+            "post_commit_enable": [],
+        }
+        _write_transaction_journal(
+            transaction,
+            "staging",
+            journal_state["operations"],
+            journal_state["addon_states"],
+            journal_state["post_commit_enable"],
+        )
         if local_archive:
             allowed_build_ids = {
                 21: (KODI21_PUBLIC_BUILD_ID, KODI21_PRIVATE_BUILD_ID),
@@ -1489,6 +1532,15 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                 raise OSError("There is not enough free storage to unpack this build safely.")
             if progress.iscanceled():
                 raise InterruptedError("Build installation was cancelled.")
+            if not public_build and "plugin.video.giptv" in packages:
+                progress.update(5, "Pausing IPTV while the build is prepared…")
+                if PVR_ADDON_ID in profile_addon_data_ids:
+                    original_pvr_enabled = _pause_install_addon(
+                        PVR_ADDON_ID, journal_state, original_service_states
+                    )
+                original_service_states["plugin.video.giptv"] = _pause_install_addon(
+                    "plugin.video.giptv", journal_state, original_service_states
+                )
             progress.close()
             progress = xbmcgui.DialogProgressBG()
             progress.create("KingBlap Wizard", "Preparing add-ons…")
@@ -1639,7 +1691,7 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
         giptv_id = "plugin.video.giptv"
         for service_addon_id in sorted(service_addon_ids):
             enabled_state = _get_addon_enabled(service_addon_id)
-            original_service_states[service_addon_id] = enabled_state
+            original_service_states.setdefault(service_addon_id, enabled_state)
             if enabled_state is True:
                 # Keep background services from changing profiles while the build is
                 # being swapped. IPTV and cleanup services get a little more time to stop.
@@ -1653,8 +1705,9 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                 _set_addon_enabled(removed_addon_id, False)
                 xbmc.sleep(1200 if removed_addon_id == "plugin.video.xstream-pro" else 300)
         if PVR_ADDON_ID in profile_addon_data_ids:
-            original_pvr_enabled = _get_addon_enabled(PVR_ADDON_ID)
-            if original_pvr_enabled:
+            if original_pvr_enabled is None:
+                original_pvr_enabled = _get_addon_enabled(PVR_ADDON_ID)
+            if original_pvr_enabled is True and _get_addon_enabled(PVR_ADDON_ID) is True:
                 # Unload every IPTV Simple instance before replacing its settings directory.
                 _set_addon_enabled(PVR_ADDON_ID, False)
                 xbmc.sleep(1500)
@@ -1779,6 +1832,17 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
             _log("Applied private Xonfluence appearance: colors={!r}, font={!r}.".format(
                 skin_colors, skin_font
             ))
+        journal_state["post_commit_enable"] = sorted(
+            set(service_addon_ids)
+            | ({PVR_ADDON_ID} if PVR_ADDON_ID in profile_addon_data_ids else set())
+        )
+        _write_transaction_journal(
+            transaction,
+            "swapping",
+            journal_state["operations"],
+            journal_state["addon_states"],
+            journal_state["post_commit_enable"],
+        )
         _write_transaction_commit_marker(transaction)
         committed = True
         post_commit_failures = []

@@ -1,0 +1,3 @@
+- Pause IPTV Simple and GIPTV during large private-build preparation to reduce concurrent TV load.
+- Save IPTV and service states before pausing, restore them after an interrupted install, and finish starting services after a restart at commit time.
+- Reduce archive extraction buffer size for lower peak memory use.
