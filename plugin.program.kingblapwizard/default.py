@@ -753,6 +753,28 @@ def _validate_archive(archive, expected_public=None):
             raise ValueError("The build profile data list does not match the archived add-on data.")
     elif profile_addon_data_ids != {SKIN_ID, WEATHER_ID} or declared_profile_ids:
         raise ValueError("The settings-only build contains unexpected add-on profile data.")
+    reset_addon_data_ids = build_info.get("reset_addon_data_ids", [])
+    if (
+        not isinstance(reset_addon_data_ids, list)
+        or any(
+            not isinstance(addon_id, str)
+            or not re.fullmatch(r"[A-Za-z0-9_.-]+", addon_id)
+            or addon_id in (
+                ADDON_ID,
+                "plugin.video.xstream-player",
+                ONEPLAY_REPO_ID,
+                LEGACY_SKIN_ID,
+                PREVIOUS_SKIN_ID,
+            )
+            for addon_id in reset_addon_data_ids
+        )
+        or len(reset_addon_data_ids) != len(set(reset_addon_data_ids))
+        or set(reset_addon_data_ids) & profile_addon_data_ids
+        or not set(reset_addon_data_ids).issubset(packages)
+        or (reset_addon_data_ids and profile_mode != PROFILE_DATA_MODE)
+        or (expected_public is True and reset_addon_data_ids)
+    ):
+        raise ValueError("The build information contains invalid add-on profile reset IDs.")
     giptv_id = "plugin.video.giptv"
     if (
         build_info.get("distribution") == "private"
@@ -884,6 +906,7 @@ def _validate_archive(archive, expected_public=None):
         sorted(set(removed_addons)),
         profile_mode,
         sorted(profile_addon_data_ids) if profile_mode == PROFILE_DATA_MODE else [],
+        sorted(reset_addon_data_ids),
         skin_colors,
         skin_font,
         screensaver_addon,
@@ -1521,6 +1544,7 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                 removed_addons,
                 profile_mode,
                 profile_addon_data_ids,
+                reset_addon_data_ids,
                 skin_colors,
                 skin_font,
                 screensaver_addon,
@@ -1745,6 +1769,16 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                 changes,
                 journal_state,
                 "skin_data",
+            )
+        for addon_id in reset_addon_data_ids:
+            _swap_child(
+                data_root,
+                addon_id,
+                None,
+                os.path.join(rollback_root, "addon-data", addon_id),
+                changes,
+                journal_state,
+                "addon_data",
             )
         for addon_id in removed_addons:
             _swap_child(

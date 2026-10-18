@@ -1,0 +1,1 @@
+- Add explicit profile-data reset support for reinstalling selected add-ons with defaults.
