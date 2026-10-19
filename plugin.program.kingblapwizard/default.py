@@ -1410,6 +1410,21 @@ def _copy_local_archive(source_path, destination, progress):
     progress.update(5, "Reading the selected build archive…")
 
 
+def _stop_playback_for_install():
+    """Do not unpack a large build while Kodi is decoding an active stream."""
+    player = xbmc.Player()
+    if not player.isPlaying():
+        return
+    _log("Stopping active playback before build preparation.")
+    player.stop()
+    deadline = time.monotonic() + 10
+    while player.isPlaying() and time.monotonic() < deadline:
+        xbmc.sleep(250)
+    if player.isPlaying():
+        raise RuntimeError("Kodi is still playing video. Stop playback, then retry the build install.")
+    _log("Playback stopped; build preparation can begin.")
+
+
 def _install(name, build_id, access_code, public_build=False, local_archive=None):
     target_kodi_major = _private_build_kodi_major(build_id) if not public_build else None
     if target_kodi_major is not None and target_kodi_major != KODI_MAJOR:
@@ -1435,7 +1450,7 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
             profile_notice += " The selected private ZIP is not encrypted; keep it in private storage and delete any extra copies after transfer."
     if not xbmcgui.Dialog().yesno(
         "Install {}?".format(name),
-        "This pauses IPTV during the large file preparation, installs and enables all packaged add-ons, fetches device-compatible "
+        "This stops active playback, pauses IPTV during the large file preparation, installs and enables all packaged add-ons, fetches device-compatible "
         "native components through Kodi, replaces matching add-on files, and installs the Xonfluence skin for Kodi {}. ".format(KODI_MAJOR) +
         "It also sets Gismeteo to Thomasville, North Carolina, installs the Xonfluence skin settings, and removes Aeon Nox: SiLVO, Estuary MOD V2, and the OnePlay repository.\n\n"
         "It also removes XStream Pro, XStream Player, and their saved settings when the selected build marks them for removal.\n\n" +
@@ -1485,6 +1500,7 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
     preserve_transaction = False
     packages = {}
     try:
+        _stop_playback_for_install()
         if not public_build:
             previous_buffer_memory = _get_setting("filecache.memorysize")
             if type(previous_buffer_memory) is int and previous_buffer_memory > 16:
@@ -1823,18 +1839,8 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                 len(packages) - len(deferred_addons)
             )
         )
-        _write_weather_addon_settings(WEATHER_ADDON_SETTINGS)
-        _set_setting("weather.addon", WEATHER_ID)
-        _set_setting("weather.currentlocation", 1)
-        # Select the configured first location through Kodi's weather manager
-        # and refresh its cached forecast. Otherwise an earlier IP-based
-        # location can remain active even after Gismeteo's settings change.
-        xbmc.executebuiltin("Weather.LocationSet(1)", True)
-        xbmc.executebuiltin("Weather.Refresh", True)
-        if _get_setting("weather.currentlocation") != 1:
-            raise RuntimeError("Kodi did not select Thomasville as its current weather location.")
-        _write_weather_addon_settings(WEATHER_ADDON_SETTINGS)
-        _log("Selected Gismeteo location 1 (Thomasville, North Carolina) and refreshed weather.")
+        _log("Weather activation deferred until after the build transaction commits.")
+        _log("Checking the packaged Xonfluence skin registration.")
         try:
             installed_skin_version = xbmcaddon.Addon(SKIN_ID).getAddonInfo("version")
         except RuntimeError:
@@ -1879,6 +1885,7 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
         )
         _write_transaction_commit_marker(transaction)
         committed = True
+        _log("Build transaction committed; starting packaged services.")
         post_commit_failures = []
         if PVR_ADDON_ID in profile_addon_data_ids:
             progress.update(98, "KingBlap Wizard", "Starting IPTV Simple after setup…")
@@ -1907,6 +1914,27 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
             )
         else:
             _log("Verified all {} packaged add-ons are enabled.".format(len(packages)))
+        weather_warning = None
+        try:
+            _log("Post-commit weather setup: applying Gismeteo settings.")
+            _write_weather_addon_settings(WEATHER_ADDON_SETTINGS)
+            _log("Post-commit weather setup: Gismeteo settings applied.")
+            _log("Post-commit weather setup: selecting Gismeteo and location 1.")
+            _set_setting("weather.addon", WEATHER_ID)
+            _log("Post-commit weather setup: Gismeteo selected.")
+            _set_setting("weather.currentlocation", 1)
+            _log("Post-commit weather setup: location 1 selected.")
+            if _get_setting("weather.currentlocation") != 1:
+                raise RuntimeError("Kodi did not select Thomasville as its current weather location.")
+            # Weather builtins may wait on the weather manager. Queue them so
+            # forecast loading cannot block the build completion notice.
+            _log("Post-commit weather setup: queuing location and forecast refresh.")
+            xbmc.executebuiltin("Weather.LocationSet(1)", False)
+            xbmc.executebuiltin("Weather.Refresh", False)
+            _log("Selected Gismeteo location 1 (Thomasville, North Carolina); forecast refresh queued.")
+        except Exception as weather_exc:
+            weather_warning = str(weather_exc)
+            _log("Build committed, but weather setup needs attention: {}".format(weather_exc), xbmc.LOGWARNING)
         progress.close()
         success_message = (
             "Kodi registered the {} add-ons in the build and checked {} "
@@ -1915,7 +1943,7 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
             "Kodi will recreate add-on logos and skin artwork when it displays them.\n"
             "Show and channel thumbnails need each add-on's own data and account settings.\n"
             "Keep Kodi's official repository enabled so Kodi can install native dependencies for {}.\n"
-            "Gismeteo is set to Thomasville, North Carolina. The OnePlay repository and build-marked add-ons were removed with their saved profile data.\n"
+            "The OnePlay repository and build-marked add-ons were removed with their saved profile data.\n"
             "{} The Wizard access code remains saved locally."
         ).format(
             len(packages),
@@ -1938,6 +1966,10 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
             )
         if auto_update_addons:
             success_message += "\nAutomatic add-on updates are enabled for compatible add-ons from enabled repositories."
+        if weather_warning:
+            success_message += "\nGismeteo needs attention: {}.".format(weather_warning)
+        else:
+            success_message += "\nGismeteo is set to Thomasville, North Carolina."
         if optiklean_enable_warning:
             success_message += "\nSome background add-ons did not start automatically: {}. You can enable them in Add-ons > My add-ons.".format(
                 optiklean_enable_warning

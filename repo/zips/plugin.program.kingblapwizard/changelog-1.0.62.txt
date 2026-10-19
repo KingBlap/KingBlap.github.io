@@ -1,0 +1,3 @@
+- Stop active playback before preparing a build and abort cleanly if playback cannot stop.
+- Apply Gismeteo weather settings after the build commits; queue weather refresh without blocking the installer.
+- Log the install phase around skin registration, commit, service startup, and weather setup.
