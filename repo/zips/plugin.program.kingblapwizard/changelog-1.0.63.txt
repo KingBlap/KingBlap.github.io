@@ -1,0 +1,2 @@
+- Allow private builds to select Kodi's built-in dim screensaver without packaging a duplicate system add-on.
+- Keep packaged video screensavers installable while supporting a lightweight wake-friendly fallback.
