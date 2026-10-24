@@ -1,0 +1,5 @@
+KingBlap Wizard 1.0.69
+- Applies the Xonfluence skin ID and package declared by the selected public archive: Kodi 21.3's portable 5.1.1 package and Kodi 22's 6.0.7 package.
+- Keeps private build skin selection rules unchanged.
+- Validates the authorized public IPTV Simple profile and installs the device-compatible PVR client through Kodi after the build files are committed.
+- Corrects malformed XML found in the staged Mad Titan, Otaku, and Kodi 21 skin source files.
