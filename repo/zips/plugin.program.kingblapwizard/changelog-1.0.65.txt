@@ -1,0 +1,5 @@
+KingBlap Wizard 1.0.65
+
+- Lists only the supported Kodi 21.3 and Kodi 22 public builds.
+- Retires the unsupported legacy public download route after archived files were removed to keep GitHub Pages below its published-site size limit.
+- Keeps public build 1.0.23 hashes, download sizes, private routes, and device-native dependency handling unchanged.

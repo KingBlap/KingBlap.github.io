@@ -49,8 +49,6 @@ else:
     SKIN_ID = "skin.xonfluence"
     SKIN_VERSION = "6.0.7"
     PREVIOUS_SKIN_ID = None
-PUBLIC_BUILD_ID = "kingblap-public-1.0.19"
-PUBLIC_BUILD_NAME = "Public KingBlap Kodi Build 1.0.19"
 KODI21_PUBLIC_BUILD_ID = "kingblap-public-kodi21.3-1.0.23"
 KODI21_PRIVATE_BUILD_ID = "kingblap-private-kodi21.3-1.0.21"
 KODI21_PRIVATE_BUILD_PREFIX = "kingblap-private-kodi21.3-"
@@ -61,11 +59,6 @@ KODI22_PRIVATE_BUILD_ID = "kingblap-private-kodi22-1.0.26"
 KODI22_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 22 1.0.23 (download)"
 KODI22_PRIVATE_BUILD_NAME = "Private KingBlap Build for Kodi 22 1.0.28 (download)"
 KODI22_PRIVATE_BUILD_PREFIX = "kingblap-private-kodi22-"
-PUBLIC_BUILD_PARTS = (
-    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-1.0.19.zip.part001", 83886080),
-    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-1.0.19.zip.part002", 83886080),
-    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-1.0.19.zip.part003", 10645365),
-)
 KODI21_PUBLIC_BUILD_PARTS = (
     ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-21.3-1.0.23.zip.part001", 82948762),
 )
@@ -204,7 +197,7 @@ def _api_url(path):
 
 def _fetch(url, max_bytes, access_code=None):
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.59 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.65 Kodi",
         "Accept": "application/json",
     }
     if access_code:
@@ -231,7 +224,7 @@ def _get_builds(access_code=None, public_build=False):
     if KODI_MAJOR == 22 and public_build:
         return [(KODI22_PUBLIC_BUILD_ID, KODI22_PUBLIC_BUILD_NAME)]
     if KODI_MAJOR not in (21, 22) and public_build:
-        return [(PUBLIC_BUILD_ID, PUBLIC_BUILD_NAME)]
+        return []
     label = "public" if public_build else "private"
     content = _fetch(_api_url(BUILDS_PATH), 1024 * 1024, access_code).decode("utf-8-sig")
     payload = json.loads(content)
@@ -950,10 +943,6 @@ def _download_public_archive(destination, progress, build_id):
         parts = KODI22_PUBLIC_BUILD_PARTS
         expected_sha256 = KODI22_PUBLIC_BUILD_SHA256
         build_label = "Kodi 22"
-    elif build_id == PUBLIC_BUILD_ID:
-        parts = PUBLIC_BUILD_PARTS
-        expected_sha256 = None
-        build_label = "public"
     else:
         raise ValueError("The selected public build is not valid.")
     total_expected = sum(size for _, size in parts)
@@ -964,7 +953,7 @@ def _download_public_archive(destination, progress, build_id):
             request = urllib.request.Request(
                 url,
                 headers={
-                    "User-Agent": "KingBlap-Wizard/1.0.59 Kodi",
+                    "User-Agent": "KingBlap-Wizard/1.0.65 Kodi",
                     "Accept": "application/octet-stream",
                 },
             )
@@ -1014,7 +1003,7 @@ def _download_public_archive(destination, progress, build_id):
 
 def _download_archive(build_id, destination, progress, access_code=None, public_build=False):
     if public_build:
-        if build_id not in (PUBLIC_BUILD_ID, KODI21_PUBLIC_BUILD_ID, KODI22_PUBLIC_BUILD_ID):
+        if build_id not in (KODI21_PUBLIC_BUILD_ID, KODI22_PUBLIC_BUILD_ID):
             raise ValueError("The selected public build is not valid.")
         _download_public_archive(destination, progress, build_id)
         return
@@ -1023,7 +1012,7 @@ def _download_archive(build_id, destination, progress, access_code=None, public_
         "{}/{}/download".format(route, urllib.parse.quote(build_id, safe=""))
     )
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.59 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.65 Kodi",
         "Accept": "application/zip",
     }
     if access_code:
@@ -2225,9 +2214,14 @@ def main():
         for build_id, name in builds:
             _add_directory_item(handle, name, build_id, public_build=public_build)
         if not builds:
+            message = (
+                "Public builds are available for Kodi 21.3 and Kodi 22."
+                if public_build and KODI_MAJOR not in (21, 22)
+                else "No {} builds are listed right now.".format(category)
+            )
             xbmcgui.Dialog().ok(
                 "KingBlap Wizard",
-                "No {} builds are listed right now.".format(category),
+                message,
             )
     except AccessDenied:
         if not public_build:

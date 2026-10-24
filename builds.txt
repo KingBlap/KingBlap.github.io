@@ -1,4 +1,4 @@
-# Choose a build category in KingBlap Wizard 1.0.64 before installing.
+# Choose a build category in KingBlap Wizard 1.0.65 before installing.
 Public KingBlap Kodi 21.3 Build 1.0.23 | 50 portable add-ons; checksum-verified Wizard download; Fire/Massive appearance; no saved personal profiles, API keys, credentials, playlists, or guides from the backup. Older omitted add-ons and their matching settings are removed on install.
 Public KingBlap Kodi 22 Build 1.0.23 | 49 portable add-ons; checksum-verified Wizard download; Fire/Massive appearance; no saved personal profiles, API keys, credentials, playlists, or guides from the backup. Older omitted add-ons and their matching settings are removed on install.
 Private KingBlap Kodi 21.3 Build 1.0.53 | Protected Wizard download; selected private add-on profiles and GIPTV configuration; built-in Dim screensaver.
