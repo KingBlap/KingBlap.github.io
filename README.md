@@ -1,6 +1,6 @@
 # KingBlap Kodi Repository
 
-Install individual add-ons from the KingBlap Kodi Repository, or install a complete public or private build with **KingBlap Wizard 1.0.65**. Builds are available for **Kodi 21.3** and **Kodi 22**.
+Install individual add-ons from the KingBlap Kodi Repository, or install a complete public or private build with **KingBlap Wizard 1.0.66**. Builds are available for **Kodi 21.3** and **Kodi 22**.
 
 Updated October 24, 2026.
 
@@ -38,9 +38,9 @@ Menu positions can vary by skin. Kodi documents its [File Manager](https://kodi.
 2. Select **repository.kingblap-1.0.0.zip** and wait for the repository installed notification.
 3. Open **Install from repository → KingBlap Kodi Repository → Program add-ons → KingBlap Wizard**.
 4. Select **Install**, accept dependency prompts, and wait for the Wizard installed notification.
-5. Open **Add-ons → Program add-ons → KingBlap Wizard**. The current Wizard version is **1.0.65**.
+5. Open **Add-ons → Program add-ons → KingBlap Wizard**. The current Wizard version is **1.0.66**.
 
-If you downloaded the repository ZIP to a computer, USB drive, or your device's Downloads folder, browse to that file from **Install from zip file** instead of using the File Manager source. The [Wizard 1.0.65 ZIP](https://kingblap.github.io/repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.65.zip) can also be installed directly from the same Add-ons menu.
+If you downloaded the repository ZIP to a computer, USB drive, or your device's Downloads folder, browse to that file from **Install from zip file** instead of using the File Manager source. The [Wizard 1.0.66 ZIP](https://kingblap.github.io/repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.66.zip) can also be installed directly from the same Add-ons menu.
 
 ### Install individual add-ons
 
@@ -48,7 +48,7 @@ Open **Add-ons → open box/package icon → Install from repository → KingBla
 
 ## Install a public build
 
-1. Install or update **KingBlap Wizard 1.0.65** using the instructions above.
+1. Install or update **KingBlap Wizard 1.0.66** using the instructions above.
 2. Open **Add-ons → Program add-ons → KingBlap Wizard → Public Builds**.
 3. Select **Public KingBlap Build for Kodi 21.3 1.0.23 (download)** on Kodi 21.3, or **Public KingBlap Build for Kodi 22 1.0.23 (download)** on Kodi 22.
 4. Review the installation notice and choose **Install build**.
@@ -64,7 +64,7 @@ The public build brings portable add-on packages, Fire colors, the Massive font,
 
 The private build access code is separate from any IPTV username or password. Keep the code and private archives with their intended recipients.
 
-1. Install or update **KingBlap Wizard 1.0.65** using the repository instructions above.
+1. Install or update **KingBlap Wizard 1.0.66** using the repository instructions above.
 2. Open the Wizard's information page from **Add-ons → open box/package icon → My add-ons → Program add-ons → KingBlap Wizard**, then choose **Configure**.
 3. Under **Private build access**, enter the **16-digit private build access code**. Leave **Build service URL** at its default unless you received a replacement address.
 4. Open **Add-ons → Program add-ons → KingBlap Wizard → Private Builds**.
@@ -92,25 +92,26 @@ The public archive includes a selected set of video, guide, weather, skin, and s
 
 | Release | Change |
 | --- | --- |
-| **Wizard 1.0.65 / Public Builds 1.0.23** | Updates the portable public add-on set for both Kodi versions, including Otaku 5.3.6 and newer Mad Titan, WatchNixtoons2, and ResolveURL packages. Removes add-ons absent from the selected October 24 set and keeps personal backup data and Windows-native binaries out. |
+| **Wizard 1.0.66 / Public Builds 1.0.23** | Shortens persistent install staging paths on Android and other devices, and retains recovery of transactions from older Wizard versions. Public build archives remain at version 1.0.23. |
+| **Public Builds 1.0.23** | Updates the portable public add-on set for both Kodi versions, including Otaku 5.3.6 and newer Mad Titan, WatchNixtoons2, and ResolveURL packages. Removes add-ons absent from the selected October 24 set and keeps personal backup data and Windows-native binaries out. |
 | **Private Builds 1.0.53 and 1.0.66** | Current separate private releases use Kodi's built-in Dim screensaver. Private build archives and access remain separate from the public packages. |
 
 Updating the Wizard alone does not apply a newer full build. Reopen **Public Builds** or **Private Builds** and install the build matching your Kodi version.
 
-Legacy public download parts for version 1.0.19 and Kodi 22 version 1.0.21 have been retired from the site. Kodi 21.3 and Kodi 22 version 1.0.22 parts remain available for existing Wizard installs. If your Wizard requests a retired file, update it to 1.0.65 and choose public build 1.0.23.
+Legacy public download parts for version 1.0.19 and Kodi 22 version 1.0.21 have been retired from the site. Kodi 21.3 and Kodi 22 version 1.0.22 parts remain available for existing Wizard installs. If your Wizard requests a retired file, update it to 1.0.66 and choose public build 1.0.23.
 
 ## Help with installation
 
-- **A new build does not appear:** update KingBlap Wizard to 1.0.65, reopen the build list, and check Kodi's version under **Settings → System information**.
+- **A new build does not appear:** update KingBlap Wizard to 1.0.66, reopen the build list, and check Kodi's version under **Settings → System information**.
 - **Kodi version mismatch:** use the Kodi 21.3 build on Kodi 21.3 or the Kodi 22 build on Kodi 22.
 - **A dependency cannot install:** enable Kodi's official add-on repository, check the device's connection and free storage, and retry the compatible dependency.
-- **Installation stops or Kodi closes:** reopen Kodi and the Wizard. If the install did not finish, retry after checking free space; the Wizard needs room for the download, staged add-ons, and recovery data.
+- **Installation stops or Kodi closes:** update to Wizard 1.0.66, reopen Kodi and the Wizard. If the install did not finish, retry after checking free space; the Wizard needs room for the download, staged add-ons, and recovery data.
 - **A public IPTV account is missing:** configure your own provider details in its add-on; the public package has no saved account or playlist.
 
 ## Downloads
 
 - [Repository installer 1.0.0](https://kingblap.github.io/repository.kingblap-1.0.0.zip)
-- [KingBlap Wizard 1.0.65](https://kingblap.github.io/repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.65.zip)
+- [KingBlap Wizard 1.0.66](https://kingblap.github.io/repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.66.zip)
 - [Current public and private build list](https://kingblap.github.io/builds.txt)
 - [Repository add-on catalog](https://kingblap.github.io/repo/zips/addons.xml)
 - [Repository website and installation guide](https://kingblap.github.io/)

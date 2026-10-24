@@ -19,6 +19,9 @@ MARKER_PATH = xbmcvfs.translatePath(
     "special://profile/addon_data/{}/skin-reapply.json".format(ADDON_ID)
 )
 TRANSACTION_ROOT = xbmcvfs.translatePath(
+    "special://profile/.kbw-transactions"
+)
+PREVIOUS_TRANSACTION_ROOT = xbmcvfs.translatePath(
     "special://profile/addon_data/{}/transactions".format(ADDON_ID)
 )
 LEGACY_TRANSACTION_ROOT = xbmcvfs.translatePath(
@@ -421,7 +424,7 @@ def _cleanup_transaction(transaction):
 
 
 def _recover_transactions():
-    roots = (TRANSACTION_ROOT, LEGACY_TRANSACTION_ROOT)
+    roots = (TRANSACTION_ROOT, PREVIOUS_TRANSACTION_ROOT, LEGACY_TRANSACTION_ROOT)
     recovered = False
     for root in roots:
         if not os.path.isdir(root):

@@ -1,0 +1,5 @@
+KingBlap Wizard 1.0.66
+
+- Shortens persistent build staging paths to avoid path-length failures while unpacking add-ons on Android and other devices.
+- Recovers interrupted transactions from the new path and both earlier transaction locations.
+- Keeps public build 1.0.23 package hashes, private download routes, and Kodi compatibility unchanged.

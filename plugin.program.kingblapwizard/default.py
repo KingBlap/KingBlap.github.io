@@ -197,7 +197,7 @@ def _api_url(path):
 
 def _fetch(url, max_bytes, access_code=None):
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.65 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.66 Kodi",
         "Accept": "application/json",
     }
     if access_code:
@@ -953,7 +953,7 @@ def _download_public_archive(destination, progress, build_id):
             request = urllib.request.Request(
                 url,
                 headers={
-                    "User-Agent": "KingBlap-Wizard/1.0.65 Kodi",
+                    "User-Agent": "KingBlap-Wizard/1.0.66 Kodi",
                     "Accept": "application/octet-stream",
                 },
             )
@@ -1012,7 +1012,7 @@ def _download_archive(build_id, destination, progress, access_code=None, public_
         "{}/{}/download".format(route, urllib.parse.quote(build_id, safe=""))
     )
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.65 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.66 Kodi",
         "Accept": "application/zip",
     }
     if access_code:
@@ -1457,15 +1457,15 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
     wizard_temp = os.path.join(_path("special://temp"), ADDON_ID)
     downloads = os.path.join(wizard_temp, "downloads")
     archive_path = os.path.join(downloads, "KingBlapKodiBuild.zip")
-    transaction_root = os.path.join(
-        _path("special://profile/addon_data"), ADDON_ID, "transactions"
-    )
+    # Keep the rollback journal on persistent profile storage, but avoid a deep
+    # addon_data path: Kodi's VFS can fail to write long staged member paths.
+    transaction_root = _path("special://profile/.kbw-transactions")
     transaction = os.path.join(
         transaction_root,
         "{}-{}".format(time.strftime("%Y%m%d-%H%M%S"), uuid.uuid4().hex[:8]),
     )
-    staged_addons = os.path.join(transaction, "staged", "addons")
-    staged_userdata = os.path.join(transaction, "staged", "userdata")
+    staged_addons = os.path.join(transaction, "s", "a")
+    staged_userdata = os.path.join(transaction, "s", "u")
     rollback_root = os.path.join(transaction, "rollback")
     os.makedirs(downloads, exist_ok=True)
     os.makedirs(addon_root, exist_ok=True)
