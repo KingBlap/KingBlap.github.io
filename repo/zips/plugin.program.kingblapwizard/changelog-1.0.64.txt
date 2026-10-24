@@ -1,0 +1,5 @@
+KingBlap Wizard 1.0.64
+
+- Offers public Kodi 21.3 and Kodi 22 builds 1.0.23 from the October 24 backup.
+- Verifies both multipart downloads with their new SHA-256 checksums.
+- Keeps platform native add-ons managed by Kodi and leaves private build routes unchanged.

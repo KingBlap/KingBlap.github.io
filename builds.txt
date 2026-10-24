@@ -1,5 +1,5 @@
-# Choose a build category in KingBlap Wizard before installing.
-Public KingBlap Kodi 21.3 Build 1.0.22 | Direct checksum-verified Wizard download; Fire/Massive appearance; no saved account profiles, API keys, or credentials.
-Public KingBlap Kodi 22 Build 1.0.22 | Sanitized skin and weather settings only; no saved account profiles, API keys, or credentials.
-Private KingBlap Kodi 22 Build 1.0.56 | Protected Wizard download; automatic add-on updates enabled for compatible add-ons from enabled repositories; Aerial selected; Otaku AnimePahe and AniMixPlay enabled; GIPTV 3.1.3 USA/24/7 playlist with filtered guide.
-Private KingBlap Kodi 21.3 Build 1.0.43 | Protected Wizard download; automatic add-on updates enabled for compatible add-ons from enabled repositories; Aerial selected; Otaku AnimePahe and AniMixPlay enabled; GIPTV 3.1.3 USA/24/7 playlist with filtered guide.
+# Choose a build category in KingBlap Wizard 1.0.64 before installing.
+Public KingBlap Kodi 21.3 Build 1.0.23 | 50 portable add-ons; checksum-verified Wizard download; Fire/Massive appearance; no saved personal profiles, API keys, credentials, playlists, or guides from the backup. Older omitted add-ons and their matching settings are removed on install.
+Public KingBlap Kodi 22 Build 1.0.23 | 49 portable add-ons; checksum-verified Wizard download; Fire/Massive appearance; no saved personal profiles, API keys, credentials, playlists, or guides from the backup. Older omitted add-ons and their matching settings are removed on install.
+Private KingBlap Kodi 21.3 Build 1.0.53 | Protected Wizard download; selected private add-on profiles and GIPTV configuration; built-in Dim screensaver.
+Private KingBlap Kodi 22 Build 1.0.66 | Protected Wizard download; selected private add-on profiles and GIPTV configuration; built-in Dim screensaver.

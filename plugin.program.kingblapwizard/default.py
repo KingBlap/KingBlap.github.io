@@ -26,6 +26,7 @@ ADDON = xbmcaddon.Addon()
 ADDON_ID = ADDON.getAddonInfo("id")
 DEFAULT_API_URL = "https://kingblap-api.tyshawncalvin243.workers.dev"
 BUILDS_PATH = "/v1/builds"
+BUILTIN_DIM_SCREENSAVER_ID = "screensaver.xbmc.builtin.dim"
 def _detect_kodi_major():
     """Read Kodi's major version without relying on platform-specific paths."""
     try:
@@ -50,14 +51,14 @@ else:
     PREVIOUS_SKIN_ID = None
 PUBLIC_BUILD_ID = "kingblap-public-1.0.19"
 PUBLIC_BUILD_NAME = "Public KingBlap Kodi Build 1.0.19"
-KODI21_PUBLIC_BUILD_ID = "kingblap-public-kodi21.3-1.0.22"
+KODI21_PUBLIC_BUILD_ID = "kingblap-public-kodi21.3-1.0.23"
 KODI21_PRIVATE_BUILD_ID = "kingblap-private-kodi21.3-1.0.21"
 KODI21_PRIVATE_BUILD_PREFIX = "kingblap-private-kodi21.3-"
-KODI21_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 21.3 1.0.22 (download)"
+KODI21_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 21.3 1.0.23 (download)"
 KODI21_PRIVATE_BUILD_NAME = "Private KingBlap Build for Kodi 21.3 (download)"
-KODI22_PUBLIC_BUILD_ID = "kingblap-public-kodi22-1.0.22"
+KODI22_PUBLIC_BUILD_ID = "kingblap-public-kodi22-1.0.23"
 KODI22_PRIVATE_BUILD_ID = "kingblap-private-kodi22-1.0.26"
-KODI22_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 22 1.0.22 (download)"
+KODI22_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 22 1.0.23 (download)"
 KODI22_PRIVATE_BUILD_NAME = "Private KingBlap Build for Kodi 22 1.0.28 (download)"
 KODI22_PRIVATE_BUILD_PREFIX = "kingblap-private-kodi22-"
 PUBLIC_BUILD_PARTS = (
@@ -66,17 +67,13 @@ PUBLIC_BUILD_PARTS = (
     ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-1.0.19.zip.part003", 10645365),
 )
 KODI21_PUBLIC_BUILD_PARTS = (
-    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-21.3-1.0.22.zip.part001", 83886080),
-    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-21.3-1.0.22.zip.part002", 83886080),
-    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-21.3-1.0.22.zip.part003", 45709021),
+    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-21.3-1.0.23.zip.part001", 82948762),
 )
-KODI21_PUBLIC_BUILD_SHA256 = "D9C3C3ECECA4EFD16E8543C555B9B434ED5F799F510C3B18560B31C312733C4D"
+KODI21_PUBLIC_BUILD_SHA256 = "A03171BA07AA8E427530EEB06F0ACDB2542988D01D31E60FB03AEC6D1FCB309A"
 KODI22_PUBLIC_BUILD_PARTS = (
-    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-22-1.0.22.zip.part001", 83886080),
-    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-22-1.0.22.zip.part002", 83886080),
-    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-22-1.0.22.zip.part003", 29489906),
+    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-22-1.0.23.zip.part001", 69831690),
 )
-KODI22_PUBLIC_BUILD_SHA256 = "B78D4A8DAC1EEA01A90437CDDFAAEBE3273AD686E0BB28AD55FDD5356DBBD860"
+KODI22_PUBLIC_BUILD_SHA256 = "A2548B1BD2C746D1AC1701A8314352EDDBC68DE64136102403F50D59C51D8FAA"
 WEATHER_VERSION = "0.6.4+matrix.1"
 SKIN_SETTINGS_ARCHIVE_PATH = "userdata/addon_data/{}/settings.xml".format(SKIN_ID)
 LEGACY_SKIN_ID = "skin.estuary.modv2"
@@ -688,13 +685,15 @@ def _validate_archive(archive, expected_public=None):
     skin_colors = build_info.get("skin_colors")
     skin_font = build_info.get("skin_font")
     screensaver_addon = build_info.get("screensaver_addon")
+    builtin_dim_screensaver = screensaver_addon == BUILTIN_DIM_SCREENSAVER_ID
     if screensaver_addon is not None and (
         not isinstance(screensaver_addon, str)
         or not re.fullmatch(r"[A-Za-z0-9_.-]+", screensaver_addon)
-        or screensaver_addon not in packages
+        or (screensaver_addon not in packages and not builtin_dim_screensaver)
+        or (builtin_dim_screensaver and expected_public)
     ):
         raise ValueError("The build information selects a screensaver that is not packaged.")
-    if screensaver_addon is not None:
+    if screensaver_addon is not None and not builtin_dim_screensaver:
         screensaver_manifest = ET.fromstring(
             archive.read("addons/{}/addon.xml".format(screensaver_addon))
         )
@@ -1439,8 +1438,10 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
         return
     if public_build:
         profile_notice = (
-            "This public build contains no saved add-on profile data, API keys, or account credentials from the backup. "
-            "It leaves other add-on profile data on this device in place."
+            "This public build contains no saved personal account profiles, API keys, or credentials from the backup. "
+            "The new public release removes older add-ons absent from the selected backup, including Forge, Gears, "
+            "and Zoro, together with their saved settings. Back up this device before installing. "
+            "Settings for other add-ons stay in place."
         )
     else:
         profile_notice = (
@@ -1862,7 +1863,7 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
             _set_setting("screensaver.mode", screensaver_addon)
             if _get_setting("screensaver.mode") != screensaver_addon:
                 raise RuntimeError("Kodi did not select the build's screensaver add-on.")
-            _log("Selected the packaged screensaver add-on {}.".format(screensaver_addon))
+            _log("Selected the build's screensaver add-on {}.".format(screensaver_addon))
         if auto_update_addons:
             _set_setting("general.addonupdates", 0)
             if _get_setting("general.addonupdates") != 0:
@@ -1961,9 +1962,12 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                 skin_font or "current",
             )
         if screensaver_addon is not None:
-            success_message += "\nThe {} screensaver is installed and selected.".format(
-                screensaver_addon
-            )
+            if screensaver_addon == BUILTIN_DIM_SCREENSAVER_ID:
+                success_message += "\nKodi's built-in dim screensaver is selected."
+            else:
+                success_message += "\nThe {} screensaver is installed and selected.".format(
+                    screensaver_addon
+                )
         if auto_update_addons:
             success_message += "\nAutomatic add-on updates are enabled for compatible add-ons from enabled repositories."
         if weather_warning:

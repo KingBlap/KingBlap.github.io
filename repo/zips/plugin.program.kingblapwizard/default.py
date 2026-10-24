@@ -1,6 +1,7 @@
 """KingBlap Kodi build installer for Kodi 21 Omega and Kodi 22 Piers."""
 import json
 import hashlib
+import html
 import os
 import re
 import shutil
@@ -25,6 +26,7 @@ ADDON = xbmcaddon.Addon()
 ADDON_ID = ADDON.getAddonInfo("id")
 DEFAULT_API_URL = "https://kingblap-api.tyshawncalvin243.workers.dev"
 BUILDS_PATH = "/v1/builds"
+BUILTIN_DIM_SCREENSAVER_ID = "screensaver.xbmc.builtin.dim"
 def _detect_kodi_major():
     """Read Kodi's major version without relying on platform-specific paths."""
     try:
@@ -49,14 +51,14 @@ else:
     PREVIOUS_SKIN_ID = None
 PUBLIC_BUILD_ID = "kingblap-public-1.0.19"
 PUBLIC_BUILD_NAME = "Public KingBlap Kodi Build 1.0.19"
-KODI21_PUBLIC_BUILD_ID = "kingblap-public-kodi21.3-1.0.22"
+KODI21_PUBLIC_BUILD_ID = "kingblap-public-kodi21.3-1.0.23"
 KODI21_PRIVATE_BUILD_ID = "kingblap-private-kodi21.3-1.0.21"
 KODI21_PRIVATE_BUILD_PREFIX = "kingblap-private-kodi21.3-"
-KODI21_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 21.3 1.0.22 (download)"
+KODI21_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 21.3 1.0.23 (download)"
 KODI21_PRIVATE_BUILD_NAME = "Private KingBlap Build for Kodi 21.3 (download)"
-KODI22_PUBLIC_BUILD_ID = "kingblap-public-kodi22-1.0.22"
+KODI22_PUBLIC_BUILD_ID = "kingblap-public-kodi22-1.0.23"
 KODI22_PRIVATE_BUILD_ID = "kingblap-private-kodi22-1.0.26"
-KODI22_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 22 1.0.22 (download)"
+KODI22_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 22 1.0.23 (download)"
 KODI22_PRIVATE_BUILD_NAME = "Private KingBlap Build for Kodi 22 1.0.28 (download)"
 KODI22_PRIVATE_BUILD_PREFIX = "kingblap-private-kodi22-"
 PUBLIC_BUILD_PARTS = (
@@ -65,23 +67,20 @@ PUBLIC_BUILD_PARTS = (
     ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-1.0.19.zip.part003", 10645365),
 )
 KODI21_PUBLIC_BUILD_PARTS = (
-    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-21.3-1.0.22.zip.part001", 83886080),
-    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-21.3-1.0.22.zip.part002", 83886080),
-    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-21.3-1.0.22.zip.part003", 45709021),
+    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-21.3-1.0.23.zip.part001", 82948762),
 )
-KODI21_PUBLIC_BUILD_SHA256 = "D9C3C3ECECA4EFD16E8543C555B9B434ED5F799F510C3B18560B31C312733C4D"
+KODI21_PUBLIC_BUILD_SHA256 = "A03171BA07AA8E427530EEB06F0ACDB2542988D01D31E60FB03AEC6D1FCB309A"
 KODI22_PUBLIC_BUILD_PARTS = (
-    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-22-1.0.22.zip.part001", 83886080),
-    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-22-1.0.22.zip.part002", 83886080),
-    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-22-1.0.22.zip.part003", 29489906),
+    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-22-1.0.23.zip.part001", 69831690),
 )
-KODI22_PUBLIC_BUILD_SHA256 = "B78D4A8DAC1EEA01A90437CDDFAAEBE3273AD686E0BB28AD55FDD5356DBBD860"
+KODI22_PUBLIC_BUILD_SHA256 = "A2548B1BD2C746D1AC1701A8314352EDDBC68DE64136102403F50D59C51D8FAA"
 WEATHER_VERSION = "0.6.4+matrix.1"
 SKIN_SETTINGS_ARCHIVE_PATH = "userdata/addon_data/{}/settings.xml".format(SKIN_ID)
 LEGACY_SKIN_ID = "skin.estuary.modv2"
 ONEPLAY_REPO_ID = "One.repo"
 WEATHER_ID = "weather.gismeteo"
 PVR_ADDON_ID = "pvr.iptvsimple"
+OPTIKLEAN_ID = "program.optiklean"
 WEATHER_LOCATION = "Thomasville"
 WEATHER_LOCATION_ID = "8771"
 WEATHER_ADDON_SETTINGS = {
@@ -93,8 +92,10 @@ WEATHER_SETTINGS_ARCHIVE_PATH = "userdata/addon_data/{}/settings.xml".format(WEA
 PROFILE_DATA_MODE = "replace-addon-data-except-wizard"
 BUILD_LIMIT = 1024 * 1024 * 1024
 DOWNLOAD_LIMIT = 512 * 1024 * 1024
+PRE_DOWNLOAD_EXPANSION_RESERVE = 512 * 1024 * 1024
+INSTALL_SAFETY_RESERVE = 64 * 1024 * 1024
 ACCESS_CODE_PATTERN = re.compile(r"[0-9]{16}\Z")
-CHUNK_SIZE = 1024 * 1024
+CHUNK_SIZE = 256 * 1024
 ADDON_REGISTRATION_TIMEOUT = 600
 SKIN_LOAD_TIMEOUT = 120
 SKIN_CONFIRMATION_GRACE = 13
@@ -148,6 +149,44 @@ def _installed_addon_version(addon_root, addon_id):
     return manifest.get("version")
 
 
+def _addon_directory_fingerprint(path):
+    """Return a content signature for an add-on tree, or None if it is incomplete."""
+    if not os.path.isdir(path) or os.path.islink(path):
+        return None
+    files = {}
+
+    def raise_walk_error(error):
+        raise error
+
+    try:
+        for current, directories, filenames in os.walk(path, onerror=raise_walk_error):
+            if any(os.path.islink(os.path.join(current, name)) for name in directories):
+                return None
+            for filename in filenames:
+                file_path = os.path.join(current, filename)
+                if os.path.islink(file_path) or not os.path.isfile(file_path):
+                    return None
+                relative = os.path.relpath(file_path, path).replace(os.sep, "/")
+                digest = hashlib.sha256()
+                with open(file_path, "rb") as source:
+                    while True:
+                        block = source.read(CHUNK_SIZE)
+                        if not block:
+                            break
+                        digest.update(block)
+                files[relative] = (os.path.getsize(file_path), digest.hexdigest())
+    except OSError:
+        return None
+    return files or None
+
+
+def _addon_directories_match(first, second):
+    """Check all packaged add-on files and contents before keeping an active skin."""
+    first_files = _addon_directory_fingerprint(first)
+    second_files = _addon_directory_fingerprint(second)
+    return first_files is not None and first_files == second_files
+
+
 def _api_url(path):
     base = ADDON.getSetting("api_url").strip() or DEFAULT_API_URL
     parsed = urllib.parse.urlsplit(base)
@@ -165,7 +204,7 @@ def _api_url(path):
 
 def _fetch(url, max_bytes, access_code=None):
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.48 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.59 Kodi",
         "Accept": "application/json",
     }
     if access_code:
@@ -254,6 +293,42 @@ def _remove_path(path):
         shutil.rmtree(path)
 
 
+def _format_storage_size(size):
+    if size >= 1024 * 1024 * 1024:
+        return "{:.1f} GB".format(size / float(1024 * 1024 * 1024))
+    return "{} MB".format(max(1, int(size / float(1024 * 1024) + 0.5)))
+
+
+def _check_pre_download_space(archive_bytes, local_archive=False):
+    """Fail before writing a large archive when Kodi's storage is too full."""
+    archive_bytes = max(0, int(archive_bytes))
+    archive_copies = 3 if local_archive else 2
+    required = (
+        archive_copies * archive_bytes
+        + PRE_DOWNLOAD_EXPANSION_RESERVE
+        + INSTALL_SAFETY_RESERVE
+    )
+    free_space = shutil.disk_usage(_path("special://home")).free
+    if free_space < required:
+        raise OSError(
+            "This device has {} free, but the installer needs about {} free to install safely. "
+            "Free storage on the TV, then try again. No build files were downloaded.".format(
+                _format_storage_size(free_space), _format_storage_size(required)
+            )
+        )
+
+
+def _remove_stale_download(path):
+    """Remove only the Wizard's own interrupted build archive before measuring space."""
+    if not os.path.lexists(path):
+        return
+    if os.path.islink(path) or os.path.isfile(path):
+        os.remove(path)
+        _log("Removed an incomplete build archive left in the Wizard download folder.")
+        return
+    raise OSError("The Wizard download path is not a regular file; it was left untouched.")
+
+
 def _remove_child(root, name):
     if not re.fullmatch(r"[A-Za-z0-9_.-]+", name):
         raise ValueError("Refusing to remove an invalid add-on path.")
@@ -264,7 +339,40 @@ def _remove_child(root, name):
     _remove_path(target)
 
 
-def _swap_child(root, name, staged, backup, changes):
+def _write_transaction_journal(
+    transaction, phase, operations, addon_states=None, post_commit_enable=None
+):
+    journal = os.path.join(transaction, "journal.json")
+    temporary = journal + ".tmp"
+    with open(temporary, "w", encoding="utf-8") as journal_file:
+        json.dump({
+            "version": 2,
+            "phase": phase,
+            "operations": operations,
+            "addon_states": addon_states or {},
+            "post_commit_enable": post_commit_enable or [],
+        }, journal_file)
+        journal_file.flush()
+        os.fsync(journal_file.fileno())
+    os.replace(temporary, journal)
+
+
+def _write_transaction_commit_marker(transaction):
+    marker = transaction + ".committed"
+    temporary = marker + ".tmp"
+    with open(temporary, "w", encoding="utf-8") as marker_file:
+        marker_file.write("KingBlap build transaction committed\n")
+        marker_file.flush()
+        os.fsync(marker_file.fileno())
+    os.replace(temporary, marker)
+
+
+def _cleanup_transaction(transaction):
+    _remove_path(transaction)
+    _remove_path(transaction + ".committed")
+
+
+def _swap_child(root, name, staged, backup, changes, journal_state=None, location=None):
     if not re.fullmatch(r"[A-Za-z0-9_.-]+", name):
         raise ValueError("The build contains an invalid add-on ID.")
     root_real = os.path.realpath(root)
@@ -272,7 +380,30 @@ def _swap_child(root, name, staged, backup, changes):
     if os.path.commonpath((root_real, target)) != root_real or target == root_real:
         raise ValueError("Refusing to replace a path outside Kodi's profile.")
     saved = None
-    if os.path.lexists(target):
+    had_target = os.path.lexists(target)
+    if journal_state is not None:
+        if location not in ("addons", "addon_data", "skin_data", "weather_data"):
+            raise ValueError("Refusing to journal an unknown Kodi profile location.")
+        backup_relative = os.path.relpath(backup, journal_state["transaction"])
+        if backup_relative.startswith("..") or os.path.isabs(backup_relative):
+            raise ValueError("Refusing to journal a rollback path outside the transaction.")
+        journal_state["operations"].append({
+            "location": location,
+            "parent": os.path.basename(root_real)
+            if location in ("skin_data", "weather_data")
+            else "",
+            "name": name,
+            "had_target": had_target,
+            "backup": backup_relative.replace(os.sep, "/"),
+        })
+        _write_transaction_journal(
+            journal_state["transaction"],
+            "swapping",
+            journal_state["operations"],
+            journal_state.get("addon_states"),
+            journal_state.get("post_commit_enable"),
+        )
+    if had_target:
         os.makedirs(os.path.dirname(backup), exist_ok=True)
         os.replace(target, backup)
         saved = backup
@@ -467,11 +598,18 @@ def _validate_archive(archive, expected_public=None):
         if any("/".join(parts[:index]) in file_paths for index in range(1, len(parts))):
             raise ValueError("The build archive uses a file as a directory.")
     if (
-        packages.get("plugin.video.giptv") not in ("3.1.0", "3.1.1")
+        packages.get("plugin.video.giptv") not in ("3.1.0", "3.1.1", "3.1.2", "3.1.3")
         and packages.get("plugin.video.xstream-pro") not in ("1.1.2", "1.1.4")
     ):
         raise ValueError("The build archive does not contain a supported IPTV add-on.")
-    if packages.get(SKIN_ID) != SKIN_VERSION:
+    expected_skin_version = SKIN_VERSION
+    if (
+        build_info
+        and build_info.get("distribution") == "private"
+        and build_info.get("pvr_channel_view") == "preview-list"
+    ):
+        expected_skin_version = {21: "5.1", 22: "6.0.8"}.get(KODI_MAJOR, SKIN_VERSION)
+    if packages.get(SKIN_ID) != expected_skin_version:
         raise ValueError("The build archive does not contain the Xonfluence skin for Kodi {}.".format(KODI_MAJOR))
     if packages.get(WEATHER_ID) != WEATHER_VERSION:
         raise ValueError("The build archive is missing the Gismeteo weather add-on.")
@@ -546,6 +684,27 @@ def _validate_archive(archive, expected_public=None):
         raise ValueError("The build information does not identify the Thomasville, North Carolina weather setup.")
     skin_colors = build_info.get("skin_colors")
     skin_font = build_info.get("skin_font")
+    screensaver_addon = build_info.get("screensaver_addon")
+    builtin_dim_screensaver = screensaver_addon == BUILTIN_DIM_SCREENSAVER_ID
+    if screensaver_addon is not None and (
+        not isinstance(screensaver_addon, str)
+        or not re.fullmatch(r"[A-Za-z0-9_.-]+", screensaver_addon)
+        or (screensaver_addon not in packages and not builtin_dim_screensaver)
+        or (builtin_dim_screensaver and expected_public)
+    ):
+        raise ValueError("The build information selects a screensaver that is not packaged.")
+    if screensaver_addon is not None and not builtin_dim_screensaver:
+        screensaver_manifest = ET.fromstring(
+            archive.read("addons/{}/addon.xml".format(screensaver_addon))
+        )
+        if not any(
+            extension.get("point") == "xbmc.ui.screensaver"
+            for extension in screensaver_manifest.findall("extension")
+        ):
+            raise ValueError("The build's selected add-on is not a Kodi screensaver.")
+    auto_update_addons = build_info.get("auto_update_addons")
+    if auto_update_addons is not None and not isinstance(auto_update_addons, bool):
+        raise ValueError("The build information contains an invalid add-on update setting.")
     appearance_declared = skin_colors is not None or skin_font is not None
     if distribution == "private" or appearance_declared:
         if (
@@ -593,6 +752,28 @@ def _validate_archive(archive, expected_public=None):
             raise ValueError("The build profile data list does not match the archived add-on data.")
     elif profile_addon_data_ids != {SKIN_ID, WEATHER_ID} or declared_profile_ids:
         raise ValueError("The settings-only build contains unexpected add-on profile data.")
+    reset_addon_data_ids = build_info.get("reset_addon_data_ids", [])
+    if (
+        not isinstance(reset_addon_data_ids, list)
+        or any(
+            not isinstance(addon_id, str)
+            or not re.fullmatch(r"[A-Za-z0-9_.-]+", addon_id)
+            or addon_id in (
+                ADDON_ID,
+                "plugin.video.xstream-player",
+                ONEPLAY_REPO_ID,
+                LEGACY_SKIN_ID,
+                PREVIOUS_SKIN_ID,
+            )
+            for addon_id in reset_addon_data_ids
+        )
+        or len(reset_addon_data_ids) != len(set(reset_addon_data_ids))
+        or set(reset_addon_data_ids) & profile_addon_data_ids
+        or not set(reset_addon_data_ids).issubset(packages)
+        or (reset_addon_data_ids and profile_mode != PROFILE_DATA_MODE)
+        or (expected_public is True and reset_addon_data_ids)
+    ):
+        raise ValueError("The build information contains invalid add-on profile reset IDs.")
     giptv_id = "plugin.video.giptv"
     if (
         build_info.get("distribution") == "private"
@@ -645,17 +826,36 @@ def _validate_archive(archive, expected_public=None):
             r'(?im)^#EXTINF:[^\r\n]*?group-title="([^"]*)"', playlist_text
         )
         playlist_entries = len(re.findall(r"(?im)^#EXTINF:", playlist_text))
+        playlist_epg_ids = {
+            html.unescape(value).strip()
+            for value in re.findall(r'(?im)^#EXTINF:[^\r\n]*?tvg-id="([^"]*)"', playlist_text)
+            if value.strip()
+        }
+        guide_entries_valid = epg_root.tag == "tv"
+        if guide_entries_valid:
+            for element in epg_root:
+                element_name = element.tag.rsplit("}", 1)[-1]
+                if element_name == "channel":
+                    guide_id = (element.get("id") or "").strip()
+                elif element_name == "programme":
+                    guide_id = (element.get("channel") or "").strip()
+                else:
+                    guide_entries_valid = False
+                    break
+                if not guide_id or guide_id not in playlist_epg_ids:
+                    guide_entries_valid = False
+                    break
         if (
             playlist_entries < 1
             or len(group_titles) != playlist_entries
+            or len(playlist_epg_ids) < 1
             or any(
                 not re.match(r"^(usa|24/7)\s*\|", title.strip(), re.I)
                 for title in group_titles
             )
-            or epg_root.tag != "tv"
-            or list(epg_root)
+            or not guide_entries_valid
         ):
-            raise ValueError("The private GIPTV exports must contain only USA/24/7 groups and an empty guide.")
+            raise ValueError("The private GIPTV exports must contain only USA/24/7 groups and a guide limited to those channels.")
         if (
             not isinstance(sync_state, dict)
             or sync_state.get("playlist_sha256") != hashlib.sha256(playlist_text.encode("utf-8")).hexdigest()
@@ -705,13 +905,16 @@ def _validate_archive(archive, expected_public=None):
         sorted(set(removed_addons)),
         profile_mode,
         sorted(profile_addon_data_ids) if profile_mode == PROFILE_DATA_MODE else [],
+        sorted(reset_addon_data_ids),
         skin_colors,
         skin_font,
+        screensaver_addon,
+        auto_update_addons is True,
     )
 
 
 def _prime_giptv_startup_state(staged_userdata):
-    """Use the packaged private lineup until its next scheduled provider sync."""
+    """Use packaged exports unless an empty guide needs its first background sync."""
     giptv_data = os.path.join(staged_userdata, "addon_data", "plugin.video.giptv", "iptv_simple")
     playlist_path = os.path.join(giptv_data, "playlist.m3u8")
     epg_path = os.path.join(giptv_data, "epg.xml")
@@ -720,8 +923,16 @@ def _prime_giptv_startup_state(staged_userdata):
         playlist_text = source.read().decode("utf-8")
     with open(epg_path, "rb") as source:
         epg_text = source.read().decode("utf-8")
+    has_programmes = False
+    try:
+        for _, element in ET.iterparse(epg_path, events=("end",)):
+            if element.tag.rsplit("}", 1)[-1] == "programme":
+                has_programmes = True
+                break
+    except (OSError, ET.ParseError):
+        has_programmes = False
     state = {
-        "last_sync": int(time.time()),
+        "last_sync": int(time.time()) if has_programmes else 0,
         "playlist_sha256": hashlib.sha256(playlist_text.encode("utf-8")).hexdigest(),
         "epg_sha256": hashlib.sha256(epg_text.encode("utf-8")).hexdigest(),
     }
@@ -746,13 +957,14 @@ def _download_public_archive(destination, progress, build_id):
     else:
         raise ValueError("The selected public build is not valid.")
     total_expected = sum(size for _, size in parts)
+    _check_pre_download_space(total_expected)
     total_written = 0
     with open(destination, "wb") as output:
         for part_index, (url, expected_part_size) in enumerate(parts):
             request = urllib.request.Request(
                 url,
                 headers={
-                    "User-Agent": "KingBlap-Wizard/1.0.48 Kodi",
+                    "User-Agent": "KingBlap-Wizard/1.0.59 Kodi",
                     "Accept": "application/octet-stream",
                 },
             )
@@ -811,7 +1023,7 @@ def _download_archive(build_id, destination, progress, access_code=None, public_
         "{}/{}/download".format(route, urllib.parse.quote(build_id, safe=""))
     )
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.48 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.59 Kodi",
         "Accept": "application/zip",
     }
     if access_code:
@@ -823,6 +1035,7 @@ def _download_archive(build_id, destination, progress, access_code=None, public_
             expected = int(length) if length else None
             if expected and expected > DOWNLOAD_LIMIT:
                 raise ValueError("The build download is larger than the wizard limit.")
+            _check_pre_download_space(expected if expected is not None else DOWNLOAD_LIMIT)
             written = 0
             with open(destination, "wb") as output:
                 while True:
@@ -948,6 +1161,26 @@ def _set_addon_enabled(addon_id, enabled):
     if state is not enabled:
         action = "enabled" if enabled else "disabled"
         raise RuntimeError("Kodi did not confirm that the {} add-on is {}.".format(addon_id, action))
+
+
+def _pause_install_addon(addon_id, journal_state, original_states):
+    """Pause a heavy background add-on and save its prior state before changing it."""
+    enabled = _get_addon_enabled(addon_id)
+    if not isinstance(enabled, bool):
+        return None
+    original_states[addon_id] = enabled
+    journal_state["addon_states"][addon_id] = enabled
+    _write_transaction_journal(
+        journal_state["transaction"],
+        "staging",
+        journal_state["operations"],
+        journal_state["addon_states"],
+        journal_state.get("post_commit_enable"),
+    )
+    if enabled:
+        _set_addon_enabled(addon_id, False)
+        xbmc.sleep(1500)
+    return enabled
 
 
 def _confirm_skin_keep_prompt():
@@ -1076,8 +1309,8 @@ def _wait_for_addon_registration(addon_ids, progress, confirm_required_addon=Fal
         )
 
 
-def _enable_build_addons(addon_ids, progress):
-    addon_ids = sorted(set(addon_ids))
+def _enable_build_addons(addon_ids, progress, deferred=()):
+    addon_ids = sorted(set(addon_ids) - set(deferred))
     failures = []
     total = max(1, len(addon_ids))
     for index, addon_id in enumerate(addon_ids, 1):
@@ -1098,7 +1331,7 @@ def _enable_build_addons(addon_ids, progress):
         raise RuntimeError("Kodi could not enable every packaged add-on. {}".format(details))
 
 
-def _ensure_kodi_managed_addon(addon_id, progress):
+def _ensure_kodi_managed_addon(addon_id, progress, enable=True):
     try:
         _jsonrpc("Addons.GetAddonDetails", {
             "addonid": addon_id,
@@ -1115,7 +1348,11 @@ def _ensure_kodi_managed_addon(addon_id, progress):
         # prompt, and the wizard must keep polling to recognize and confirm it.
         xbmc.executebuiltin("InstallAddon({})".format(addon_id), False)
         _wait_for_addon_registration((addon_id,), progress, confirm_required_addon=True)
-    _enable_addon(addon_id)
+    if enable:
+        _enable_addon(addon_id)
+    elif _get_addon_enabled(addon_id) is True:
+        _set_addon_enabled(addon_id, False)
+        xbmc.sleep(1500)
 
 
 def _apply_skin_settings():
@@ -1172,6 +1409,21 @@ def _copy_local_archive(source_path, destination, progress):
     progress.update(5, "Reading the selected build archive…")
 
 
+def _stop_playback_for_install():
+    """Do not unpack a large build while Kodi is decoding an active stream."""
+    player = xbmc.Player()
+    if not player.isPlaying():
+        return
+    _log("Stopping active playback before build preparation.")
+    player.stop()
+    deadline = time.monotonic() + 10
+    while player.isPlaying() and time.monotonic() < deadline:
+        xbmc.sleep(250)
+    if player.isPlaying():
+        raise RuntimeError("Kodi is still playing video. Stop playback, then retry the build install.")
+    _log("Playback stopped; build preparation can begin.")
+
+
 def _install(name, build_id, access_code, public_build=False, local_archive=None):
     target_kodi_major = _private_build_kodi_major(build_id) if not public_build else None
     if target_kodi_major is not None and target_kodi_major != KODI_MAJOR:
@@ -1186,8 +1438,10 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
         return
     if public_build:
         profile_notice = (
-            "This public build contains no saved add-on profile data, API keys, or account credentials from the backup. "
-            "It leaves other add-on profile data on this device in place."
+            "This public build contains no saved personal account profiles, API keys, or credentials from the backup. "
+            "The new public release removes older add-ons absent from the selected backup, including Forge, Gears, "
+            "and Zoro, together with their saved settings. Back up this device before installing. "
+            "Settings for other add-ons stay in place."
         )
     else:
         profile_notice = (
@@ -1197,10 +1451,10 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
             profile_notice += " The selected private ZIP is not encrypted; keep it in private storage and delete any extra copies after transfer."
     if not xbmcgui.Dialog().yesno(
         "Install {}?".format(name),
-        "This installs and enables all packaged add-ons, fetches device-compatible "
+        "This stops active playback, pauses IPTV during the large file preparation, installs and enables all packaged add-ons, fetches device-compatible "
         "native components through Kodi, replaces matching add-on files, and installs the Xonfluence skin for Kodi {}. ".format(KODI_MAJOR) +
         "It also sets Gismeteo to Thomasville, North Carolina, installs the Xonfluence skin settings, and removes Aeon Nox: SiLVO, Estuary MOD V2, and the OnePlay repository.\n\n"
-        "It also removes XStream Player and its saved settings from this Kodi profile.\n\n" +
+        "It also removes XStream Pro, XStream Player, and their saved settings when the selected build marks them for removal.\n\n" +
         profile_notice + " The KingBlap Wizard's own settings and access code will stay saved here. "
         "Libraries and Kodi databases are not in the build.",
         yeslabel="Install build",
@@ -1214,9 +1468,11 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
     wizard_temp = os.path.join(_path("special://temp"), ADDON_ID)
     downloads = os.path.join(wizard_temp, "downloads")
     archive_path = os.path.join(downloads, "KingBlapKodiBuild.zip")
+    transaction_root = os.path.join(
+        _path("special://profile/addon_data"), ADDON_ID, "transactions"
+    )
     transaction = os.path.join(
-        wizard_temp,
-        "transactions",
+        transaction_root,
         "{}-{}".format(time.strftime("%Y%m%d-%H%M%S"), uuid.uuid4().hex[:8]),
     )
     staged_addons = os.path.join(transaction, "staged", "addons")
@@ -1224,20 +1480,52 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
     rollback_root = os.path.join(transaction, "rollback")
     os.makedirs(downloads, exist_ok=True)
     os.makedirs(addon_root, exist_ok=True)
+    _remove_stale_download(archive_path)
 
     progress = xbmcgui.DialogProgress()
     progress.create("KingBlap Wizard", "Downloading build…")
     changes = []
     original_skin = None
-    original_giptv_enabled = None
     original_pvr_enabled = None
     original_weather_settings = None
     original_weather_addon_settings = None
     original_skin_appearance = None
+    original_screensaver_mode = None
+    original_addon_update_mode = None
+    original_stream_buffer_memory = None
+    original_service_states = {}
+    service_addon_ids = set()
+    optiklean_enable_warning = None
     committed = False
     rollback_complete = True
     preserve_transaction = False
+    packages = {}
     try:
+        _stop_playback_for_install()
+        if not public_build:
+            previous_buffer_memory = _get_setting("filecache.memorysize")
+            if type(previous_buffer_memory) is int and previous_buffer_memory > 16:
+                original_stream_buffer_memory = previous_buffer_memory
+                _set_setting("filecache.memorysize", 16)
+                _log(
+                    "Reduced Kodi's stream-buffer memory from {} MB to 16 MB for this private install.".format(
+                        previous_buffer_memory
+                    )
+                )
+        os.makedirs(transaction, exist_ok=True)
+        journal_state = {
+            "transaction": transaction,
+            "operations": [],
+            "addon_states": {},
+            "post_commit_enable": [],
+        }
+        _write_transaction_journal(
+            transaction,
+            "staging",
+            journal_state["operations"],
+            journal_state["addon_states"],
+            journal_state["post_commit_enable"],
+        )
         if local_archive:
             allowed_build_ids = {
                 21: (KODI21_PUBLIC_BUILD_ID, KODI21_PRIVATE_BUILD_ID),
@@ -1259,6 +1547,7 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                 and not kodi22_private_release
             ):
                 raise ValueError("This local archive is not an available build for this Kodi release.")
+            _check_pre_download_space(os.path.getsize(local_archive), local_archive=True)
             _copy_local_archive(local_archive, archive_path, progress)
         else:
             _download_archive(
@@ -1272,8 +1561,11 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                 removed_addons,
                 profile_mode,
                 profile_addon_data_ids,
+                reset_addon_data_ids,
                 skin_colors,
                 skin_font,
+                screensaver_addon,
+                auto_update_addons,
             ) = _validate_archive(archive, expected_public=public_build)
             required_dependencies = _required_external_dependencies(archive, packages)
             free_space = shutil.disk_usage(home).free
@@ -1281,6 +1573,15 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                 raise OSError("There is not enough free storage to unpack this build safely.")
             if progress.iscanceled():
                 raise InterruptedError("Build installation was cancelled.")
+            if not public_build and "plugin.video.giptv" in packages:
+                progress.update(5, "Pausing IPTV while the build is prepared…")
+                if PVR_ADDON_ID in profile_addon_data_ids:
+                    original_pvr_enabled = _pause_install_addon(
+                        PVR_ADDON_ID, journal_state, original_service_states
+                    )
+                original_service_states["plugin.video.giptv"] = _pause_install_addon(
+                    "plugin.video.giptv", journal_state, original_service_states
+                )
             progress.close()
             progress = xbmcgui.DialogProgressBG()
             progress.create("KingBlap Wizard", "Preparing add-ons…")
@@ -1382,6 +1683,11 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                 manifest = ET.parse(manifest_file).getroot()
             if manifest.get("id") != addon_id or manifest.get("version") != version:
                 raise ValueError("The staged {} add-on failed its manifest check.".format(addon_id))
+            if any(
+                extension.get("point") == "xbmc.service"
+                for extension in manifest.findall("extension")
+            ):
+                service_addon_ids.add(addon_id)
         original_skin = _get_setting("lookandfeel.skin")
         if skin_colors is not None or skin_font is not None:
             original_skin_appearance = {}
@@ -1393,31 +1699,56 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                 original_skin_appearance["lookandfeel.font"] = _get_setting(
                     "lookandfeel.font"
                 )
+        if screensaver_addon is not None:
+            original_screensaver_mode = _get_setting("screensaver.mode")
+        if auto_update_addons:
+            original_addon_update_mode = _get_setting("general.addonupdates")
         original_weather_settings = {
             "weather.addon": _get_setting("weather.addon"),
             "weather.currentlocation": _get_setting("weather.currentlocation"),
         }
         original_weather_addon_settings = _read_weather_addon_settings()
-        keep_active_skin = (
+        same_skin_version = (
             original_skin == SKIN_ID
             and _installed_addon_version(addon_root, SKIN_ID) == packages.get(SKIN_ID)
         )
+        keep_active_skin = same_skin_version and _addon_directories_match(
+            os.path.join(addon_root, SKIN_ID),
+            os.path.join(staged_addons, SKIN_ID),
+        )
         if keep_active_skin:
             _log(
-                "Keeping the active {} skin in place because its installed and build versions match ({}).".format(
+                "Keeping the active {} skin in place because its installed files and build package match ({}).".format(
                     SKIN_ID, packages[SKIN_ID]
                 )
             )
+        elif same_skin_version:
+            _log(
+                "Replacing the active {} skin because installed files differ from the staged build package.".format(
+                    SKIN_ID
+                ),
+                xbmc.LOGWARNING,
+            )
         giptv_id = "plugin.video.giptv"
-        if giptv_id in packages or giptv_id in removed_addons:
-            original_giptv_enabled = _get_addon_enabled(giptv_id)
-            if original_giptv_enabled:
-                # Stop the provider service before replacing or removing its profile files.
-                _set_addon_enabled(giptv_id, False)
-                xbmc.sleep(1500)
+        for service_addon_id in sorted(service_addon_ids):
+            enabled_state = _get_addon_enabled(service_addon_id)
+            original_service_states.setdefault(service_addon_id, enabled_state)
+            if enabled_state is True:
+                # Keep background services from changing profiles while the build is
+                # being swapped. IPTV and cleanup services get a little more time to stop.
+                _set_addon_enabled(service_addon_id, False)
+                xbmc.sleep(1500 if service_addon_id in (giptv_id, OPTIKLEAN_ID) else 300)
+        for removed_addon_id in sorted(set(removed_addons) - set(packages)):
+            enabled_state = _get_addon_enabled(removed_addon_id)
+            original_service_states[removed_addon_id] = enabled_state
+            if enabled_state is True:
+                # Stop removed add-on services before replacing their files and profile data.
+                _set_addon_enabled(removed_addon_id, False)
+                xbmc.sleep(1200 if removed_addon_id == "plugin.video.xstream-pro" else 300)
         if PVR_ADDON_ID in profile_addon_data_ids:
-            original_pvr_enabled = _get_addon_enabled(PVR_ADDON_ID)
-            if original_pvr_enabled:
+            if original_pvr_enabled is None:
+                original_pvr_enabled = _get_addon_enabled(PVR_ADDON_ID)
+            if original_pvr_enabled is True and _get_addon_enabled(PVR_ADDON_ID) is True:
                 # Unload every IPTV Simple instance before replacing its settings directory.
                 _set_addon_enabled(PVR_ADDON_ID, False)
                 xbmc.sleep(1500)
@@ -1434,7 +1765,7 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
         for addon_id in sorted(addon_ids_to_replace):
             staged = os.path.join(staged_addons, addon_id) if addon_id in packages else None
             backup = os.path.join(rollback_root, "addons", addon_id)
-            _swap_child(addon_root, addon_id, staged, backup, changes)
+            _swap_child(addon_root, addon_id, staged, backup, changes, journal_state, "addons")
         if profile_mode == PROFILE_DATA_MODE:
             for addon_id in profile_addon_data_ids:
                 _swap_child(
@@ -1443,6 +1774,8 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                     os.path.join(staged_userdata, "addon_data", addon_id),
                     os.path.join(rollback_root, "addon-data", addon_id),
                     changes,
+                    journal_state,
+                    "addon_data",
                 )
         else:
             _swap_child(
@@ -1451,6 +1784,18 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                 staged_skin_settings,
                 os.path.join(rollback_root, "addon-data", SKIN_ID, "settings.xml"),
                 changes,
+                journal_state,
+                "skin_data",
+            )
+        for addon_id in reset_addon_data_ids:
+            _swap_child(
+                data_root,
+                addon_id,
+                None,
+                os.path.join(rollback_root, "addon-data", addon_id),
+                changes,
+                journal_state,
+                "addon_data",
             )
         for addon_id in removed_addons:
             _swap_child(
@@ -1459,6 +1804,8 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                 None,
                 os.path.join(rollback_root, "addon-data", addon_id),
                 changes,
+                journal_state,
+                "addon_data",
             )
         if profile_mode != PROFILE_DATA_MODE:
             _swap_child(
@@ -1467,6 +1814,8 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                 staged_weather_settings,
                 os.path.join(rollback_root, "addon-data", WEATHER_ID, "settings.xml"),
                 changes,
+                journal_state,
+                "weather_data",
             )
         xbmc.executebuiltin("UpdateLocalAddons", True)
         xbmc.executebuiltin("UpdateAddonRepos", True)
@@ -1478,22 +1827,21 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
         kodi_managed_addons = sorted(kodi_managed_addons)
         for addon_id in kodi_managed_addons:
             _ensure_kodi_managed_addon(addon_id, progress)
+        # Kodi automatically enables a newly installed IPTV Simple dependency.
+        # Installing it here starts a large channel import while the skin is
+        # changing, even when _ensure_kodi_managed_addon(enable=False) is used.
+        # Wait until after the file swap and skin activation have committed.
         xbmc.executebuiltin("UpdateLocalAddons", True)
         _wait_for_addon_registration(packages.keys(), progress)
-        _enable_build_addons(packages.keys(), progress)
-        _log("Verified all {} packaged add-ons are enabled.".format(len(packages)))
-        _write_weather_addon_settings(WEATHER_ADDON_SETTINGS)
-        _set_setting("weather.addon", WEATHER_ID)
-        _set_setting("weather.currentlocation", 1)
-        # Select the configured first location through Kodi's weather manager
-        # and refresh its cached forecast. Otherwise an earlier IP-based
-        # location can remain active even after Gismeteo's settings change.
-        xbmc.executebuiltin("Weather.LocationSet(1)", True)
-        xbmc.executebuiltin("Weather.Refresh", True)
-        if _get_setting("weather.currentlocation") != 1:
-            raise RuntimeError("Kodi did not select Thomasville as its current weather location.")
-        _write_weather_addon_settings(WEATHER_ADDON_SETTINGS)
-        _log("Selected Gismeteo location 1 (Thomasville, North Carolina) and refreshed weather.")
+        deferred_addons = service_addon_ids
+        _enable_build_addons(packages.keys(), progress, deferred=deferred_addons)
+        _log(
+            "Verified {} packaged add-ons are enabled; Kodi services stay paused until the file swap commits.".format(
+                len(packages) - len(deferred_addons)
+            )
+        )
+        _log("Weather activation deferred until after the build transaction commits.")
+        _log("Checking the packaged Xonfluence skin registration.")
         try:
             installed_skin_version = xbmcaddon.Addon(SKIN_ID).getAddonInfo("version")
         except RuntimeError:
@@ -1511,25 +1859,92 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
             _set_setting("lookandfeel.font", skin_font)
             if _get_setting("lookandfeel.font") != skin_font:
                 raise RuntimeError("Kodi did not apply the selected Xonfluence font.")
-        if PVR_ADDON_ID in profile_addon_data_ids:
-            progress.update(98, "KingBlap Wizard", "Starting GIPTV Live TV…")
-            if _get_addon_enabled(PVR_ADDON_ID) is not True:
-                _enable_addon(PVR_ADDON_ID)
-            xbmc.sleep(1500)
+        if screensaver_addon is not None:
+            _set_setting("screensaver.mode", screensaver_addon)
+            if _get_setting("screensaver.mode") != screensaver_addon:
+                raise RuntimeError("Kodi did not select the build's screensaver add-on.")
+            _log("Selected the build's screensaver add-on {}.".format(screensaver_addon))
+        if auto_update_addons:
+            _set_setting("general.addonupdates", 0)
+            if _get_setting("general.addonupdates") != 0:
+                raise RuntimeError("Kodi did not enable automatic add-on updates.")
+            _log("Enabled automatic updates for compatible add-ons from enabled repositories.")
         if skin_colors is not None or skin_font is not None:
             _log("Applied private Xonfluence appearance: colors={!r}, font={!r}.".format(
                 skin_colors, skin_font
             ))
+        journal_state["post_commit_enable"] = sorted(
+            set(service_addon_ids)
+            | ({PVR_ADDON_ID} if PVR_ADDON_ID in profile_addon_data_ids else set())
+        )
+        _write_transaction_journal(
+            transaction,
+            "swapping",
+            journal_state["operations"],
+            journal_state["addon_states"],
+            journal_state["post_commit_enable"],
+        )
+        _write_transaction_commit_marker(transaction)
         committed = True
+        _log("Build transaction committed; starting packaged services.")
+        post_commit_failures = []
+        if PVR_ADDON_ID in profile_addon_data_ids:
+            progress.update(98, "KingBlap Wizard", "Starting IPTV Simple after setup…")
+            try:
+                _ensure_kodi_managed_addon(PVR_ADDON_ID, progress)
+            except Exception as pvr_exc:
+                post_commit_failures.append("IPTV Simple: {}".format(pvr_exc))
+        for service_addon_id in sorted(service_addon_ids - {"plugin.video.giptv"}):
+            try:
+                _enable_addon(service_addon_id)
+            except Exception as service_exc:
+                post_commit_failures.append("{}: {}".format(service_addon_id, service_exc))
+        if "plugin.video.giptv" in service_addon_ids:
+            progress.update(99, "KingBlap Wizard", "Starting GIPTV after setup…")
+            try:
+                _enable_addon("plugin.video.giptv")
+            except Exception as giptv_exc:
+                post_commit_failures.append("GIPTV: {}".format(giptv_exc))
+        if post_commit_failures:
+            optiklean_enable_warning = "; ".join(post_commit_failures[:4])
+            _log(
+                "The build committed, but some background services could not start: {}".format(
+                    optiklean_enable_warning
+                ),
+                xbmc.LOGWARNING,
+            )
+        else:
+            _log("Verified all {} packaged add-ons are enabled.".format(len(packages)))
+        weather_warning = None
+        try:
+            _log("Post-commit weather setup: applying Gismeteo settings.")
+            _write_weather_addon_settings(WEATHER_ADDON_SETTINGS)
+            _log("Post-commit weather setup: Gismeteo settings applied.")
+            _log("Post-commit weather setup: selecting Gismeteo and location 1.")
+            _set_setting("weather.addon", WEATHER_ID)
+            _log("Post-commit weather setup: Gismeteo selected.")
+            _set_setting("weather.currentlocation", 1)
+            _log("Post-commit weather setup: location 1 selected.")
+            if _get_setting("weather.currentlocation") != 1:
+                raise RuntimeError("Kodi did not select Thomasville as its current weather location.")
+            # Weather builtins may wait on the weather manager. Queue them so
+            # forecast loading cannot block the build completion notice.
+            _log("Post-commit weather setup: queuing location and forecast refresh.")
+            xbmc.executebuiltin("Weather.LocationSet(1)", False)
+            xbmc.executebuiltin("Weather.Refresh", False)
+            _log("Selected Gismeteo location 1 (Thomasville, North Carolina); forecast refresh queued.")
+        except Exception as weather_exc:
+            weather_warning = str(weather_exc)
+            _log("Build committed, but weather setup needs attention: {}".format(weather_exc), xbmc.LOGWARNING)
         progress.close()
         success_message = (
-            "Kodi registered and enabled all {} add-ons in the build and checked {} "
+            "Kodi registered the {} add-ons in the build and checked {} "
             "platform-specific add-ons through Kodi's add-on manager. After you close this message, the wizard will "
             "finish applying Xonfluence.\n\n"
             "Kodi will recreate add-on logos and skin artwork when it displays them.\n"
             "Show and channel thumbnails need each add-on's own data and account settings.\n"
             "Keep Kodi's official repository enabled so Kodi can install native dependencies for {}.\n"
-            "Gismeteo is set to Thomasville, North Carolina. The OnePlay repository and build-marked add-ons were removed with their saved profile data.\n"
+            "The OnePlay repository and build-marked add-ons were removed with their saved profile data.\n"
             "{} The Wizard access code remains saved locally."
         ).format(
             len(packages),
@@ -1546,6 +1961,23 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                 skin_colors or "current",
                 skin_font or "current",
             )
+        if screensaver_addon is not None:
+            if screensaver_addon == BUILTIN_DIM_SCREENSAVER_ID:
+                success_message += "\nKodi's built-in dim screensaver is selected."
+            else:
+                success_message += "\nThe {} screensaver is installed and selected.".format(
+                    screensaver_addon
+                )
+        if auto_update_addons:
+            success_message += "\nAutomatic add-on updates are enabled for compatible add-ons from enabled repositories."
+        if weather_warning:
+            success_message += "\nGismeteo needs attention: {}.".format(weather_warning)
+        else:
+            success_message += "\nGismeteo is set to Thomasville, North Carolina."
+        if optiklean_enable_warning:
+            success_message += "\nSome background add-ons did not start automatically: {}. You can enable them in Add-ons > My add-ons.".format(
+                optiklean_enable_warning
+            )
         xbmcgui.Dialog().ok(
             "KingBlap build installed",
             success_message,
@@ -1561,12 +1993,31 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
         except Exception:
             pass
         if not committed:
+            for service_addon_id in sorted(service_addon_ids):
+                try:
+                    if _get_addon_enabled(service_addon_id) is True:
+                        _set_addon_enabled(service_addon_id, False)
+                        xbmc.sleep(1500 if service_addon_id in ("plugin.video.giptv", OPTIKLEAN_ID) else 300)
+                except Exception as service_exc:
+                    rollback_complete = False
+                    _log(
+                        "Could not pause {} before rollback: {}".format(service_addon_id, service_exc),
+                        xbmc.LOGERROR,
+                    )
             if changes:
                 try:
                     _activate_skin("skin.estuary")
                 except Exception:
                     pass
             rollback_complete = _restore_children(changes) and rollback_complete
+            if original_stream_buffer_memory is not None:
+                try:
+                    _set_setting("filecache.memorysize", original_stream_buffer_memory)
+                except Exception as restore_exc:
+                    rollback_complete = False
+                    _log("Could not restore Kodi's previous stream-buffer memory setting: {}".format(
+                        restore_exc
+                    ), xbmc.LOGERROR)
             if original_weather_settings is not None:
                 for setting, value in original_weather_settings.items():
                     try:
@@ -1581,6 +2032,22 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                 _log("Could not refresh Kodi's add-on list during rollback: {}".format(
                     restore_exc
                 ), xbmc.LOGERROR)
+            if original_screensaver_mode is not None:
+                try:
+                    _set_setting("screensaver.mode", original_screensaver_mode)
+                except Exception as restore_exc:
+                    rollback_complete = False
+                    _log("Could not restore the previous screensaver: {}".format(
+                        restore_exc
+                    ), xbmc.LOGERROR)
+            if original_addon_update_mode is not None:
+                try:
+                    _set_setting("general.addonupdates", original_addon_update_mode)
+                except Exception as restore_exc:
+                    rollback_complete = False
+                    _log("Could not restore the previous add-on update setting: {}".format(
+                        restore_exc
+                    ), xbmc.LOGERROR)
             if original_pvr_enabled is not None:
                 try:
                     if _get_addon_enabled(PVR_ADDON_ID) is not None:
@@ -1590,14 +2057,16 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                     _log("Could not restore the previous IPTV Simple enabled state: {}".format(
                         restore_exc
                     ), xbmc.LOGERROR)
-            if original_giptv_enabled is not None:
+            for service_addon_id, previous_state in original_service_states.items():
+                if previous_state is None:
+                    continue
                 try:
-                    if _get_addon_enabled("plugin.video.giptv") is not None:
-                        _set_addon_enabled("plugin.video.giptv", original_giptv_enabled)
+                    if _get_addon_enabled(service_addon_id) is not previous_state:
+                        _set_addon_enabled(service_addon_id, previous_state)
                 except Exception as restore_exc:
                     rollback_complete = False
-                    _log("Could not restore the previous GIPTV enabled state: {}".format(
-                        restore_exc
+                    _log("Could not restore the previous {} enabled state: {}".format(
+                        service_addon_id, restore_exc
                     ), xbmc.LOGERROR)
             if original_weather_addon_settings is not None:
                 try:
@@ -1622,7 +2091,7 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                         _log("Could not restore {}: {}".format(setting, restore_exc), xbmc.LOGERROR)
         if not committed and rollback_complete and not preserve_transaction:
             try:
-                _remove_path(transaction)
+                _cleanup_transaction(transaction)
             except OSError as cleanup_exc:
                 _log("Could not remove installer staging files: {}".format(
                     cleanup_exc
@@ -1651,7 +2120,7 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
             pass
     if committed:
         try:
-            _remove_path(transaction)
+            _cleanup_transaction(transaction)
         except OSError as cleanup_exc:
             _log("Could not remove installer rollback files: {}".format(
                 cleanup_exc
