@@ -49,26 +49,26 @@ else:
     SKIN_ID = "skin.xonfluence"
     SKIN_VERSION = "6.0.7"
     PREVIOUS_SKIN_ID = None
-KODI21_PUBLIC_BUILD_ID = "kingblap-public-kodi21.3-1.0.34"
+KODI21_PUBLIC_BUILD_ID = "kingblap-public-kodi21.3-1.0.35"
 KODI21_PRIVATE_BUILD_ID = "kingblap-private-kodi21.3-1.0.21"
 KODI21_PRIVATE_BUILD_PREFIX = "kingblap-private-kodi21.3-"
-KODI21_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 21.3 1.0.34 (download)"
+KODI21_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 21.3 1.0.35 (download)"
 KODI21_PRIVATE_BUILD_NAME = "Private KingBlap Build for Kodi 21.3 (download)"
-KODI22_PUBLIC_BUILD_ID = "kingblap-public-kodi22-1.0.34"
+KODI22_PUBLIC_BUILD_ID = "kingblap-public-kodi22-1.0.35"
 KODI22_PRIVATE_BUILD_ID = "kingblap-private-kodi22-1.0.26"
-KODI22_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 22 1.0.34 (download)"
+KODI22_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 22 1.0.35 (download)"
 KODI22_PRIVATE_BUILD_NAME = "Private KingBlap Build for Kodi 22 1.0.28 (download)"
 KODI22_PRIVATE_BUILD_PREFIX = "kingblap-private-kodi22-"
 KODI21_PUBLIC_BUILD_PARTS = (
-    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-21.3-1.0.34.zip.part001", 83886080),
-    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-21.3-1.0.34.zip.part002", 32749575),
+    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-21.3-1.0.35.zip.part001", 83886080),
+    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-21.3-1.0.35.zip.part002", 32750182),
 )
-KODI21_PUBLIC_BUILD_SHA256 = "BD874C9F3653CC273B5AA8D239CF18786BCE5FCBE0F90E6D55BAF30DB791A2F3"
+KODI21_PUBLIC_BUILD_SHA256 = "023F88127771D1751ABA04493F98EE752C13E0116D1D4E9CE2ADCA0207BB97A8"
 KODI22_PUBLIC_BUILD_PARTS = (
-    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-22-1.0.34.zip.part001", 83886080),
-    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-22-1.0.34.zip.part002", 20393645),
+    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-22-1.0.35.zip.part001", 83886080),
+    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-22-1.0.35.zip.part002", 20394252),
 )
-KODI22_PUBLIC_BUILD_SHA256 = "EF03398E1FEE955E4AFC64608F7E44EAAAF74406C9FA330646EE612AFBE9DAEE"
+KODI22_PUBLIC_BUILD_SHA256 = "7A3A1FB8ED4BCBF5CF8B63B0004B0045354D9D8F5A5EABBC122F20E30D7D64B7"
 WEATHER_VERSION = "0.6.4+matrix.1"
 SKIN_SETTINGS_ARCHIVE_PATH = "userdata/addon_data/{}/settings.xml".format(SKIN_ID)
 LEGACY_SKIN_ID = "skin.estuary.modv2"
@@ -217,7 +217,7 @@ def _api_url(path):
 
 def _fetch(url, max_bytes, access_code=None):
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.76 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.77 Kodi",
         "Accept": "application/json",
     }
     if access_code:
@@ -1060,7 +1060,7 @@ def _download_public_archive(destination, progress, build_id):
             request = urllib.request.Request(
                 url,
                 headers={
-                    "User-Agent": "KingBlap-Wizard/1.0.76 Kodi",
+                    "User-Agent": "KingBlap-Wizard/1.0.77 Kodi",
                     "Accept": "application/octet-stream",
                 },
             )
@@ -1119,7 +1119,7 @@ def _download_archive(build_id, destination, progress, access_code=None, public_
         "{}/{}/download".format(route, urllib.parse.quote(build_id, safe=""))
     )
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.76 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.77 Kodi",
         "Accept": "application/zip",
     }
     if access_code:

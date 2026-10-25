@@ -1,0 +1,3 @@
+KingBlap Wizard 1.0.77
+- Publish public Kodi 21.3 and Kodi 22 builds 1.0.35.
+- Fix Otaku browsing when the optional Simkl API database is absent; no private API keys are included.
