@@ -69,9 +69,11 @@ The private build access code is separate from any IPTV username or password. Ke
 3. Under **Private build access**, enter the **16-digit private build access code**. Leave **Build service URL** at its default unless you received a replacement address.
 4. Open **Add-ons → Program add-ons → KingBlap Wizard → Private Builds**.
 5. Select **Private KingBlap Build for Kodi 21.3 (1.0.53)** on Kodi 21.3, or **Private KingBlap Build for Kodi 22 1.0.66** on Kodi 22.
-6. Review the notice about restoring saved add-on settings, choose **Install build**, and leave Kodi open until installation finishes. Restart Kodi once.
+6. Review the notice about restoring saved add-on settings, choose **Install build**, and leave Kodi open until installation finishes. If the Wizard asks to reload IPTV Simple, accept the prompt. On Android/Fire TV, Kodi closes; reopen it after it exits.
 
 The private releases are served through the protected Cloudflare build service. They may contain saved account settings and credentials. A private build can replace matching saved profiles on the device.
+
+Wizard 1.0.71 also restores and verifies the IPTV Simple profile for a private archive that includes one. It enables the PVR client after restoring the profile and asks Kodi to reload it. This prevents an install from leaving IPTV Simple disabled; on Android/Fire TV, reopen Kodi after the Wizard closes it.
 
 ## What is included
 
@@ -80,7 +82,7 @@ The private releases are served through the protected Cloudflare build service. 
 | Skin | Xonfluence SKINBASE 5 | Xonfluence 6.0.7 | Version matched to Kodi |
 | Appearance | Fire colors and Massive font | Fire colors and Massive font | Fire colors and Massive font |
 | Saved personal accounts and API keys from backup | Excluded except PVR URLs | Excluded except PVR URLs | Selected saved profiles included |
-| IPTV playlist and guide | PC Kodi PVR URLs (public credentials) | PC Kodi PVR URLs (public credentials) | Separate private GIPTV configuration |
+| IPTV playlist and guide | PC Kodi PVR URLs (public credentials) | PC Kodi PVR URLs (public credentials) | Separate private GIPTV configuration; IPTV Simple is restored and re-enabled when included in the archive |
 | Device-specific native add-ons | Installed by Kodi | Installed by Kodi | Installed by Kodi |
 | Screensaver | Not configured by this build | Not configured by this build | Kodi's built-in Dim screensaver |
 
@@ -93,7 +95,7 @@ The public archive includes a selected set of video, guide, weather, skin, and s
 | Release | Change |
 | --- | --- |
 | **Wizard 1.0.66 / Public Builds 1.0.23** | Previous release with shorter persistent install staging paths on Android and recovery for older transactions. |
-| **Wizard 1.0.71 / Public Builds 1.0.31** | Validates and applies the skin package matched to each Kodi major version, repairs malformed XML in the staged Mad Titan, Otaku, and Kodi 21 skin files, restores IPTV Simple playlist and guide settings, enables and verifies the PVR client, then prompts for a Kodi reload. It verifies each archive checksum. Kodi obtains the compatible PVR client through its own repository. The public PVR URLs contain credentials and are accessible to anyone who downloads the ZIP. |
+| **Wizard 1.0.71 / Public Builds 1.0.31** | Validates and applies the skin package matched to each Kodi major version, repairs malformed XML in the staged Mad Titan, Otaku, and Kodi 21 skin files, restores IPTV Simple playlist and guide settings, enables and verifies the PVR client for public and private archives that include its profile, then prompts for a Kodi reload. Kodi 22 public build 1.0.31 was verified in BlueStacks: IPTV Simple loaded 1,031 channels, two groups, 149 guide channels, and 12,636 EPG entries. It verifies each archive checksum. Kodi obtains the compatible PVR client through its own repository. The public PVR URLs contain credentials and are accessible to anyone who downloads the ZIP. |
 | **Public Builds 1.0.23** | Previous portable add-on set for both Kodi versions. |
 | **Private Builds 1.0.53 and 1.0.66** | Current separate private releases use Kodi's built-in Dim screensaver. Private build archives and access remain separate from the public packages. |
 
@@ -107,6 +109,7 @@ Older public download parts remain available for existing Wizard installs. Updat
 - **Kodi version mismatch:** use the Kodi 21.3 build on Kodi 21.3 or the Kodi 22 build on Kodi 22.
 - **A dependency cannot install:** enable Kodi's official add-on repository, check the device's connection and free storage, and retry the compatible dependency.
 - **Installation stops or Kodi closes:** update to Wizard 1.0.71, reopen Kodi and the Wizard. If the install did not finish, retry after checking free space; the Wizard needs room for the download, staged add-ons, and recovery data.
+- **IPTV Simple is disabled or the guide is empty after a build apply:** update to Wizard 1.0.71, reapply the matching build, and accept the IPTV reload prompt. On Android/Fire TV, reopen Kodi after it closes. Private builds use this recovery when their archive contains an IPTV Simple profile.
 - **The public IPTV guide or playlist is unavailable:** the public build uses the PC Kodi PVR URLs. They contain credentials and are shared with every ZIP download; contact the owner if they need to be changed.
 
 ## Downloads
