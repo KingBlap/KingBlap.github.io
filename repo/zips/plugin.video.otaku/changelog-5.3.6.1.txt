@@ -1,0 +1,1 @@
+KingBlap public compatibility patch: tolerate absent optional info-table and Simkl API metadata in clean public profiles. No keys or user settings are included.
