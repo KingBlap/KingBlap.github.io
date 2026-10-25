@@ -1,0 +1,5 @@
+KingBlap Wizard 1.0.78
+
+- Publish public Kodi 21.3 and Kodi 22 builds 1.0.36 from the October 24 backup.
+- Reset Otaku's saved profile in public builds so first-run setup appears again.
+- Show a clear installation warning if Kodi cannot enable IPTV Simple.

@@ -49,26 +49,26 @@ else:
     SKIN_ID = "skin.xonfluence"
     SKIN_VERSION = "6.0.7"
     PREVIOUS_SKIN_ID = None
-KODI21_PUBLIC_BUILD_ID = "kingblap-public-kodi21.3-1.0.35"
+KODI21_PUBLIC_BUILD_ID = "kingblap-public-kodi21.3-1.0.36"
 KODI21_PRIVATE_BUILD_ID = "kingblap-private-kodi21.3-1.0.21"
 KODI21_PRIVATE_BUILD_PREFIX = "kingblap-private-kodi21.3-"
-KODI21_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 21.3 1.0.35 (download)"
+KODI21_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 21.3 1.0.36 (download)"
 KODI21_PRIVATE_BUILD_NAME = "Private KingBlap Build for Kodi 21.3 (download)"
-KODI22_PUBLIC_BUILD_ID = "kingblap-public-kodi22-1.0.35"
+KODI22_PUBLIC_BUILD_ID = "kingblap-public-kodi22-1.0.36"
 KODI22_PRIVATE_BUILD_ID = "kingblap-private-kodi22-1.0.26"
-KODI22_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 22 1.0.35 (download)"
+KODI22_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 22 1.0.36 (download)"
 KODI22_PRIVATE_BUILD_NAME = "Private KingBlap Build for Kodi 22 1.0.28 (download)"
 KODI22_PRIVATE_BUILD_PREFIX = "kingblap-private-kodi22-"
 KODI21_PUBLIC_BUILD_PARTS = (
-    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-21.3-1.0.35.zip.part001", 83886080),
-    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-21.3-1.0.35.zip.part002", 32750182),
+    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-21.3-1.0.36.zip.part001", 83886080),
+    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-21.3-1.0.36.zip.part002", 36248082),
 )
-KODI21_PUBLIC_BUILD_SHA256 = "023F88127771D1751ABA04493F98EE752C13E0116D1D4E9CE2ADCA0207BB97A8"
+KODI21_PUBLIC_BUILD_SHA256 = "4EA736F52224602564F9A0CD1F7741EB13EF5F0A31D1505BFCE9D0252F2944F7"
 KODI22_PUBLIC_BUILD_PARTS = (
-    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-22-1.0.35.zip.part001", 83886080),
-    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-22-1.0.35.zip.part002", 20394252),
+    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-22-1.0.36.zip.part001", 83886080),
+    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-22-1.0.36.zip.part002", 23892151),
 )
-KODI22_PUBLIC_BUILD_SHA256 = "7A3A1FB8ED4BCBF5CF8B63B0004B0045354D9D8F5A5EABBC122F20E30D7D64B7"
+KODI22_PUBLIC_BUILD_SHA256 = "2E1AAC7BA310B0F7911A99A02D800B561C3D00F209036C64C2EE0DBB395FDF15"
 WEATHER_VERSION = "0.6.4+matrix.1"
 SKIN_SETTINGS_ARCHIVE_PATH = "userdata/addon_data/{}/settings.xml".format(SKIN_ID)
 LEGACY_SKIN_ID = "skin.estuary.modv2"
@@ -830,7 +830,9 @@ def _validate_archive(archive, expected_public=None):
         or set(reset_addon_data_ids) & profile_addon_data_ids
         or not set(reset_addon_data_ids).issubset(packages)
         or (reset_addon_data_ids and profile_mode != PROFILE_DATA_MODE)
-        or (expected_public is True and reset_addon_data_ids)
+        # Public builds may reset Otaku so its first-run setup is shown again,
+        # but must not wipe unrelated add-on profiles.
+        or (expected_public is True and set(reset_addon_data_ids) - {"plugin.video.otaku"})
     ):
         raise ValueError("The build information contains invalid add-on profile reset IDs.")
     if expected_public is True:
@@ -1633,6 +1635,7 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
     pvr_profile_filename = None
     restart_after_pvr = False
     pvr_profile_warning = None
+    pvr_enable_error = None
     try:
         _stop_playback_for_install()
         if not public_build:
@@ -2081,6 +2084,7 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                     raise RuntimeError("Kodi did not confirm IPTV Simple is enabled after profile restoration.")
                 _log("Verified IPTV Simple is enabled after restoring its playlist and guide settings.")
             except Exception as pvr_exc:
+                pvr_enable_error = str(pvr_exc)
                 post_commit_failures.append("IPTV Simple: {}".format(pvr_exc))
         for service_addon_id in sorted(service_addon_ids - {"plugin.video.giptv"}):
             try:
@@ -2139,7 +2143,7 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
             len(platform_addons),
             _platform_name(),
             (
-                "The PC Kodi IPTV Simple playlist and guide settings were imported; those public URLs contain credentials. Other personal profiles and API keys were not imported."
+                "The PC Kodi IPTV Simple playlist and guide URLs and add-on API defaults are included in this public release. Saved personal add-on profiles were not imported."
                 if public_build
                 else "Saved profile data for add-ons in this private build has been restored."
             ),
@@ -2158,8 +2162,13 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                 )
         if auto_update_addons:
             success_message += "\nAutomatic add-on updates are enabled for compatible add-ons from enabled repositories."
-        if restart_after_pvr:
+        if restart_after_pvr and not pvr_enable_error:
             success_message += "\nKodi must restart so IPTV Simple can load the saved playlist and guide settings."
+        if pvr_enable_error:
+            success_message += (
+                "\nIPTV Simple was not enabled: {}. Check Add-ons > My add-ons > PVR clients "
+                "and Kodi's official add-on repository, then retry the build."
+            ).format(pvr_enable_error)
         if pvr_profile_warning:
             success_message += "\n{}".format(pvr_profile_warning)
         if weather_warning:
@@ -2171,7 +2180,8 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                 optiklean_enable_warning
             )
         xbmcgui.Dialog().ok(
-            "KingBlap build installed",
+            "KingBlap build installed; IPTV Simple needs attention"
+            if pvr_enable_error else "KingBlap build installed",
             success_message,
         )
         try:
