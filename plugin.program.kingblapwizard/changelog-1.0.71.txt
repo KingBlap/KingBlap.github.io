@@ -1,0 +1,5 @@
+KingBlap Wizard 1.0.71
+- Restore the public IPTV Simple instance settings before starting the client.
+- Explicitly enable and verify IPTV Simple after restoring the playlist and guide profile.
+- Keep the Kodi reload prompt so the client reopens the restored sources cleanly.
+- Point Kodi 21.3 and Kodi 22 public entries to build 1.0.31.

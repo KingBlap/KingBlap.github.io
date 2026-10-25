@@ -49,26 +49,26 @@ else:
     SKIN_ID = "skin.xonfluence"
     SKIN_VERSION = "6.0.7"
     PREVIOUS_SKIN_ID = None
-KODI21_PUBLIC_BUILD_ID = "kingblap-public-kodi21.3-1.0.29"
+KODI21_PUBLIC_BUILD_ID = "kingblap-public-kodi21.3-1.0.31"
 KODI21_PRIVATE_BUILD_ID = "kingblap-private-kodi21.3-1.0.21"
 KODI21_PRIVATE_BUILD_PREFIX = "kingblap-private-kodi21.3-"
-KODI21_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 21.3 1.0.29 (download)"
+KODI21_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 21.3 1.0.31 (download)"
 KODI21_PRIVATE_BUILD_NAME = "Private KingBlap Build for Kodi 21.3 (download)"
-KODI22_PUBLIC_BUILD_ID = "kingblap-public-kodi22-1.0.29"
+KODI22_PUBLIC_BUILD_ID = "kingblap-public-kodi22-1.0.31"
 KODI22_PRIVATE_BUILD_ID = "kingblap-private-kodi22-1.0.26"
-KODI22_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 22 1.0.29 (download)"
+KODI22_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 22 1.0.31 (download)"
 KODI22_PRIVATE_BUILD_NAME = "Private KingBlap Build for Kodi 22 1.0.28 (download)"
 KODI22_PRIVATE_BUILD_PREFIX = "kingblap-private-kodi22-"
 KODI21_PUBLIC_BUILD_PARTS = (
-    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-21.3-1.0.29.zip.part001", 83886080),
-    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-21.3-1.0.29.zip.part002", 21333777),
+    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-21.3-1.0.31.zip.part001", 83886080),
+    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-21.3-1.0.31.zip.part002", 23170452),
 )
-KODI21_PUBLIC_BUILD_SHA256 = "41659C7AD612C71F818EAECDB5B6DEC85F069002B902E30F2FB1CB70B45A937E"
+KODI21_PUBLIC_BUILD_SHA256 = "3434383463B219835A77AAF062DE99AE5B9132213A5267C27BA4872D9B85D424"
 KODI22_PUBLIC_BUILD_PARTS = (
-    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-22-1.0.29.zip.part001", 83886080),
-    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-22-1.0.29.zip.part002", 8977846),
+    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-22-1.0.31.zip.part001", 83886080),
+    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-22-1.0.31.zip.part002", 10703321),
 )
-KODI22_PUBLIC_BUILD_SHA256 = "080F78958C9EA9F5DDFA0FC141BFC3C59F2490681FD3C0891B67666BD85CB9B2"
+KODI22_PUBLIC_BUILD_SHA256 = "1F51BB4294B35BA76DD9A785AC8B53D73D0E00DF5E908E2D19A12C37A5D83D37"
 WEATHER_VERSION = "0.6.4+matrix.1"
 SKIN_SETTINGS_ARCHIVE_PATH = "userdata/addon_data/{}/settings.xml".format(SKIN_ID)
 LEGACY_SKIN_ID = "skin.estuary.modv2"
@@ -200,7 +200,7 @@ def _api_url(path):
 
 def _fetch(url, max_bytes, access_code=None):
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.69 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.71 Kodi",
         "Accept": "application/json",
     }
     if access_code:
@@ -407,6 +407,35 @@ def _swap_child(root, name, staged, backup, changes, journal_state=None, locatio
     if staged is not None:
         os.makedirs(os.path.dirname(target), exist_ok=True)
         os.replace(staged, target)
+
+
+def _pvr_profile_sources(profile_data):
+    """Read only the IPTV Simple playlist and EPG source values from XML."""
+    try:
+        settings = ET.fromstring(profile_data)
+    except ET.ParseError:
+        return None
+    if settings.tag != "settings":
+        return None
+    values = {
+        setting.get("id"): (setting.text or "").strip()
+        for setting in settings.findall("setting")
+    }
+    playlist = values.get("m3uPath", "")
+    epg = values.get("epgPath", "")
+    if not playlist or not epg:
+        return None
+    return playlist, epg
+
+
+def _write_pvr_profile(path, profile_data):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    temporary = path + ".kbw-tmp"
+    with open(temporary, "wb") as profile_file:
+        profile_file.write(profile_data)
+        profile_file.flush()
+        os.fsync(profile_file.fileno())
+    os.replace(temporary, path)
 
 
 def _restore_children(changes):
@@ -1014,7 +1043,7 @@ def _download_public_archive(destination, progress, build_id):
             request = urllib.request.Request(
                 url,
                 headers={
-                    "User-Agent": "KingBlap-Wizard/1.0.69 Kodi",
+                    "User-Agent": "KingBlap-Wizard/1.0.71 Kodi",
                     "Accept": "application/octet-stream",
                 },
             )
@@ -1073,7 +1102,7 @@ def _download_archive(build_id, destination, progress, access_code=None, public_
         "{}/{}/download".format(route, urllib.parse.quote(build_id, safe=""))
     )
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.69 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.71 Kodi",
         "Accept": "application/zip",
     }
     if access_code:
@@ -1551,6 +1580,10 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
     rollback_complete = True
     preserve_transaction = False
     packages = {}
+    pvr_profile_data = None
+    pvr_profile_filename = None
+    restart_after_pvr = False
+    pvr_profile_warning = None
     try:
         _stop_playback_for_install()
         if not public_build:
@@ -1724,6 +1757,21 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
             for addon_id in profile_addon_data_ids:
                 if not os.path.isdir(os.path.join(staged_profile_root, addon_id)):
                     raise ValueError("The staged build is missing profile data for {}.".format(addon_id))
+            if public_build and PVR_ADDON_ID in profile_addon_data_ids:
+                staged_pvr_root = os.path.join(staged_profile_root, PVR_ADDON_ID)
+                staged_pvr_files = [
+                    filename for filename in os.listdir(staged_pvr_root)
+                    if re.fullmatch(r"instance-settings-\d+\.xml", filename)
+                    and os.path.isfile(os.path.join(staged_pvr_root, filename))
+                ]
+                if len(staged_pvr_files) != 1:
+                    raise ValueError("The public build must include one IPTV Simple instance profile.")
+                pvr_profile_filename = staged_pvr_files[0]
+                with open(os.path.join(staged_pvr_root, pvr_profile_filename), "rb") as pvr_file:
+                    pvr_profile_data = pvr_file.read()
+                if _pvr_profile_sources(pvr_profile_data) is None:
+                    raise ValueError("The public build's IPTV Simple playlist or guide source is empty.")
+                _log("Prepared the public IPTV Simple playlist and guide settings for restoration.")
             if "plugin.video.giptv" in packages:
                 _prime_giptv_startup_state(staged_userdata)
 
@@ -1945,10 +1993,38 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
         committed = True
         _log("Build transaction committed; starting packaged services.")
         post_commit_failures = []
-        if PVR_ADDON_ID in profile_addon_data_ids:
-            progress.update(98, "KingBlap Wizard", "Starting IPTV Simple after setup…")
+        if pvr_profile_data is not None and pvr_profile_filename:
+            pvr_profile_path = os.path.join(data_root, PVR_ADDON_ID, pvr_profile_filename)
             try:
+                expected_sources = _pvr_profile_sources(pvr_profile_data)
+                active_sources = None
+                try:
+                    with open(pvr_profile_path, "rb") as active_pvr_file:
+                        active_sources = _pvr_profile_sources(active_pvr_file.read())
+                except OSError:
+                    pass
+                if active_sources != expected_sources:
+                    _write_pvr_profile(pvr_profile_path, pvr_profile_data)
+                    _log("Reapplied the packaged IPTV Simple playlist and guide settings; source values omitted.")
+                else:
+                    _log("Verified IPTV Simple playlist and guide settings in Kodi's active profile.")
+            except (OSError, ET.ParseError) as pvr_profile_exc:
+                pvr_profile_warning = "Kodi could not verify IPTV Simple's saved playlist and guide settings."
+                _log("Could not verify the active IPTV Simple profile: {}".format(pvr_profile_exc), xbmc.LOGWARNING)
+            restart_after_pvr = True
+        if PVR_ADDON_ID in profile_addon_data_ids:
+            progress.update(98, "KingBlap Wizard", "Enabling IPTV Simple with the restored settings…")
+            try:
+                # Restore the instance settings before starting the binary PVR
+                # client. Kodi can otherwise leave IPTV Simple disabled when
+                # an installer replaces its active profile while the client is
+                # unloaded.
                 _ensure_kodi_managed_addon(PVR_ADDON_ID, progress)
+                if _get_addon_enabled(PVR_ADDON_ID) is not True:
+                    _enable_addon(PVR_ADDON_ID)
+                if _get_addon_enabled(PVR_ADDON_ID) is not True:
+                    raise RuntimeError("Kodi did not confirm IPTV Simple is enabled after profile restoration.")
+                _log("Verified IPTV Simple is enabled after restoring its playlist and guide settings.")
             except Exception as pvr_exc:
                 post_commit_failures.append("IPTV Simple: {}".format(pvr_exc))
         for service_addon_id in sorted(service_addon_ids - {"plugin.video.giptv"}):
@@ -2027,6 +2103,10 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                 )
         if auto_update_addons:
             success_message += "\nAutomatic add-on updates are enabled for compatible add-ons from enabled repositories."
+        if restart_after_pvr:
+            success_message += "\nKodi must restart so IPTV Simple can load the saved playlist and guide settings."
+        if pvr_profile_warning:
+            success_message += "\n{}".format(pvr_profile_warning)
         if weather_warning:
             success_message += "\nGismeteo needs attention: {}.".format(weather_warning)
         else:
@@ -2182,6 +2262,30 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
             _log("Could not remove installer rollback files: {}".format(
                 cleanup_exc
             ), xbmc.LOGWARNING)
+    if committed and restart_after_pvr:
+        try:
+            restart_supported = (
+                xbmc.getCondVisibility("System.Platform.Windows")
+                or (
+                    xbmc.getCondVisibility("System.Platform.Linux")
+                    and not xbmc.getCondVisibility("System.Platform.Android")
+                )
+            )
+            action = "Restart Kodi" if restart_supported else "Close Kodi"
+            detail = (
+                "Restart Kodi now so IPTV Simple reloads its playlist and guide?"
+                if restart_supported
+                else "Close Kodi now so IPTV Simple can reload its playlist and guide. Reopen Kodi after it exits."
+            )
+            if xbmcgui.Dialog().yesno(
+                "Reload IPTV Simple",
+                detail,
+                yeslabel=action,
+                nolabel="Later",
+            ):
+                xbmc.executebuiltin("RestartApp" if restart_supported else "Quit")
+        except Exception as restart_exc:
+            _log("Could not present the IPTV Simple reload prompt: {}".format(restart_exc), xbmc.LOGWARNING)
 
 
 def _add_category_item(handle, name, category, description):
