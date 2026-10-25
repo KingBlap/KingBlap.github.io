@@ -49,26 +49,26 @@ else:
     SKIN_ID = "skin.xonfluence"
     SKIN_VERSION = "6.0.7"
     PREVIOUS_SKIN_ID = None
-KODI21_PUBLIC_BUILD_ID = "kingblap-public-kodi21.3-1.0.31"
+KODI21_PUBLIC_BUILD_ID = "kingblap-public-kodi21.3-1.0.33"
 KODI21_PRIVATE_BUILD_ID = "kingblap-private-kodi21.3-1.0.21"
 KODI21_PRIVATE_BUILD_PREFIX = "kingblap-private-kodi21.3-"
-KODI21_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 21.3 1.0.31 (download)"
+KODI21_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 21.3 1.0.33 (download)"
 KODI21_PRIVATE_BUILD_NAME = "Private KingBlap Build for Kodi 21.3 (download)"
-KODI22_PUBLIC_BUILD_ID = "kingblap-public-kodi22-1.0.31"
+KODI22_PUBLIC_BUILD_ID = "kingblap-public-kodi22-1.0.33"
 KODI22_PRIVATE_BUILD_ID = "kingblap-private-kodi22-1.0.26"
-KODI22_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 22 1.0.31 (download)"
+KODI22_PUBLIC_BUILD_NAME = "Public KingBlap Build for Kodi 22 1.0.33 (download)"
 KODI22_PRIVATE_BUILD_NAME = "Private KingBlap Build for Kodi 22 1.0.28 (download)"
 KODI22_PRIVATE_BUILD_PREFIX = "kingblap-private-kodi22-"
 KODI21_PUBLIC_BUILD_PARTS = (
-    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-21.3-1.0.31.zip.part001", 83886080),
-    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-21.3-1.0.31.zip.part002", 23170452),
+    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-21.3-1.0.33.zip.part001", 83886080),
+    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-21.3-1.0.33.zip.part002", 35039091),
 )
-KODI21_PUBLIC_BUILD_SHA256 = "3434383463B219835A77AAF062DE99AE5B9132213A5267C27BA4872D9B85D424"
+KODI21_PUBLIC_BUILD_SHA256 = "EFD4B8BE75A8E8E1CA49FD860C0752BCD033549F7F294F6735E73660019F871F"
 KODI22_PUBLIC_BUILD_PARTS = (
-    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-22-1.0.31.zip.part001", 83886080),
-    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-22-1.0.31.zip.part002", 10703321),
+    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-22-1.0.33.zip.part001", 83886080),
+    ("https://kingblap.github.io/builds/public/KingBlapKodiPublicBuild-22-1.0.33.zip.part002", 22571959),
 )
-KODI22_PUBLIC_BUILD_SHA256 = "1F51BB4294B35BA76DD9A785AC8B53D73D0E00DF5E908E2D19A12C37A5D83D37"
+KODI22_PUBLIC_BUILD_SHA256 = "CF8868E20BFFFECB30FF89A17EC71C0DF4C88B5AA91D70328D3D20DAFCA9F5F5"
 WEATHER_VERSION = "0.6.4+matrix.1"
 SKIN_SETTINGS_ARCHIVE_PATH = "userdata/addon_data/{}/settings.xml".format(SKIN_ID)
 LEGACY_SKIN_ID = "skin.estuary.modv2"
@@ -95,6 +95,23 @@ CHUNK_SIZE = 256 * 1024
 ADDON_REGISTRATION_TIMEOUT = 600
 SKIN_LOAD_TIMEOUT = 120
 SKIN_CONFIRMATION_GRACE = 13
+SKIN_MENU_SETTING_ID = re.compile(
+    r"^AddonSet(?:One|Two|Three|Four|Six)\.\d+\.(?:path|label|icon)$",
+    re.IGNORECASE,
+)
+
+
+class _ClosedProgressDialog:
+    """No-op progress handle after closing Kodi's modal Wizard progress dialog."""
+
+    def update(self, *args, **kwargs):
+        pass
+
+    def close(self):
+        pass
+
+    def iscanceled(self):
+        return False
 
 
 def _platform_name():
@@ -200,7 +217,7 @@ def _api_url(path):
 
 def _fetch(url, max_bytes, access_code=None):
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.71 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.75 Kodi",
         "Accept": "application/json",
     }
     if access_code:
@@ -1043,7 +1060,7 @@ def _download_public_archive(destination, progress, build_id):
             request = urllib.request.Request(
                 url,
                 headers={
-                    "User-Agent": "KingBlap-Wizard/1.0.71 Kodi",
+                    "User-Agent": "KingBlap-Wizard/1.0.75 Kodi",
                     "Accept": "application/octet-stream",
                 },
             )
@@ -1102,7 +1119,7 @@ def _download_archive(build_id, destination, progress, access_code=None, public_
         "{}/{}/download".format(route, urllib.parse.quote(build_id, safe=""))
     )
     headers = {
-        "User-Agent": "KingBlap-Wizard/1.0.71 Kodi",
+        "User-Agent": "KingBlap-Wizard/1.0.75 Kodi",
         "Accept": "application/zip",
     }
     if access_code:
@@ -1442,10 +1459,42 @@ def _apply_skin_settings(skin_id=SKIN_ID):
 def _request_skin_reapply(skin_id=SKIN_ID):
     marker_dir = os.path.join(_path("special://profile/addon_data"), ADDON_ID)
     os.makedirs(marker_dir, exist_ok=True)
+    pending_settings = os.path.join(marker_dir, "pending-skin-settings.xml")
+    source_settings = _path(
+        "special://profile/addon_data/{}/settings.xml".format(skin_id)
+    )
+    menu_setting_count = 0
+    if os.path.isfile(source_settings):
+        source_root = ET.parse(source_settings).getroot()
+        pending_root = ET.Element("settings", source_root.attrib)
+        for setting in source_root.findall("setting"):
+            setting_id = setting.get("id", "")
+            if not SKIN_MENU_SETTING_ID.fullmatch(setting_id):
+                continue
+            pending_setting = ET.SubElement(pending_root, "setting", setting.attrib)
+            pending_setting.text = "".join(setting.itertext())
+            menu_setting_count += 1
+        if menu_setting_count:
+            temporary_settings = pending_settings + ".tmp"
+            ET.ElementTree(pending_root).write(
+                temporary_settings, encoding="utf-8", xml_declaration=True
+            )
+            os.replace(temporary_settings, pending_settings)
+            _log(
+                "Queued {} Xonfluence menu settings for post-restart restore."
+                .format(menu_setting_count)
+            )
+        else:
+            _log("No Xonfluence add-on menu settings were found to queue.", xbmc.LOGWARNING)
+
     marker = os.path.join(marker_dir, "skin-reapply.json")
     temporary = marker + ".tmp"
     with open(temporary, "w", encoding="utf-8") as marker_file:
-        json.dump({"skin": skin_id, "requested": time.time()}, marker_file)
+        json.dump({
+            "skin": skin_id,
+            "requested": time.time(),
+            "menu_settings_pending": bool(menu_setting_count),
+        }, marker_file)
     os.replace(temporary, marker)
 
 
@@ -2014,6 +2063,12 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
             restart_after_pvr = True
         if PVR_ADDON_ID in profile_addon_data_ids:
             progress.update(98, "KingBlap Wizard", "Enabling IPTV Simple with the restored settings…")
+            # InstallAddon displays Kodi's own confirmation and install dialogs.
+            # Close the Wizard's modal progress dialog first so those native
+            # dialogs can receive focus and the prompt handler can accept them.
+            _log("Closing the Wizard progress dialog before enabling IPTV Simple.")
+            progress.close()
+            progress = _ClosedProgressDialog()
             try:
                 # Restore the instance settings before starting the binary PVR
                 # client. Kodi can otherwise leave IPTV Simple disabled when
@@ -2112,7 +2167,7 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
         else:
             success_message += "\nGismeteo is set to Thomasville, North Carolina."
         if optiklean_enable_warning:
-            success_message += "\nSome background add-ons did not start automatically: {}. You can enable them in Add-ons > My add-ons.".format(
+            success_message += "\nSome add-ons or IPTV components could not start automatically: {}. You can enable them in Add-ons > My add-ons.".format(
                 optiklean_enable_warning
             )
         xbmcgui.Dialog().ok(

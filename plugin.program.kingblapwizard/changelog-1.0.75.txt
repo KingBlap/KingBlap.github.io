@@ -1,0 +1,3 @@
+KingBlap Wizard 1.0.75
+- Restore Xonfluence menu shortcuts with Kodi's per-skin Skin.SetString and Skin.Reset commands.
+- Verify saved per-skin menu values before completing the post-restart repair.

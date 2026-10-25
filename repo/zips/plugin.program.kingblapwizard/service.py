@@ -18,6 +18,13 @@ SKIN_ID = None
 MARKER_PATH = xbmcvfs.translatePath(
     "special://profile/addon_data/{}/skin-reapply.json".format(ADDON_ID)
 )
+PENDING_SKIN_SETTINGS_PATH = xbmcvfs.translatePath(
+    "special://profile/addon_data/{}/pending-skin-settings.xml".format(ADDON_ID)
+)
+SKIN_MENU_SETTING_ID = re.compile(
+    r"^AddonSet(?:One|Two|Three|Four|Six)\.\d+\.(?:path|label|icon)$",
+    re.IGNORECASE,
+)
 TRANSACTION_ROOT = xbmcvfs.translatePath(
     "special://profile/.kbw-transactions"
 )
@@ -154,27 +161,110 @@ def _apply_pending_skin(monitor):
     # Let Kodi close the wizard's add-on window before changing the home skin.
     if monitor.waitForAbort(12):
         return False
+
+    def finish_skin_apply(message):
+        _log(message)
+        _apply_pending_menu_settings(monitor)
+        return True
+
     try:
         if (
             _skin_selected()
             and xbmc.getSkinDir() == SKIN_ID
             and _skin_stays_loaded(monitor, 10)
         ):
-            _log("Xonfluence stayed selected after Kodi finished opening the build.")
-            return True
+            return finish_skin_apply(
+                "Xonfluence stayed selected after Kodi finished opening the build."
+            )
         _set_skin()
         if _wait_for_skin(monitor) and _skin_stays_loaded(monitor, 10):
-            _log("Xonfluence is loaded and selected.")
-            return True
+            return finish_skin_apply("Xonfluence is loaded and selected.")
         _log("Kodi did not settle on Xonfluence after the first reload; retrying.", xbmc.LOGWARNING)
         _set_skin()
         if _wait_for_skin(monitor) and _skin_stays_loaded(monitor, 10):
-            _log("Xonfluence is loaded and selected after retry.")
-            return True
+            return finish_skin_apply("Xonfluence is loaded and selected after retry.")
         _log("Kodi could not keep Xonfluence loaded; the saved preference will be checked next launch.", xbmc.LOGERROR)
     except (RuntimeError, TypeError, ValueError) as exc:
         _log("Could not apply Xonfluence: {}".format(exc), xbmc.LOGERROR)
     return False
+
+
+def _apply_pending_menu_settings(monitor):
+    """Restore Xonfluence's configured add-on rows after Kodi reloads the skin."""
+    if not os.path.isfile(PENDING_SKIN_SETTINGS_PATH):
+        return True
+    try:
+        root = ET.parse(PENDING_SKIN_SETTINGS_PATH).getroot()
+        settings = {}
+        for item in root.findall("setting"):
+            setting_id = item.get("id", "")
+            if SKIN_MENU_SETTING_ID.fullmatch(setting_id):
+                settings[setting_id] = "".join(item.itertext())
+        if not settings:
+            raise ValueError("The pending Xonfluence file contains no menu rows.")
+
+        xbmcaddon.Addon(SKIN_ID)
+        changed = False
+        for setting_id, value in settings.items():
+            current = _read_skin_setting(setting_id)
+            if current != value:
+                if value:
+                    # Xonfluence persists these strings in its per-skin file.
+                    xbmc.executebuiltin(
+                        "Skin.SetString({},{})".format(setting_id, _quote_builtin(value)),
+                        True,
+                    )
+                else:
+                    xbmc.executebuiltin("Skin.Reset({})".format(setting_id), True)
+                changed = True
+
+        if changed:
+            xbmc.executebuiltin("ReloadSkin", False)
+            for unused in range(20):
+                if monitor.waitForAbort(0.5):
+                    return False
+        saved_settings = _read_skin_settings()
+        mismatched = [
+            setting_id for setting_id, value in settings.items()
+            if saved_settings.get(setting_id, "") != value
+        ]
+        if mismatched:
+            raise RuntimeError(
+                "Kodi did not retain {} Xonfluence menu settings.".format(len(mismatched))
+            )
+
+        os.remove(PENDING_SKIN_SETTINGS_PATH)
+        _log(
+            "Restored and verified {} Xonfluence add-on menu settings after Kodi restarted."
+            .format(len(settings))
+        )
+        return True
+    except (OSError, RuntimeError, TypeError, ValueError, ET.ParseError) as exc:
+        _log("Could not restore Xonfluence menu settings yet: {}".format(exc), xbmc.LOGWARNING)
+        return False
+
+
+def _quote_builtin(value):
+    """Quote a Kodi built-in parameter so embedded commas remain intact."""
+    return '"{}"'.format(value.replace("\\", "\\\\").replace('"', '\\"'))
+
+
+def _read_skin_settings():
+    path = xbmcvfs.translatePath(
+        "special://profile/addon_data/{}/settings.xml".format(SKIN_ID)
+    )
+    root = ET.parse(path).getroot()
+    return {
+        item.get("id", ""): "".join(item.itertext())
+        for item in root.findall("setting")
+    }
+
+
+def _read_skin_setting(setting_id):
+    try:
+        return _read_skin_settings().get(setting_id, "")
+    except (OSError, ET.ParseError):
+        return None
 
 
 def _jsonrpc(method, params):
@@ -519,20 +609,33 @@ def main():
     monitor = xbmc.Monitor()
     _apply_private_memory_policy()
     last_marker_time = None
-    if _recover_transactions():
-        if os.path.isfile(MARKER_PATH) and _load_requested_skin():
+    recovered = _recover_transactions()
+    pending_menu_settings = os.path.isfile(PENDING_SKIN_SETTINGS_PATH)
+    if os.path.isfile(MARKER_PATH) and (recovered or pending_menu_settings):
+        if _load_requested_skin():
             _apply_pending_skin(monitor)
-        else:
-            configured_skin = _configured_supported_skin()
-            if configured_skin:
-                SKIN_ID = configured_skin
-                _apply_pending_skin(monitor)
+    elif recovered:
+        configured_skin = _configured_supported_skin()
+        if configured_skin:
+            SKIN_ID = configured_skin
+            _apply_pending_skin(monitor)
+    elif pending_menu_settings:
+        configured_skin = _configured_supported_skin()
+        if configured_skin:
+            SKIN_ID = configured_skin
+            _apply_pending_skin(monitor)
+        try:
+            last_marker_time = os.path.getmtime(MARKER_PATH)
+        except OSError:
+            pass
+    if last_marker_time is None:
         try:
             last_marker_time = os.path.getmtime(MARKER_PATH)
         except OSError:
             pass
     _enable_pending_commit_addons()
     last_pending_commit_check = time.monotonic()
+    last_pending_menu_settings_check = time.monotonic()
     while not monitor.abortRequested():
         try:
             marker_time = os.path.getmtime(MARKER_PATH)
@@ -542,6 +645,21 @@ def main():
             last_marker_time = marker_time
             if _load_requested_skin():
                 _apply_pending_skin(monitor)
+        if (
+            os.path.isfile(PENDING_SKIN_SETTINGS_PATH)
+            and time.monotonic() - last_pending_menu_settings_check >= 20
+        ):
+            if SKIN_ID not in SUPPORTED_SKINS:
+                if not (_load_requested_skin() or _configured_supported_skin()):
+                    last_pending_menu_settings_check = time.monotonic()
+                    if monitor.waitForAbort(2):
+                        break
+                    continue
+                if SKIN_ID not in SUPPORTED_SKINS:
+                    SKIN_ID = _configured_supported_skin()
+            if SKIN_ID in SUPPORTED_SKINS:
+                _apply_pending_skin(monitor)
+            last_pending_menu_settings_check = time.monotonic()
         if time.monotonic() - last_pending_commit_check >= 15:
             _enable_pending_commit_addons()
             last_pending_commit_check = time.monotonic()
