@@ -1,0 +1,5 @@
+KingBlap Wizard 1.0.79
+
+- Keep valid packaged G IPTV playlist and guide sync metadata during a private build install.
+- Validate the complete packaged XMLTV guide before treating it as ready.
+- Let an empty packaged guide fetch its first listings after startup without repeatedly resetting IPTV Simple.

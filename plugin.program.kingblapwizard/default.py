@@ -76,6 +76,7 @@ PUBLIC_SKIN_ID = "skin.xonfluence"
 ONEPLAY_REPO_ID = "One.repo"
 WEATHER_ID = "weather.gismeteo"
 PVR_ADDON_ID = "pvr.iptvsimple"
+GIPTV_GUIDE_SOURCE_VERSION = "epgtalk-us-lite-local-v1"
 OPTIKLEAN_ID = "program.optiklean"
 WEATHER_LOCATION = "Thomasville"
 WEATHER_LOCATION_ID = "8771"
@@ -1016,7 +1017,7 @@ def _validate_archive(archive, expected_public=None):
 
 
 def _prime_giptv_startup_state(staged_userdata):
-    """Use packaged exports unless an empty guide needs its first background sync."""
+    """Keep a valid packaged guide's sync metadata without delaying an empty guide."""
     giptv_data = os.path.join(staged_userdata, "addon_data", "plugin.video.giptv", "iptv_simple")
     playlist_path = os.path.join(giptv_data, "playlist.m3u8")
     epg_path = os.path.join(giptv_data, "epg.xml")
@@ -1027,17 +1028,57 @@ def _prime_giptv_startup_state(staged_userdata):
         epg_text = source.read().decode("utf-8")
     has_programmes = False
     try:
-        for _, element in ET.iterparse(epg_path, events=("end",)):
-            if element.tag.rsplit("}", 1)[-1] == "programme":
-                has_programmes = True
-                break
-    except (OSError, ET.ParseError):
+        elements = ET.iterparse(epg_path, events=("start", "end"))
+        _, root = next(elements)
+        if root.tag.rsplit("}", 1)[-1] != "tv":
+            raise ValueError("The packaged guide is not XMLTV.")
+        depth = 1
+        for event, element in elements:
+            if event == "start":
+                depth += 1
+            else:
+                if depth == 2:
+                    if element.tag.rsplit("}", 1)[-1] == "programme":
+                        has_programmes = True
+                    # Keep parsing through the closing tv tag, but discard each
+                    # completed channel/programme so large guides stay bounded.
+                    root.clear()
+                depth -= 1
+    except (OSError, ET.ParseError, StopIteration, ValueError):
         has_programmes = False
+    playlist_hash = hashlib.sha256(playlist_text.encode("utf-8")).hexdigest()
+    epg_hash = hashlib.sha256(epg_text.encode("utf-8")).hexdigest()
+    try:
+        with open(state_path, "r", encoding="utf-8-sig") as source:
+            packaged_state = json.load(source)
+    except (OSError, ValueError, TypeError):
+        packaged_state = {}
+    if not isinstance(packaged_state, dict):
+        packaged_state = {}
+    exports_match = (
+        packaged_state.get("playlist_sha256") == playlist_hash
+        and packaged_state.get("epg_sha256") == epg_hash
+    )
     state = {
-        "last_sync": int(time.time()) if has_programmes else 0,
-        "playlist_sha256": hashlib.sha256(playlist_text.encode("utf-8")).hexdigest(),
-        "epg_sha256": hashlib.sha256(epg_text.encode("utf-8")).hexdigest(),
+        "last_sync": 0,
+        "last_attempt": 0,
+        "playlist_sha256": playlist_hash,
+        "epg_sha256": epg_hash,
     }
+    if has_programmes and exports_match:
+        now = int(time.time())
+        for key in ("last_sync", "last_attempt"):
+            try:
+                timestamp = int(packaged_state.get(key, 0))
+            except (TypeError, ValueError):
+                timestamp = 0
+            state[key] = timestamp if 0 < timestamp <= now else now
+        packaged_version = packaged_state.get("guide_source_version")
+        state["guide_source_version"] = (
+            packaged_version
+            if isinstance(packaged_version, str) and packaged_version
+            else GIPTV_GUIDE_SOURCE_VERSION
+        )
     with open(state_path, "w", encoding="utf-8") as destination:
         json.dump(state, destination, separators=(",", ":"))
         destination.write("\n")
@@ -1062,7 +1103,7 @@ def _download_public_archive(destination, progress, build_id):
             request = urllib.request.Request(
                 url,
                 headers={
-                    "User-Agent": "KingBlap-Wizard/1.0.77 Kodi",
+                    "User-Agent": "KingBlap-Wizard/1.0.79 Kodi",
                     "Accept": "application/octet-stream",
                 },
             )
