@@ -43,7 +43,7 @@
     <article>
 <h1 id="kingblap-kodi-repository">KingBlap Kodi Repository</h1>
 <p>Install individual add-ons from the KingBlap Kodi Repository, or install a complete public or private build with <strong>KingBlap Wizard 1.0.79</strong>. Builds are available for <strong>Kodi 21.3</strong> and <strong>Kodi 22</strong>.</p>
-<p>Updated October 28, 2026.</p>
+<p>Updated October 29, 2026.</p>
 <p><strong>Kodi File Manager source:</strong> https://kingblap.github.io/</p>
 <p><a href="#install-the-repository">Install the repository</a> · <a href="#install-a-public-build">Public builds</a> · <a href="#install-a-private-build">Private builds</a> · <a href="#what-is-included">Contents</a> · <a href="#recent-updates">Recent updates</a> · <a href="#downloads">Downloads</a></p>
 <h2 id="current-builds">Current builds</h2>
@@ -97,6 +97,7 @@
 <li>Review the notice about restoring saved add-on settings, choose <strong>Install build</strong>, and leave Kodi open until installation finishes. If the Wizard asks to reload IPTV Simple, accept the prompt. On Android/Fire TV, Kodi may close; reopen it after it exits.</li>
 </ol>
 <p>The private releases are served through the protected Cloudflare build service. They contain selected saved profiles and may contain account settings and credentials. A private build can replace matching saved profiles on the device. Do not share the access code or private ZIPs.</p>
+<p>The Cloudflare build listing points to private versions <strong>1.0.54</strong> and <strong>1.0.67</strong>, but an existing Kodi installation stays on its installed build until you select and install the matching version in the Wizard. Install after stopping playback, then reopen Kodi to let IPTV Simple load the playlist and guide.</p>
 <p>Wizard 1.0.79 restores Xonfluence menu shortcuts with Kodi&#x27;s skin-specific commands and verifies they were saved after restart. It restores and verifies the IPTV Simple profile for a private archive that includes one, enables the PVR client, and keeps a valid packaged GIPTV sync checkpoint. On Android/Fire TV, reopen Kodi after the Wizard closes it.</p>
 <h2 id="what-is-included">What is included</h2>
 <div class="table-scroll"><table><thead><tr><th>Feature</th><th>Public Kodi 21.3</th><th>Public Kodi 22</th><th>Private Kodi 21.3</th><th>Private Kodi 22</th></tr></thead><tbody>
@@ -129,6 +130,7 @@
 <li><strong>A dependency cannot install:</strong> enable Kodi&#x27;s official add-on repository, check the device&#x27;s connection and free storage, and retry the compatible dependency.</li>
 <li><strong>Installation stops or Kodi closes:</strong> update to Wizard 1.0.79, reopen Kodi and the Wizard. If the install did not finish, retry after checking free space; the Wizard needs room for the download, staged add-ons, and recovery data.</li>
 <li><strong>IPTV Simple is disabled or the guide is empty after a build apply:</strong> update to Wizard 1.0.79, reapply the matching build, and accept the IPTV reload prompt. On Android/Fire TV, reopen Kodi after it closes. The private build&#x27;s first guide fetch starts after Kodi settles; a failed fetch keeps the last working exports and retries later.</li>
+<li><strong>GIPTV still resets or Kodi exits after installing a private build:</strong> check that the installed build is 1.0.54 for Kodi 21.3 or 1.0.67 for Kodi 22. If the problem continues on that version, collect a fresh Kodi log and Android exit reason. The new archives passed package and refresh checks, but have not yet completed a long-running TV test.</li>
 <li><strong>The public IPTV guide or playlist is unavailable:</strong> the public build uses the PC Kodi PVR URLs. They contain credentials and are shared with every ZIP download; contact the owner if they need to be changed.</li>
 <li><strong>Otaku changes version after installation:</strong> the public ZIP installs Otaku 5.3.4, but Kodi can update it later. To keep 5.3.4, open <strong>Add-ons → My add-ons → Video add-ons → Otaku → Information</strong> and turn off <strong>Auto-update</strong> for Otaku.</li>
 </ul>
