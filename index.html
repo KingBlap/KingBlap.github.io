@@ -50,8 +50,8 @@
 <div class="table-scroll"><table><thead><tr><th>Kodi version on your device</th><th>Build</th><th>Build version</th><th>Bundled add-ons</th><th>Access</th></tr></thead><tbody>
 <tr><td>Kodi 21.3</td><td>Public</td><td>1.0.36</td><td>64</td><td>No private code required</td></tr>
 <tr><td>Kodi 22</td><td>Public</td><td>1.0.36</td><td>64</td><td>No private code required</td></tr>
-<tr><td>Kodi 21.3</td><td>Private</td><td>1.0.54</td><td>81</td><td>16-digit private access code</td></tr>
-<tr><td>Kodi 22</td><td>Private</td><td>1.0.67</td><td>78</td><td>16-digit private access code</td></tr>
+<tr><td>Kodi 21.3</td><td>Private</td><td>1.0.55</td><td>81</td><td>16-digit private access code</td></tr>
+<tr><td>Kodi 22</td><td>Private</td><td>1.0.68</td><td>78</td><td>16-digit private access code</td></tr>
 </tbody></table></div>
 <p>Choose the build for the <strong>Kodi version installed on your device</strong>, whether Kodi runs on Windows, Android/Fire TV, Linux, or macOS. The archives contain portable add-on files and settings; Kodi obtains device-specific native components, including IPTV Simple and InputStream components, from a compatible repository when available. Keep Kodi&#x27;s official add-on repository enabled and allow Kodi to install dependencies. A package check cannot guarantee that every third-party service works on every device.</p>
 <p>Public and private releases are separate. Public builds include the PC Kodi IPTV Simple playlist and guide profile plus bundled add-on API defaults from the October 24 backup. <strong>Those URLs contain credentials, and the URLs and API defaults can be read by anyone who downloads a public ZIP.</strong> Saved personal add-on profiles are omitted. Private builds include GIPTV and selected saved add-on settings and are distributed through the protected build service. Back up an existing Kodi setup before installing either type of build.</p>
@@ -93,11 +93,11 @@
 <li>Open the Wizard&#x27;s information page from <strong>Add-ons → open box/package icon → My add-ons → Program add-ons → KingBlap Wizard</strong>, then choose <strong>Configure</strong>.</li>
 <li>Under <strong>Private build access</strong>, enter the <strong>16-digit private build access code</strong>. Leave <strong>Build service URL</strong> at its default unless you received a replacement address.</li>
 <li>Open <strong>Add-ons → Program add-ons → KingBlap Wizard → Private Builds</strong>.</li>
-<li>Select <strong>Private KingBlap Build for Kodi 21.3 (1.0.54)</strong> on Kodi 21.3, or <strong>Private KingBlap Build for Kodi 22 (1.0.67)</strong> on Kodi 22.</li>
+<li>Select <strong>Private KingBlap Build for Kodi 21.3 (1.0.55)</strong> on Kodi 21.3, or <strong>Private KingBlap Build for Kodi 22 (1.0.68)</strong> on Kodi 22.</li>
 <li>Review the notice about restoring saved add-on settings, choose <strong>Install build</strong>, and leave Kodi open until installation finishes. If the Wizard asks to reload IPTV Simple, accept the prompt. On Android/Fire TV, Kodi may close; reopen it after it exits.</li>
 </ol>
 <p>The private releases are served through the protected Cloudflare build service. They contain selected saved profiles and may contain account settings and credentials. A private build can replace matching saved profiles on the device. Do not share the access code or private ZIPs.</p>
-<p>The Cloudflare build listing points to private versions <strong>1.0.54</strong> and <strong>1.0.67</strong>, but an existing Kodi installation stays on its installed build until you select and install the matching version in the Wizard. Install after stopping playback, then reopen Kodi to let IPTV Simple load the playlist and guide.</p>
+<p>The Cloudflare build listing points to private versions <strong>1.0.55</strong> and <strong>1.0.68</strong>, but an existing Kodi installation stays on its installed build until you select and install the matching version in the Wizard. Install after stopping playback, then reopen Kodi to let IPTV Simple load the playlist and guide.</p>
 <p>Wizard 1.0.79 restores Xonfluence menu shortcuts with Kodi&#x27;s skin-specific commands and verifies they were saved after restart. It restores and verifies the IPTV Simple profile for a private archive that includes one, enables the PVR client, and keeps a valid packaged GIPTV sync checkpoint. On Android/Fire TV, reopen Kodi after the Wizard closes it.</p>
 <h2 id="what-is-included">What is included</h2>
 <div class="table-scroll"><table><thead><tr><th>Feature</th><th>Public Kodi 21.3</th><th>Public Kodi 22</th><th>Private Kodi 21.3</th><th>Private Kodi 22</th></tr></thead><tbody>
@@ -116,6 +116,7 @@
 <p>The private video add-ons are Absolution, C.O.S.M.O.S, Dailymotion, Forge, The Gears, Genocide, GIPTV, Homelander, Jet Guide, Loop Guide, Loop TV, Mad Titan Sports, Otaku, TATV2, The Chains, WatchNixtoons2, and Zoro. Kodi 21.3 also includes Prism. The archives include Xonfluence, Gismeteo, artwork, Otaku&#x27;s repository, and supporting libraries. Their saved GIPTV and IPTV Simple setup limits channels and guide data to USA/24/7 groups, and the TV channel view is Preview List. They include selected saved add-on profiles, so installing a private build can replace existing settings. The full private package list is below.</p>
 <h2 id="recent-updates">Recent updates</h2>
 <div class="table-scroll"><table><thead><tr><th>Release</th><th>Change</th></tr></thead><tbody>
+<tr><td><strong>Private Builds 1.0.55 and 1.0.68</strong></td><td>Updated Jet Guide, Mad Titan Sports, WatchNixtoons2, JetExtractors, ResolveURL, CocoScrapers, GearsScrapers, and Up Next from compatible repository packages. Kodi 22 also updates Skin Shortcuts. Otaku stays at 5.3.4 because that is the current version in its configured repository. Saved profiles, the GIPTV reset fix, and the platform-specific IPTV Simple install flow are unchanged. Both archives passed ZIP, dependency, and Wizard 1.0.79 checks; playback and long-running TV stability have not yet been tested with these releases.</td></tr>
 <tr><td><strong>Wizard 1.0.79 / Private Builds 1.0.54 and 1.0.67</strong></td><td>GIPTV keeps its last working playlist and guide when a refresh fails, and a guide-only update no longer disables and restarts IPTV Simple. Portable PVR paths avoid an unnecessary settings rewrite on first startup. The Wizard validates and preserves a complete packaged guide checkpoint; an empty guide still fetches its first listings after startup. Both archives passed ZIP and GIPTV refresh regression checks. The Kodi 22 TV was inspected before release; the new builds have not yet been installed on the TV.</td></tr>
 <tr><td><strong>Wizard 1.0.78 / Public Builds 1.0.36</strong></td><td>Rebuilt both public archives from the October 24 PC backup. Restored Otaku 5.3.4 and its required context database, reset Otaku&#x27;s saved profile for first-run setup, restored Scrubs V2 artwork, and corrected Maneflix and EZ Maintenance+ fanart paths. The Wizard verifies IPTV Simple after installation and shows a clear message if enabling it fails. BlueStacks Kodi 22 installed the build with all 64 packaged add-ons and IPTV Simple enabled; playback and Kodi 21.3 were not runtime-tested.</td></tr>
 <tr><td><strong>Private Builds 1.0.53 and 1.0.66</strong></td><td>Replaced Aerial with Kodi&#x27;s built-in Dim screensaver to address black screens after waking. Kept the filtered USA/24/7 GIPTV playlist and guide, Preview List TV view, and low-memory playback and guide settings. Otaku 5.3.4 was reinstalled from Otaku&#x27;s repository with saved Otaku settings reset; Hooty&#x27;s repository, Xstream Pro, and OptiKlean were removed.</td></tr>
@@ -130,7 +131,7 @@
 <li><strong>A dependency cannot install:</strong> enable Kodi&#x27;s official add-on repository, check the device&#x27;s connection and free storage, and retry the compatible dependency.</li>
 <li><strong>Installation stops or Kodi closes:</strong> update to Wizard 1.0.79, reopen Kodi and the Wizard. If the install did not finish, retry after checking free space; the Wizard needs room for the download, staged add-ons, and recovery data.</li>
 <li><strong>IPTV Simple is disabled or the guide is empty after a build apply:</strong> update to Wizard 1.0.79, reapply the matching build, and accept the IPTV reload prompt. On Android/Fire TV, reopen Kodi after it closes. The private build&#x27;s first guide fetch starts after Kodi settles; a failed fetch keeps the last working exports and retries later.</li>
-<li><strong>GIPTV still resets or Kodi exits after installing a private build:</strong> check that the installed build is 1.0.54 for Kodi 21.3 or 1.0.67 for Kodi 22. If the problem continues on that version, collect a fresh Kodi log and Android exit reason. The new archives passed package and refresh checks, but have not yet completed a long-running TV test.</li>
+<li><strong>GIPTV still resets or Kodi exits after installing a private build:</strong> check that the installed build is 1.0.55 for Kodi 21.3 or 1.0.68 for Kodi 22. If the problem continues on that version, collect a fresh Kodi log and Android exit reason. The new archives passed package and Wizard checks, but have not yet completed a long-running TV test.</li>
 <li><strong>The public IPTV guide or playlist is unavailable:</strong> the public build uses the PC Kodi PVR URLs. They contain credentials and are shared with every ZIP download; contact the owner if they need to be changed.</li>
 <li><strong>Otaku changes version after installation:</strong> the public ZIP installs Otaku 5.3.4, but Kodi can update it later. To keep 5.3.4, open <strong>Add-ons → My add-ons → Video add-ons → Otaku → Information</strong> and turn off <strong>Auto-update</strong> for Otaku.</li>
 </ul>
@@ -229,15 +230,15 @@
 <tr><td><code>plugin.video.genocide</code></td><td>6.9.9</td><td>6.9.9</td></tr>
 <tr><td><code>plugin.video.giptv</code></td><td>3.1.3</td><td>3.1.3</td></tr>
 <tr><td><code>plugin.video.homelander</code></td><td>1.3.1</td><td>1.3.1</td></tr>
-<tr><td><code>plugin.video.jet_guide</code></td><td>0.0.21</td><td>0.0.21</td></tr>
+<tr><td><code>plugin.video.jet_guide</code></td><td>0.0.22</td><td>0.0.22</td></tr>
 <tr><td><code>plugin.video.loopguide</code></td><td>3.8.2</td><td>3.8.2</td></tr>
 <tr><td><code>plugin.video.looptv</code></td><td>26+matrix.2</td><td>26+matrix.2</td></tr>
-<tr><td><code>plugin.video.madtitansports</code></td><td>2.0.45</td><td>2.0.45</td></tr>
+<tr><td><code>plugin.video.madtitansports</code></td><td>2.0.47</td><td>2.0.47</td></tr>
 <tr><td><code>plugin.video.otaku</code></td><td>5.3.4</td><td>5.3.4</td></tr>
 <tr><td><code>plugin.video.prism</code></td><td>5.0.56</td><td>—</td></tr>
 <tr><td><code>plugin.video.tatv2</code></td><td>1.0.3</td><td>1.0.3</td></tr>
 <tr><td><code>plugin.video.thechains</code></td><td>6.0.1</td><td>6.0.1</td></tr>
-<tr><td><code>plugin.video.watchnixtoons2</code></td><td>0.14.23</td><td>0.14.23</td></tr>
+<tr><td><code>plugin.video.watchnixtoons2</code></td><td>0.14.24</td><td>0.14.24</td></tr>
 <tr><td><code>plugin.video.zoro</code></td><td>1.1.9</td><td>1.1.9</td></tr>
 <tr><td><code>program.easyplayerswitch</code></td><td>1.1.0</td><td>1.1.0</td></tr>
 <tr><td><code>repository.otaku</code></td><td>1.0</td><td>1.0</td></tr>
@@ -257,17 +258,17 @@
 <tr><td><code>script.module.certifi</code></td><td>2023.5.7</td><td>2023.5.7</td></tr>
 <tr><td><code>script.module.chainscrapers</code></td><td>1.0.8</td><td>1.0.8</td></tr>
 <tr><td><code>script.module.chardet</code></td><td>5.1.0</td><td>5.1.0</td></tr>
-<tr><td><code>script.module.cocoscrapers</code></td><td>1.0.39</td><td>1.0.39</td></tr>
+<tr><td><code>script.module.cocoscrapers</code></td><td>1.0.45</td><td>1.0.45</td></tr>
 <tr><td><code>script.module.dateutil</code></td><td>2.8.2</td><td>2.8.2</td></tr>
 <tr><td><code>script.module.defusedxml</code></td><td>0.6.0+matrix.1</td><td>0.6.0+matrix.1</td></tr>
 <tr><td><code>script.module.dropbox</code></td><td>10.3.1+matrix.1</td><td>10.3.1+matrix.1</td></tr>
 <tr><td><code>script.module.fenomscrapers</code></td><td>1.5.4</td><td>1.5.4</td></tr>
 <tr><td><code>script.module.future</code></td><td>1.0.0+matrix.1</td><td>1.0.0+matrix.1</td></tr>
-<tr><td><code>script.module.gearsscrapers</code></td><td>1.6.2</td><td>1.6.2</td></tr>
+<tr><td><code>script.module.gearsscrapers</code></td><td>1.6.3</td><td>1.6.3</td></tr>
 <tr><td><code>script.module.homelanderscrapers</code></td><td>2.0.4</td><td>2.0.4</td></tr>
 <tr><td><code>script.module.idna</code></td><td>3.10.0</td><td>3.10.0</td></tr>
 <tr><td><code>script.module.inputstreamhelper</code></td><td>0.8.6</td><td>0.8.6</td></tr>
-<tr><td><code>script.module.jetextractors</code></td><td>3.3.27</td><td>3.3.27</td></tr>
+<tr><td><code>script.module.jetextractors</code></td><td>3.3.30</td><td>3.3.30</td></tr>
 <tr><td><code>script.module.kodi-six</code></td><td>0.1.3.1</td><td>0.1.3.1</td></tr>
 <tr><td><code>script.module.microjenscrapers</code></td><td>1.4</td><td>1.4</td></tr>
 <tr><td><code>script.module.myaccounts</code></td><td>1.1.3</td><td>1.1.3</td></tr>
@@ -278,7 +279,7 @@
 <tr><td><code>script.module.pytz</code></td><td>2023.3.0+matrix.1</td><td>2023.3.0+matrix.1</td></tr>
 <tr><td><code>script.module.qrcode</code></td><td>6.1.0+matrix.3</td><td>6.1.0+matrix.3</td></tr>
 <tr><td><code>script.module.requests</code></td><td>2.31.0</td><td>2.31.0</td></tr>
-<tr><td><code>script.module.resolveurl</code></td><td>5.1.211</td><td>5.1.211</td></tr>
+<tr><td><code>script.module.resolveurl</code></td><td>5.1.212</td><td>5.1.212</td></tr>
 <tr><td><code>script.module.routing</code></td><td>0.2.3+matrix.1</td><td>0.2.3+matrix.1</td></tr>
 <tr><td><code>script.module.simpleeval</code></td><td>0.9.13</td><td>—</td></tr>
 <tr><td><code>script.module.simplejson</code></td><td>3.19.1+matrix.1</td><td>3.19.1+matrix.1</td></tr>
@@ -290,9 +291,9 @@
 <tr><td><code>script.module.tzlocal</code></td><td>5.0.1</td><td>5.0.1</td></tr>
 <tr><td><code>script.module.unidecode</code></td><td>1.3.6</td><td>1.3.6</td></tr>
 <tr><td><code>script.module.urllib3</code></td><td>2.2.3</td><td>2.2.3</td></tr>
-<tr><td><code>script.skinshortcuts</code></td><td>2.0.3</td><td>3.0.4</td></tr>
+<tr><td><code>script.skinshortcuts</code></td><td>2.0.3</td><td>3.0.5</td></tr>
 <tr><td><code>script.xbmcbackup</code></td><td>1.7.3</td><td>1.7.3</td></tr>
-<tr><td><code>service.upnext</code></td><td>1.1.9+matrix.1</td><td>1.1.9+matrix.1</td></tr>
+<tr><td><code>service.upnext</code></td><td>1.3.0</td><td>1.3.0</td></tr>
 <tr><td><code>service.xbmc.versioncheck</code></td><td>0.5.30+matrix.1</td><td>0.5.30+matrix.1</td></tr>
 <tr><td><code>skin.xonfluence</code></td><td>—</td><td>6.0.8</td></tr>
 <tr><td><code>skin.xonfluence.skinbase</code></td><td>5.1</td><td>—</td></tr>
