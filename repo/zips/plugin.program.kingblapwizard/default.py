@@ -2,6 +2,7 @@
 import json
 import hashlib
 import html
+from datetime import datetime, timedelta, timezone
 import os
 import re
 import shutil
@@ -76,6 +77,7 @@ PUBLIC_SKIN_ID = "skin.xonfluence"
 ONEPLAY_REPO_ID = "One.repo"
 WEATHER_ID = "weather.gismeteo"
 PVR_ADDON_ID = "pvr.iptvsimple"
+GIPTV_GUIDE_SOURCE_VERSION = "epgtalk-us-lite-local-v1"
 OPTIKLEAN_ID = "program.optiklean"
 WEATHER_LOCATION = "Thomasville"
 WEATHER_LOCATION_ID = "8771"
@@ -1015,29 +1017,198 @@ def _validate_archive(archive, expected_public=None):
     )
 
 
-def _prime_giptv_startup_state(staged_userdata):
-    """Use packaged exports unless an empty guide needs its first background sync."""
+def _file_sha256(path):
+    digest = hashlib.sha256()
+    with open(path, "rb") as source:
+        for chunk in iter(lambda: source.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _xmltv_time(value):
+    value = (value or "").strip()
+    for format_string in ("%Y%m%d%H%M%S %z", "%Y%m%d%H%M%S"):
+        try:
+            result = datetime.strptime(value, format_string)
+            return result if result.tzinfo else result.replace(tzinfo=timezone.utc)
+        except ValueError:
+            pass
+    return None
+
+
+def _current_guide_matches_playlist(playlist_path, epg_path, now=None):
+    """Accept only a complete, current guide for the packaged USA/24/7 lineup."""
+    allowed_ids = set()
+    with open(playlist_path, "r", encoding="utf-8-sig") as source:
+        for line in source:
+            if line.startswith("#EXTINF:"):
+                match = re.search(r'tvg-id="([^"]*)"', line, re.I)
+                if match:
+                    channel_id = html.unescape(match.group(1)).strip()
+                    if channel_id and not channel_id.startswith("giptv:"):
+                        allowed_ids.add(channel_id)
+    if not allowed_ids:
+        return False
+    current_time = datetime.fromtimestamp(
+        time.time() if now is None else float(now), timezone.utc
+    )
+    # The packaged GIPTV profile refreshes every six hours. Require two more
+    # hours of listings so a delayed refresh does not leave a blank guide.
+    future_time = current_time + timedelta(hours=8)
+    channels = set()
+    current_programmes = set()
+    future_programmes = set()
+    root = None
+    try:
+        for event, element in ET.iterparse(epg_path, events=("start", "end")):
+            name = element.tag.rsplit("}", 1)[-1]
+            if root is None and event == "start":
+                if name != "tv":
+                    return False
+                root = element
+            elif event == "end" and name in ("channel", "programme"):
+                channel_id = (element.get("id" if name == "channel" else "channel") or "").strip()
+                if name == "channel":
+                    if channel_id in allowed_ids:
+                        channels.add(channel_id)
+                elif channel_id in allowed_ids:
+                    start = _xmltv_time(element.get("start"))
+                    stop = _xmltv_time(element.get("stop"))
+                    if start is not None and stop is not None and start <= current_time < stop:
+                        current_programmes.add(channel_id)
+                    if start is not None and stop is not None and start <= future_time < stop:
+                        future_programmes.add(channel_id)
+                element.clear()
+                root.clear()
+        # A large lineup with one surviving programme would still look empty
+        # to most viewers. Small test or custom lineups need just one match.
+        minimum_current = min(10, max(1, len(allowed_ids) // 20))
+        return (
+            root is not None
+            and len(channels & current_programmes) >= minimum_current
+            and len(channels & future_programmes) >= minimum_current
+        )
+    except (OSError, ET.ParseError, ValueError, OverflowError):
+        return False
+
+
+def _set_staged_giptv_instance_enabled(staged_userdata, enabled):
+    directory = os.path.join(staged_userdata, "addon_data", PVR_ADDON_ID)
+    candidates = [
+        os.path.join(directory, name)
+        for name in os.listdir(directory)
+        if re.fullmatch(r"instance-settings-\d+\.xml", name)
+    ]
+    if len(candidates) != 1:
+        raise ValueError("The staged private build must contain one IPTV Simple instance.")
+    path = candidates[0]
+    root = ET.parse(path).getroot()
+    values = {node.get("id"): node for node in root.findall("setting")}
+    if root.tag != "settings" or (values.get("kodi_addon_instance_name") is None
+                                  or values["kodi_addon_instance_name"].text != "GIPTV"):
+        raise ValueError("The staged IPTV Simple instance is not managed by GIPTV.")
+    node = values.get("kodi_addon_instance_enabled")
+    if node is None:
+        raise ValueError("The staged IPTV Simple instance has no enabled setting.")
+    node.text = "true" if enabled else "false"
+    if enabled:
+        node.set("default", "true")
+    else:
+        # Kodi treats default="true" as a request to use the schema value,
+        # which would re-enable this instance despite the saved false text.
+        node.attrib.pop("default", None)
+    ET.ElementTree(root).write(path, encoding="utf-8", xml_declaration=True)
+
+
+def _prepare_giptv_guide_startup(staged_userdata, active_data_root, now=None):
+    """Carry a useful current guide across upgrades, or gate the first PVR scan."""
+    staged_export = os.path.join(staged_userdata, "addon_data", "plugin.video.giptv", "iptv_simple")
+    playlist_path = os.path.join(staged_export, "playlist.m3u8")
+    guide_path = os.path.join(staged_export, "epg.xml")
+    guide_ready = _current_guide_matches_playlist(playlist_path, guide_path, now=now)
+    candidate = guide_path + ".previous"
+    if not guide_ready:
+        active_guide = os.path.join(active_data_root, "plugin.video.giptv", "iptv_simple", "epg.xml")
+        try:
+            if os.path.getsize(active_guide) <= 128 * 1024 * 1024:
+                shutil.copyfile(active_guide, candidate)
+                if _current_guide_matches_playlist(playlist_path, candidate, now=now):
+                    os.replace(candidate, guide_path)
+                    guide_ready = True
+        except OSError as exc:
+            _log("Could not preserve the existing GIPTV guide ({}).".format(exc.__class__.__name__), xbmc.LOGWARNING)
+        finally:
+            if os.path.exists(candidate):
+                os.remove(candidate)
+    if not guide_ready:
+        _set_staged_giptv_instance_enabled(staged_userdata, False)
+        _log("Deferred the GIPTV IPTV Simple instance until a current guide is ready.")
+    else:
+        _log("Preserved a current GIPTV guide matching the staged playlist.")
+    _prime_giptv_startup_state(staged_userdata, verified_current_guide=guide_ready)
+    return guide_ready
+
+
+def _prime_giptv_startup_state(staged_userdata, verified_current_guide=False):
+    """Keep a valid packaged guide's sync metadata without delaying an empty guide."""
     giptv_data = os.path.join(staged_userdata, "addon_data", "plugin.video.giptv", "iptv_simple")
     playlist_path = os.path.join(giptv_data, "playlist.m3u8")
     epg_path = os.path.join(giptv_data, "epg.xml")
     state_path = os.path.join(giptv_data, "sync_state.json")
-    with open(playlist_path, "rb") as source:
-        playlist_text = source.read().decode("utf-8")
-    with open(epg_path, "rb") as source:
-        epg_text = source.read().decode("utf-8")
-    has_programmes = False
+    has_programmes = bool(verified_current_guide)
+    if not has_programmes:
+        try:
+            elements = ET.iterparse(epg_path, events=("start", "end"))
+            _, root = next(elements)
+            if root.tag.rsplit("}", 1)[-1] != "tv":
+                raise ValueError("The packaged guide is not XMLTV.")
+            depth = 1
+            for event, element in elements:
+                if event == "start":
+                    depth += 1
+                else:
+                    if depth == 2:
+                        if element.tag.rsplit("}", 1)[-1] == "programme":
+                            has_programmes = True
+                        # Keep parsing through the closing tv tag, but discard each
+                        # completed channel/programme so large guides stay bounded.
+                        root.clear()
+                    depth -= 1
+        except (OSError, ET.ParseError, StopIteration, ValueError):
+            has_programmes = False
+    playlist_hash = _file_sha256(playlist_path)
+    epg_hash = _file_sha256(epg_path)
     try:
-        for _, element in ET.iterparse(epg_path, events=("end",)):
-            if element.tag.rsplit("}", 1)[-1] == "programme":
-                has_programmes = True
-                break
-    except (OSError, ET.ParseError):
-        has_programmes = False
+        with open(state_path, "r", encoding="utf-8-sig") as source:
+            packaged_state = json.load(source)
+    except (OSError, ValueError, TypeError):
+        packaged_state = {}
+    if not isinstance(packaged_state, dict):
+        packaged_state = {}
+    exports_match = (
+        packaged_state.get("playlist_sha256") == playlist_hash
+        and packaged_state.get("epg_sha256") == epg_hash
+    )
     state = {
-        "last_sync": int(time.time()) if has_programmes else 0,
-        "playlist_sha256": hashlib.sha256(playlist_text.encode("utf-8")).hexdigest(),
-        "epg_sha256": hashlib.sha256(epg_text.encode("utf-8")).hexdigest(),
+        "last_sync": 0,
+        "last_attempt": 0,
+        "playlist_sha256": playlist_hash,
+        "epg_sha256": epg_hash,
     }
+    if has_programmes and (exports_match or verified_current_guide):
+        now = int(time.time())
+        for key in ("last_sync", "last_attempt"):
+            try:
+                timestamp = int(packaged_state.get(key, 0))
+            except (TypeError, ValueError):
+                timestamp = 0
+            state[key] = now if verified_current_guide else (timestamp if 0 < timestamp <= now else now)
+        packaged_version = packaged_state.get("guide_source_version")
+        state["guide_source_version"] = (
+            packaged_version
+            if isinstance(packaged_version, str) and packaged_version
+            else GIPTV_GUIDE_SOURCE_VERSION
+        )
     with open(state_path, "w", encoding="utf-8") as destination:
         json.dump(state, destination, separators=(",", ":"))
         destination.write("\n")
@@ -1062,7 +1233,7 @@ def _download_public_archive(destination, progress, build_id):
             request = urllib.request.Request(
                 url,
                 headers={
-                    "User-Agent": "KingBlap-Wizard/1.0.77 Kodi",
+                    "User-Agent": "KingBlap-Wizard/1.0.80 Kodi",
                     "Accept": "application/octet-stream",
                 },
             )
@@ -1624,6 +1795,9 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
     original_screensaver_mode = None
     original_addon_update_mode = None
     original_stream_buffer_memory = None
+    original_epg_playback_update_setting = None
+    epg_playback_update_changed = False
+    guide_ready_at_install = None
     original_service_states = {}
     service_addon_ids = set()
     optiklean_enable_warning = None
@@ -1825,7 +1999,12 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                     raise ValueError("The public build's IPTV Simple playlist or guide source is empty.")
                 _log("Prepared the public IPTV Simple playlist and guide settings for restoration.")
             if "plugin.video.giptv" in packages:
-                _prime_giptv_startup_state(staged_userdata)
+                if public_build:
+                    _prime_giptv_startup_state(staged_userdata)
+                else:
+                    guide_ready_at_install = _prepare_giptv_guide_startup(
+                        staged_userdata, data_root
+                    )
 
         for addon_id, version in packages.items():
             manifest_path = _safe_target(staged_addons, "{}/addon.xml".format(addon_id))
@@ -2026,6 +2205,21 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
             if _get_setting("general.addonupdates") != 0:
                 raise RuntimeError("Kodi did not enable automatic add-on updates.")
             _log("Enabled automatic updates for compatible add-ons from enabled repositories.")
+        if not public_build and "plugin.video.giptv" in packages:
+            try:
+                original_epg_playback_update_setting = _get_setting(
+                    "epg.preventupdateswhileplayingtv"
+                )
+                if original_epg_playback_update_setting is False:
+                    _set_setting("epg.preventupdateswhileplayingtv", True)
+                    epg_playback_update_changed = True
+                    if _get_setting("epg.preventupdateswhileplayingtv") is not True:
+                        raise RuntimeError("Kodi did not retain the live-TV EPG update setting.")
+                _log("EPG updates are paused while live TV is playing.")
+            except Exception as epg_setting_exc:
+                _log("Could not enable the live-TV EPG update pause: {}.".format(
+                    epg_setting_exc
+                ), xbmc.LOGWARNING)
         if skin_colors is not None or skin_font is not None:
             _log("Applied private Xonfluence appearance: colors={!r}, font={!r}.".format(
                 skin_colors, skin_font
@@ -2164,6 +2358,10 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
             success_message += "\nAutomatic add-on updates are enabled for compatible add-ons from enabled repositories."
         if restart_after_pvr and not pvr_enable_error:
             success_message += "\nKodi must restart so IPTV Simple can load the saved playlist and guide settings."
+        if guide_ready_at_install is False:
+            success_message += (
+                "\nThe TV guide will load after GIPTV finishes its first guide sync."
+            )
         if pvr_enable_error:
             success_message += (
                 "\nIPTV Simple was not enabled: {}. Check Add-ons > My add-ons > PVR clients "
@@ -2218,6 +2416,17 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                 except Exception as restore_exc:
                     rollback_complete = False
                     _log("Could not restore Kodi's previous stream-buffer memory setting: {}".format(
+                        restore_exc
+                    ), xbmc.LOGERROR)
+            if epg_playback_update_changed and original_epg_playback_update_setting is not None:
+                try:
+                    _set_setting(
+                        "epg.preventupdateswhileplayingtv",
+                        original_epg_playback_update_setting,
+                    )
+                except Exception as restore_exc:
+                    rollback_complete = False
+                    _log("Could not restore Kodi's previous live-TV EPG update setting: {}".format(
                         restore_exc
                     ), xbmc.LOGERROR)
             if original_weather_settings is not None:

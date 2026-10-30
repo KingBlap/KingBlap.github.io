@@ -1,0 +1,7 @@
+KingBlap Wizard 1.0.80
+
+- Private builds preserve a complete, current GIPTV guide on upgrade when it matches the staged USA/24/7 playlist and has at least eight hours of listings.
+- Fresh private installs keep the GIPTV IPTV Simple instance inactive until the guide has populated. The PVR add-on itself remains enabled.
+- Private installs pause Kodi guide updates during live TV playback and restore the previous setting if installation rolls back.
+- Guide validation and hashing stream through files to reduce peak memory use during installation.
+- Public build behavior is unchanged.
