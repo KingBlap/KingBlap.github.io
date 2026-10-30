@@ -1,6 +1,6 @@
 # KingBlap Kodi Repository
 
-Install individual add-ons from the KingBlap Kodi Repository, or install a complete public or private build with **KingBlap Wizard 1.0.79**. Builds are available for **Kodi 21.3** and **Kodi 22**.
+Install individual add-ons from the KingBlap Kodi Repository, or install a complete public or private build with **KingBlap Wizard 1.0.80**. Builds are available for **Kodi 21.3** and **Kodi 22**.
 
 Updated October 29, 2026.
 
@@ -14,8 +14,8 @@ Updated October 29, 2026.
 | --- | --- | --- | --- | --- |
 | Kodi 21.3 | Public | 1.0.36 | 64 | No private code required |
 | Kodi 22 | Public | 1.0.36 | 64 | No private code required |
-| Kodi 21.3 | Private | 1.0.56 | 81 | 16-digit private access code |
-| Kodi 22 | Private | 1.0.69 | 78 | 16-digit private access code |
+| Kodi 21.3 | Private | 1.0.57 | 81 | 16-digit private access code |
+| Kodi 22 | Private | 1.0.70 | 78 | 16-digit private access code |
 
 Choose the build for the **Kodi version installed on your device**, whether Kodi runs on Windows, Android/Fire TV, Linux, or macOS. The archives contain portable add-on files and settings; Kodi obtains device-specific native components, including IPTV Simple and InputStream components, from a compatible repository when available. Keep Kodi's official add-on repository enabled and allow Kodi to install dependencies. A package check cannot guarantee that every third-party service works on every device.
 
@@ -38,9 +38,9 @@ Menu positions can vary by skin. Kodi documents its [File Manager](https://kodi.
 2. Select **repository.kingblap-1.0.0.zip** and wait for the repository installed notification.
 3. Open **Install from repository → KingBlap Kodi Repository → Program add-ons → KingBlap Wizard**.
 4. Select **Install**, accept dependency prompts, and wait for the Wizard installed notification.
-5. Open **Add-ons → Program add-ons → KingBlap Wizard**. The current Wizard version is **1.0.79**.
+5. Open **Add-ons → Program add-ons → KingBlap Wizard**. The current Wizard version is **1.0.80**.
 
-If you downloaded the repository ZIP to a computer, USB drive, or your device's Downloads folder, browse to that file from **Install from zip file** instead of using the File Manager source. The [Wizard 1.0.79 ZIP](https://kingblap.github.io/repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.79.zip) can also be installed directly from the same Add-ons menu.
+If you downloaded the repository ZIP to a computer, USB drive, or your device's Downloads folder, browse to that file from **Install from zip file** instead of using the File Manager source. The [Wizard 1.0.80 ZIP](https://kingblap.github.io/repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.80.zip) can also be installed directly from the same Add-ons menu.
 
 ### Install individual add-ons
 
@@ -48,7 +48,7 @@ Open **Add-ons → open box/package icon → Install from repository → KingBla
 
 ## Install a public build
 
-1. Install or update **KingBlap Wizard 1.0.79** using the instructions above.
+1. Install or update **KingBlap Wizard 1.0.80** using the instructions above.
 2. Open **Add-ons → Program add-ons → KingBlap Wizard → Public Builds**.
 3. Select **Public KingBlap Build for Kodi 21.3 1.0.36 (download)** on Kodi 21.3, or **Public KingBlap Build for Kodi 22 1.0.36 (download)** on Kodi 22.
 4. Review the installation notice and choose **Install build**.
@@ -64,18 +64,18 @@ The October 24 public package includes Aliunde K19, Gratis Red, Scrubs V2, and t
 
 The private build access code is separate from any IPTV username or password. Keep the code and private archives with their intended recipients.
 
-1. Install or update **KingBlap Wizard 1.0.79** using the repository instructions above.
+1. Install or update **KingBlap Wizard 1.0.80** using the repository instructions above.
 2. Open the Wizard's information page from **Add-ons → open box/package icon → My add-ons → Program add-ons → KingBlap Wizard**, then choose **Configure**.
 3. Under **Private build access**, enter the **16-digit private build access code**. Leave **Build service URL** at its default unless you received a replacement address.
 4. Open **Add-ons → Program add-ons → KingBlap Wizard → Private Builds**.
-5. Select **Private KingBlap Build for Kodi 21.3 (1.0.56)** on Kodi 21.3, or **Private KingBlap Build for Kodi 22 (1.0.69)** on Kodi 22.
+5. Select **Private KingBlap Build for Kodi 21.3 (1.0.57)** on Kodi 21.3, or **Private KingBlap Build for Kodi 22 (1.0.70)** on Kodi 22.
 6. Review the notice about restoring saved add-on settings, choose **Install build**, and leave Kodi open until installation finishes. If the Wizard asks to reload IPTV Simple, accept the prompt. On Android/Fire TV, Kodi may close; reopen it after it exits.
 
 The private releases are served through the protected Cloudflare build service. They contain selected saved profiles and may contain account settings and credentials. A private build can replace matching saved profiles on the device. Do not share the access code or private ZIPs.
 
-The Cloudflare build listing points to private versions **1.0.56** and **1.0.69**, but an existing Kodi installation stays on its installed build until you select and install the matching version in the Wizard. Install after stopping playback, then reopen Kodi to let IPTV Simple load the playlist and guide.
+The Cloudflare build listing points to private versions **1.0.57** and **1.0.70**, but an existing Kodi installation stays on its installed build until you select and install the matching version in the Wizard. Install after stopping playback, then reopen Kodi. The private guide starts when GIPTV has complete current listings; the first sync may take several minutes.
 
-Wizard 1.0.79 restores Xonfluence menu shortcuts with Kodi's skin-specific commands and verifies they were saved after restart. It restores and verifies the IPTV Simple profile for a private archive that includes one, enables the PVR client, and keeps a valid packaged GIPTV sync checkpoint. On Android/Fire TV, reopen Kodi after the Wizard closes it.
+Wizard 1.0.80 restores Xonfluence menu shortcuts with Kodi's skin-specific commands and verifies they were saved after restart. For a private update, it keeps an existing current guide that matches the playlist. On a first install with no valid guide, it keeps the IPTV Simple add-on enabled but waits to activate its GIPTV instance until GIPTV finishes the guide. Guide imports pause during live TV playback. On Android/Fire TV, reopen Kodi after the Wizard closes it.
 
 ## What is included
 
@@ -101,6 +101,7 @@ The private video add-ons are Absolution, C.O.S.M.O.S, Dailymotion, Forge, The G
 
 | Release | Change |
 | --- | --- |
+| **Wizard 1.0.80 / Private Builds 1.0.57 and 1.0.70** | Prevented IPTV Simple from scanning the packaged empty guide on first install. The Wizard carries a current matching guide into an update; otherwise GIPTV activates the PVR instance after a valid guide is ready. Guide-only changes reload PVR after playback stops, and short guides refresh before their listings expire. Kodi pauses guide imports while live TV plays. Both ZIPs passed archive and Wizard validation plus 21 guide startup regression tests. The Fire Stick's current guide matched the Kodi 22 staged playlist in a read-only check; these new archives have not been installed on the devices yet. |
 | **Private Builds 1.0.56 and 1.0.69** | Updated Loop Guide to 3.8.4 and the paired Account Manager Lite/Account Viewer packages to 1.2.1/1.1.6. The earlier eight Kodi 21.3 and nine Kodi 22 package updates remain included. The newer C.O.S.M.O.S release was held for device testing because it adds substantially more artwork and more frequent background checks on a TV that has reported memory pressure. Both archives passed ZIP, dependency, and Wizard 1.0.79 validation; playback and long-running TV stability remain to be tested. |
 | **Private Builds 1.0.55 and 1.0.68** | Updated Jet Guide, Mad Titan Sports, WatchNixtoons2, JetExtractors, ResolveURL, CocoScrapers, GearsScrapers, and Up Next from compatible repository packages. Kodi 22 also updates Skin Shortcuts. Otaku stays at 5.3.4 because that is the current version in its configured repository. Saved profiles, the GIPTV reset fix, and the platform-specific IPTV Simple install flow are unchanged. Both archives passed ZIP, dependency, and Wizard 1.0.79 checks; playback and long-running TV stability have not yet been tested with these releases. |
 | **Wizard 1.0.79 / Private Builds 1.0.54 and 1.0.67** | GIPTV keeps its last working playlist and guide when a refresh fails, and a guide-only update no longer disables and restarts IPTV Simple. Portable PVR paths avoid an unnecessary settings rewrite on first startup. The Wizard validates and preserves a complete packaged guide checkpoint; an empty guide still fetches its first listings after startup. Both archives passed ZIP and GIPTV refresh regression checks. The Kodi 22 TV was inspected before release; the new builds have not yet been installed on the TV. |
@@ -110,23 +111,23 @@ The private video add-ons are Absolution, C.O.S.M.O.S, Dailymotion, Forge, The G
 
 Updating the Wizard alone does not apply a newer full build. Reopen **Public Builds** or **Private Builds** and install the build matching your Kodi version.
 
-Older public download parts remain available for existing Wizard installs. Update the Wizard to 1.0.79 and choose public build 1.0.36 to use the current archives.
+Older public download parts remain available for existing Wizard installs. Update the Wizard to 1.0.80 and choose public build 1.0.36 to use the current archives.
 
 ## Help with installation
 
-- **A new build does not appear:** update KingBlap Wizard to 1.0.79, reopen the build list, and check Kodi's version under **Settings → System information**.
+- **A new build does not appear:** update KingBlap Wizard to 1.0.80, reopen the build list, and check Kodi's version under **Settings → System information**.
 - **Kodi version mismatch:** use the Kodi 21.3 build on Kodi 21.3 or the Kodi 22 build on Kodi 22.
 - **A dependency cannot install:** enable Kodi's official add-on repository, check the device's connection and free storage, and retry the compatible dependency.
-- **Installation stops or Kodi closes:** update to Wizard 1.0.79, reopen Kodi and the Wizard. If the install did not finish, retry after checking free space; the Wizard needs room for the download, staged add-ons, and recovery data.
-- **IPTV Simple is disabled or the guide is empty after a build apply:** update to Wizard 1.0.79, reapply the matching build, and accept the IPTV reload prompt. On Android/Fire TV, reopen Kodi after it closes. The private build's first guide fetch starts after Kodi settles; a failed fetch keeps the last working exports and retries later.
-- **GIPTV still resets or Kodi exits after installing a private build:** check that the installed build is 1.0.56 for Kodi 21.3 or 1.0.69 for Kodi 22. If the problem continues on that version, collect a fresh Kodi log and Android exit reason. The new archives passed package and Wizard checks, but have not yet completed a long-running TV test.
+- **Installation stops or Kodi closes:** update to Wizard 1.0.80, reopen Kodi and the Wizard. If the install did not finish, retry after checking free space; the Wizard needs room for the download, staged add-ons, and recovery data.
+- **IPTV Simple is enabled but the guide is empty after a private build apply:** reopen Kodi and allow GIPTV time to fetch current listings. A fresh private install keeps the GIPTV PVR instance inactive until the guide is ready; a failed fetch retries without replacing a working guide. If it remains empty, check the Kodi log for the GIPTV sync error.
+- **GIPTV still resets or Kodi exits after installing a private build:** check that the installed build is 1.0.57 for Kodi 21.3 or 1.0.70 for Kodi 22, with Wizard 1.0.80. If the problem continues, collect a fresh Kodi log and Android exit reason. The new archives passed package and Wizard checks, but have not yet completed a long-running device test.
 - **The public IPTV guide or playlist is unavailable:** the public build uses the PC Kodi PVR URLs. They contain credentials and are shared with every ZIP download; contact the owner if they need to be changed.
 - **Otaku changes version after installation:** the public ZIP installs Otaku 5.3.4, but Kodi can update it later. To keep 5.3.4, open **Add-ons → My add-ons → Video add-ons → Otaku → Information** and turn off **Auto-update** for Otaku.
 
 ## Downloads
 
 - [Repository installer 1.0.0](https://kingblap.github.io/repository.kingblap-1.0.0.zip)
-- [KingBlap Wizard 1.0.79](https://kingblap.github.io/repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.79.zip)
+- [KingBlap Wizard 1.0.80](https://kingblap.github.io/repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.80.zip)
 - [Current public and private build list](https://kingblap.github.io/builds.txt)
 - [Repository add-on catalog](https://kingblap.github.io/repo/zips/addons.xml)
 - [Repository website and installation guide](https://kingblap.github.io/)
