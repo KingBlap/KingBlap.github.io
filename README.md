@@ -2,7 +2,7 @@
 
 Install individual add-ons from the KingBlap Kodi Repository, or install a complete public or private build with **KingBlap Wizard 1.0.80**. Builds are available for **Kodi 21.3** and **Kodi 22**.
 
-Updated October 29, 2026.
+Updated October 30, 2026.
 
 **Kodi File Manager source:** https://kingblap.github.io/
 
@@ -14,8 +14,8 @@ Updated October 29, 2026.
 | --- | --- | --- | --- | --- |
 | Kodi 21.3 | Public | 1.0.36 | 64 | No private code required |
 | Kodi 22 | Public | 1.0.36 | 64 | No private code required |
-| Kodi 21.3 | Private | 1.0.57 | 81 | 16-digit private access code |
-| Kodi 22 | Private | 1.0.70 | 78 | 16-digit private access code |
+| Kodi 21.3 | Private | 1.0.58 | 81 | 16-digit private access code |
+| Kodi 22 | Private | 1.0.71 | 78 | 16-digit private access code |
 
 Choose the build for the **Kodi version installed on your device**, whether Kodi runs on Windows, Android/Fire TV, Linux, or macOS. The archives contain portable add-on files and settings; Kodi obtains device-specific native components, including IPTV Simple and InputStream components, from a compatible repository when available. Keep Kodi's official add-on repository enabled and allow Kodi to install dependencies. A package check cannot guarantee that every third-party service works on every device.
 
@@ -68,12 +68,12 @@ The private build access code is separate from any IPTV username or password. Ke
 2. Open the Wizard's information page from **Add-ons → open box/package icon → My add-ons → Program add-ons → KingBlap Wizard**, then choose **Configure**.
 3. Under **Private build access**, enter the **16-digit private build access code**. Leave **Build service URL** at its default unless you received a replacement address.
 4. Open **Add-ons → Program add-ons → KingBlap Wizard → Private Builds**.
-5. Select **Private KingBlap Build for Kodi 21.3 (1.0.57)** on Kodi 21.3, or **Private KingBlap Build for Kodi 22 (1.0.70)** on Kodi 22.
+5. Select **Private KingBlap Build for Kodi 21.3 (1.0.58)** on Kodi 21.3, or **Private KingBlap Build for Kodi 22 (1.0.71)** on Kodi 22.
 6. Review the notice about restoring saved add-on settings, choose **Install build**, and leave Kodi open until installation finishes. If the Wizard asks to reload IPTV Simple, accept the prompt. On Android/Fire TV, Kodi may close; reopen it after it exits.
 
 The private releases are served through the protected Cloudflare build service. They contain selected saved profiles and may contain account settings and credentials. A private build can replace matching saved profiles on the device. Do not share the access code or private ZIPs.
 
-The Cloudflare build listing points to private versions **1.0.57** and **1.0.70**, but an existing Kodi installation stays on its installed build until you select and install the matching version in the Wizard. Install after stopping playback, then reopen Kodi. The private guide starts when GIPTV has complete current listings; the first sync may take several minutes.
+The Cloudflare build listing points to private versions **1.0.58** and **1.0.71**, but an existing Kodi installation stays on its installed build until you select and install the matching version in the Wizard. Install after stopping playback, then reopen Kodi. The private guide starts when GIPTV has complete current listings; the first sync may take several minutes.
 
 Wizard 1.0.80 restores Xonfluence menu shortcuts with Kodi's skin-specific commands and verifies they were saved after restart. For a private update, it keeps an existing current guide that matches the playlist. On a first install with no valid guide, it keeps the IPTV Simple add-on enabled but waits to activate its GIPTV instance until GIPTV finishes the guide. Guide imports pause during live TV playback. On Android/Fire TV, reopen Kodi after the Wizard closes it.
 
@@ -101,6 +101,7 @@ The private video add-ons are Absolution, C.O.S.M.O.S, Dailymotion, Forge, The G
 
 | Release | Change |
 | --- | --- |
+| **Private Builds 1.0.58 and 1.0.71** | Repaired GIPTV's saved settings format for Kodi's version 2 loader and removed stale default markers that caused saved values to reset. The packages preserve their selected account fields and USA/24/7 group selection. ZIP integrity and Wizard 1.0.80 archive checks passed; the repaired builds have not yet been installed and verified on the Fire Stick. |
 | **Wizard 1.0.80 / Private Builds 1.0.57 and 1.0.70** | Prevented IPTV Simple from scanning the packaged empty guide on first install. The Wizard carries a current matching guide into an update; otherwise GIPTV activates the PVR instance after a valid guide is ready. Guide-only changes reload PVR after playback stops, and short guides refresh before their listings expire. Kodi pauses guide imports while live TV plays. Both ZIPs passed archive and Wizard validation plus 21 guide startup regression tests. The Fire Stick's current guide matched the Kodi 22 staged playlist in a read-only check; these new archives have not been installed on the devices yet. |
 | **Private Builds 1.0.56 and 1.0.69** | Updated Loop Guide to 3.8.4 and the paired Account Manager Lite/Account Viewer packages to 1.2.1/1.1.6. The earlier eight Kodi 21.3 and nine Kodi 22 package updates remain included. The newer C.O.S.M.O.S release was held for device testing because it adds substantially more artwork and more frequent background checks on a TV that has reported memory pressure. Both archives passed ZIP, dependency, and Wizard 1.0.79 validation; playback and long-running TV stability remain to be tested. |
 | **Private Builds 1.0.55 and 1.0.68** | Updated Jet Guide, Mad Titan Sports, WatchNixtoons2, JetExtractors, ResolveURL, CocoScrapers, GearsScrapers, and Up Next from compatible repository packages. Kodi 22 also updates Skin Shortcuts. Otaku stays at 5.3.4 because that is the current version in its configured repository. Saved profiles, the GIPTV reset fix, and the platform-specific IPTV Simple install flow are unchanged. Both archives passed ZIP, dependency, and Wizard 1.0.79 checks; playback and long-running TV stability have not yet been tested with these releases. |
@@ -120,7 +121,7 @@ Older public download parts remain available for existing Wizard installs. Updat
 - **A dependency cannot install:** enable Kodi's official add-on repository, check the device's connection and free storage, and retry the compatible dependency.
 - **Installation stops or Kodi closes:** update to Wizard 1.0.80, reopen Kodi and the Wizard. If the install did not finish, retry after checking free space; the Wizard needs room for the download, staged add-ons, and recovery data.
 - **IPTV Simple is enabled but the guide is empty after a private build apply:** reopen Kodi and allow GIPTV time to fetch current listings. A fresh private install keeps the GIPTV PVR instance inactive until the guide is ready; a failed fetch retries without replacing a working guide. If it remains empty, check the Kodi log for the GIPTV sync error.
-- **GIPTV still resets or Kodi exits after installing a private build:** check that the installed build is 1.0.57 for Kodi 21.3 or 1.0.70 for Kodi 22, with Wizard 1.0.80. If the problem continues, collect a fresh Kodi log and Android exit reason. The new archives passed package and Wizard checks, but have not yet completed a long-running device test.
+- **GIPTV still resets or Kodi exits after installing a private build:** check that the installed build is 1.0.58 for Kodi 21.3 or 1.0.71 for Kodi 22, with Wizard 1.0.80. If the problem continues, collect a fresh Kodi log and Android exit reason. The repaired builds passed package and Wizard checks, but have not yet completed a long-running device test.
 - **The public IPTV guide or playlist is unavailable:** the public build uses the PC Kodi PVR URLs. They contain credentials and are shared with every ZIP download; contact the owner if they need to be changed.
 - **Otaku changes version after installation:** the public ZIP installs Otaku 5.3.4, but Kodi can update it later. To keep 5.3.4, open **Add-ons → My add-ons → Video add-ons → Otaku → Information** and turn off **Auto-update** for Otaku.
 
