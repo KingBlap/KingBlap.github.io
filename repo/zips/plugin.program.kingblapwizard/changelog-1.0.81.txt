@@ -1,0 +1,4 @@
+1.0.81
+- Prepare a complete GIPTV guide before IPTV Simple's first scan on a private build install.
+- Keep the managed IPTV Simple instance enabled and preserve a current guide across upgrades.
+- Use IPTV Simple's periodic local-file refresh without cycling the client off and on.

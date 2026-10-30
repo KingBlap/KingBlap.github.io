@@ -1117,11 +1117,21 @@ def _set_staged_giptv_instance_enabled(staged_userdata, enabled):
         # Kodi treats default="true" as a request to use the schema value,
         # which would re-enable this instance despite the saved false text.
         node.attrib.pop("default", None)
+    # IPTV Simple's mode 0 never rereads a changed local XMLTV file. GIPTV
+    # exports every six hours, so let the native client reimport the files
+    # once after that interval without cycling the PVR add-on off and on.
+    for setting_id, value in (("m3uRefreshMode", "1"),
+                              ("m3uRefreshIntervalMins", "420")):
+        refresh_node = values.get(setting_id)
+        if refresh_node is None:
+            refresh_node = ET.SubElement(root, "setting", {"id": setting_id})
+        refresh_node.text = value
+        refresh_node.attrib.pop("default", None)
     ET.ElementTree(root).write(path, encoding="utf-8", xml_declaration=True)
 
 
 def _prepare_giptv_guide_startup(staged_userdata, active_data_root, now=None):
-    """Carry a useful current guide across upgrades, or gate the first PVR scan."""
+    """Carry a current guide across upgrades and keep the GIPTV PVR instance on."""
     staged_export = os.path.join(staged_userdata, "addon_data", "plugin.video.giptv", "iptv_simple")
     playlist_path = os.path.join(staged_export, "playlist.m3u8")
     guide_path = os.path.join(staged_export, "epg.xml")
@@ -1140,13 +1150,79 @@ def _prepare_giptv_guide_startup(staged_userdata, active_data_root, now=None):
         finally:
             if os.path.exists(candidate):
                 os.remove(candidate)
-    if not guide_ready:
-        _set_staged_giptv_instance_enabled(staged_userdata, False)
-        _log("Deferred the GIPTV IPTV Simple instance until a current guide is ready.")
-    else:
+    # Never leave the managed PVR instance disabled. An empty packaged guide
+    # primes GIPTV for its first background sync, while an already current
+    # guide remains available to IPTV Simple as soon as Kodi starts it.
+    _set_staged_giptv_instance_enabled(staged_userdata, True)
+    if guide_ready:
         _log("Preserved a current GIPTV guide matching the staged playlist.")
+    else:
+        _log("GIPTV IPTV Simple instance remains enabled; first guide sync is pending.")
     _prime_giptv_startup_state(staged_userdata, verified_current_guide=guide_ready)
     return guide_ready
+
+
+def _bootstrap_giptv_guide_before_pvr(data_root, progress, timeout_seconds=180):
+    """Export a first guide before IPTV Simple can cache the packaged stub."""
+    export = os.path.join(data_root, "plugin.video.giptv", "iptv_simple")
+    marker_path = os.path.join(export, "bootstrap_export_only.flag")
+    result_path = os.path.join(export, "bootstrap_result.json")
+    playlist_path = os.path.join(export, "playlist.m3u8")
+    guide_path = os.path.join(export, "epg.xml")
+    os.makedirs(export, exist_ok=True)
+    started_at = int(time.time())
+    try:
+        os.remove(result_path)
+    except FileNotFoundError:
+        pass
+    # The GIPTV service reads this flag before its scheduled sync. The plugin
+    # action performs the only export, and neither action touches the PVR add-on.
+    with open(marker_path, "w", encoding="ascii") as marker:
+        marker.write(str(started_at))
+        marker.flush()
+        os.fsync(marker.fileno())
+    try:
+        _enable_addon("plugin.video.giptv")
+        xbmc.executebuiltin(
+            "RunPlugin(plugin://plugin.video.giptv/?action=bootstrap_guide)", False
+        )
+        deadline = time.monotonic() + timeout_seconds
+        next_notice = 0
+        while time.monotonic() < deadline:
+            try:
+                with open(result_path, "r", encoding="utf-8") as result_file:
+                    result = json.load(result_file)
+            except (OSError, ValueError, TypeError):
+                result = None
+            if isinstance(result, dict):
+                try:
+                    generation = int(result.get("generation", 0))
+                    completed_at = int(result.get("finished", 0))
+                except (TypeError, ValueError):
+                    generation = 0
+                    completed_at = 0
+                if generation == started_at and completed_at >= started_at:
+                    if result.get("guide_ready") is True and _current_guide_matches_playlist(
+                        playlist_path, guide_path
+                    ):
+                        _log("GIPTV completed a current guide before IPTV Simple's first scan.")
+                        return True
+                    _log("GIPTV did not complete a usable first guide; IPTV Simple will still be enabled.",
+                         xbmc.LOGWARNING)
+                    return False
+            if time.monotonic() >= next_notice:
+                remaining = max(0, int(deadline - time.monotonic()))
+                progress.update(98, "KingBlap Wizard",
+                                "Preparing the TV guide before IPTV Simple starts ({}s remaining)…".format(remaining))
+                next_notice = time.monotonic() + 5
+            xbmc.sleep(1000)
+        _log("GIPTV first guide export timed out; IPTV Simple will still be enabled.", xbmc.LOGWARNING)
+        return False
+    finally:
+        try:
+            os.remove(marker_path)
+        except FileNotFoundError:
+            pass
 
 
 def _prime_giptv_startup_state(staged_userdata, verified_current_guide=False):
@@ -1885,10 +1961,20 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
             if progress.iscanceled():
                 raise InterruptedError("Build installation was cancelled.")
             if not public_build and "plugin.video.giptv" in packages:
-                progress.update(5, "Pausing IPTV while the build is prepared…")
+                progress.update(5, "Preparing the private IPTV profile…")
                 if PVR_ADDON_ID in profile_addon_data_ids:
-                    original_pvr_enabled = _pause_install_addon(
-                        PVR_ADDON_ID, journal_state, original_service_states
+                    # Keep IPTV Simple running through the potentially long
+                    # unpack phase. Record its state for rollback, then pause
+                    # it only immediately before replacing the profile.
+                    original_pvr_enabled = _get_addon_enabled(PVR_ADDON_ID)
+                    original_service_states[PVR_ADDON_ID] = original_pvr_enabled
+                    journal_state["addon_states"][PVR_ADDON_ID] = original_pvr_enabled
+                    _write_transaction_journal(
+                        transaction,
+                        "staging",
+                        journal_state["operations"],
+                        journal_state["addon_states"],
+                        journal_state["post_commit_enable"],
                     )
                 original_service_states["plugin.video.giptv"] = _pause_install_addon(
                     "plugin.video.giptv", journal_state, original_service_states
@@ -2239,6 +2325,7 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
         committed = True
         _log("Build transaction committed; starting packaged services.")
         post_commit_failures = []
+        giptv_bootstrap_warning = None
         if pvr_profile_data is not None and pvr_profile_filename:
             pvr_profile_path = os.path.join(data_root, PVR_ADDON_ID, pvr_profile_filename)
             try:
@@ -2258,6 +2345,31 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                 pvr_profile_warning = "Kodi could not verify IPTV Simple's saved playlist and guide settings."
                 _log("Could not verify the active IPTV Simple profile: {}".format(pvr_profile_exc), xbmc.LOGWARNING)
             restart_after_pvr = True
+        if (
+            not public_build
+            and guide_ready_at_install is False
+            and "plugin.video.giptv" in service_addon_ids
+            and PVR_ADDON_ID in profile_addon_data_ids
+        ):
+            # The packaged XMLTV is often only an empty <tv/> stub. Importing
+            # that before GIPTV exports its first complete guide can leave
+            # Kodi's EPG cache empty even after the file later fills in.
+            progress.update(98, "KingBlap Wizard", "Preparing the first TV guide…")
+            try:
+                guide_ready_at_install = _bootstrap_giptv_guide_before_pvr(
+                    data_root, progress
+                )
+                if not guide_ready_at_install:
+                    giptv_bootstrap_warning = (
+                        "The first TV guide did not finish during installation. "
+                        "IPTV Simple remains enabled and GIPTV will retry in the background."
+                    )
+            except Exception as bootstrap_exc:
+                giptv_bootstrap_warning = (
+                    "The first TV guide could not finish during installation. "
+                    "IPTV Simple remains enabled and GIPTV will retry in the background."
+                )
+                _log("GIPTV guide bootstrap failed: {}".format(bootstrap_exc), xbmc.LOGWARNING)
         if PVR_ADDON_ID in profile_addon_data_ids:
             progress.update(98, "KingBlap Wizard", "Enabling IPTV Simple with the restored settings…")
             # InstallAddon displays Kodi's own confirmation and install dialogs.
@@ -2288,7 +2400,8 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
         if "plugin.video.giptv" in service_addon_ids:
             progress.update(99, "KingBlap Wizard", "Starting GIPTV after setup…")
             try:
-                _enable_addon("plugin.video.giptv")
+                if _get_addon_enabled("plugin.video.giptv") is not True:
+                    _enable_addon("plugin.video.giptv")
             except Exception as giptv_exc:
                 post_commit_failures.append("GIPTV: {}".format(giptv_exc))
         if post_commit_failures:
@@ -2362,6 +2475,8 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
             success_message += (
                 "\nThe TV guide will load after GIPTV finishes its first guide sync."
             )
+        if giptv_bootstrap_warning:
+            success_message += "\n{}".format(giptv_bootstrap_warning)
         if pvr_enable_error:
             success_message += (
                 "\nIPTV Simple was not enabled: {}. Check Add-ons > My add-ons > PVR clients "
