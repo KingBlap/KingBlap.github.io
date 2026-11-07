@@ -1117,16 +1117,32 @@ def _set_staged_giptv_instance_enabled(staged_userdata, enabled):
         # Kodi treats default="true" as a request to use the schema value,
         # which would re-enable this instance despite the saved false text.
         node.attrib.pop("default", None)
-    # IPTV Simple's mode 0 never rereads a changed local XMLTV file. GIPTV
-    # exports every six hours, so let the native client reimport the files
-    # once after that interval without cycling the PVR add-on off and on.
+    # Keep the refresh interval supplied by the private build, but clamp
+    # older packages to IPTV Simple's supported 1..120 minute range. The
+    # staged instance is loaded when the native PVR client starts below.
+    interval_node = values.get("m3uRefreshIntervalMins")
+    try:
+        interval = int((interval_node.text or "").strip())
+    except (AttributeError, TypeError, ValueError):
+        interval = 120
+    interval = min(120, max(1, interval))
     for setting_id, value in (("m3uRefreshMode", "1"),
-                              ("m3uRefreshIntervalMins", "420")):
+                              ("m3uRefreshIntervalMins", str(interval))):
         refresh_node = values.get(setting_id)
         if refresh_node is None:
             refresh_node = ET.SubElement(root, "setting", {"id": setting_id})
         refresh_node.text = value
         refresh_node.attrib.pop("default", None)
+    if KODI_MAJOR >= 22:
+        # Recent Kodi 22 IPTV Simple builds watch local playlist and XMLTV
+        # files. Older builds ignore this setting and use the timer above.
+        watcher_node = values.get("reloadOnLocalFileChange")
+        if watcher_node is None:
+            watcher_node = ET.SubElement(
+                root, "setting", {"id": "reloadOnLocalFileChange"}
+            )
+        watcher_node.text = "true"
+        watcher_node.attrib.pop("default", None)
     ET.ElementTree(root).write(path, encoding="utf-8", xml_declaration=True)
 
 
@@ -1525,6 +1541,23 @@ def _pause_install_addon(addon_id, journal_state, original_states):
     if enabled:
         _set_addon_enabled(addon_id, False)
         xbmc.sleep(1500)
+    return enabled
+
+
+def _record_optional_addon_state(addon_id, journal_state, original_states):
+    """Journal an existing add-on state, leaving absent add-ons out of rollback."""
+    enabled = _get_addon_enabled(addon_id)
+    if not isinstance(enabled, bool):
+        return None
+    original_states[addon_id] = enabled
+    journal_state["addon_states"][addon_id] = enabled
+    _write_transaction_journal(
+        journal_state["transaction"],
+        "staging",
+        journal_state["operations"],
+        journal_state["addon_states"],
+        journal_state.get("post_commit_enable"),
+    )
     return enabled
 
 
@@ -1966,15 +1999,8 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                     # Keep IPTV Simple running through the potentially long
                     # unpack phase. Record its state for rollback, then pause
                     # it only immediately before replacing the profile.
-                    original_pvr_enabled = _get_addon_enabled(PVR_ADDON_ID)
-                    original_service_states[PVR_ADDON_ID] = original_pvr_enabled
-                    journal_state["addon_states"][PVR_ADDON_ID] = original_pvr_enabled
-                    _write_transaction_journal(
-                        transaction,
-                        "staging",
-                        journal_state["operations"],
-                        journal_state["addon_states"],
-                        journal_state["post_commit_enable"],
+                    original_pvr_enabled = _record_optional_addon_state(
+                        PVR_ADDON_ID, journal_state, original_service_states
                     )
                 original_service_states["plugin.video.giptv"] = _pause_install_addon(
                     "plugin.video.giptv", journal_state, original_service_states
@@ -2239,8 +2265,10 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                 journal_state,
                 "weather_data",
             )
+        # Register local packages before querying their dependencies. A remote
+        # repository refresh here can compete with installation on low-memory
+        # devices; normal Kodi auto-updates run after this transaction.
         xbmc.executebuiltin("UpdateLocalAddons", True)
-        xbmc.executebuiltin("UpdateAddonRepos", True)
         kodi_managed_addons = set(required_dependencies) | set(platform_addons)
         if PVR_ADDON_ID in profile_addon_data_ids:
             # Do not start importing thousands of IPTV channels while Kodi is
@@ -2263,16 +2291,14 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
             )
         )
         _log("Weather activation deferred until after the build transaction commits.")
-        _log("Checking the packaged Xonfluence skin registration.")
-        try:
-            installed_skin_version = xbmcaddon.Addon(build_skin_id).getAddonInfo("version")
-        except RuntimeError:
-            installed_skin_version = ""
-        if installed_skin_version != packages[build_skin_id]:
-            raise RuntimeError("Kodi did not register the installed Xonfluence {} skin.".format(SKIN_VERSION))
-
+        # The registration scan above found the skin and _enable_build_addons
+        # confirmed it enabled. A second synchronous xbmcaddon.Addon lookup
+        # can stall behind Kodi's add-on manager during a large install.
+        _log("Xonfluence registration and enabled state confirmed; advancing to 97%.")
         progress.update(97, "KingBlap Wizard", "Loading Xonfluence…")
+        _log("Installer progress is 97%; activating the packaged Xonfluence skin.")
         _apply_skin_settings(build_skin_id)
+        _log("Packaged Xonfluence skin activation completed.")
         if skin_colors is not None:
             _set_setting("lookandfeel.skincolors", skin_colors)
             if _get_setting("lookandfeel.skincolors") != skin_colors:

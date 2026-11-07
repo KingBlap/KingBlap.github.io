@@ -1,0 +1,5 @@
+1.0.83
+- Avoid a second synchronous skin registration lookup during build installation.
+- Record progress immediately before and after Xonfluence activation for clearer diagnosis.
+- Defer repository refresh to Kodi's normal automatic update cycle after installation.
+- Handle a missing IPTV Simple Client cleanly in the install recovery journal.

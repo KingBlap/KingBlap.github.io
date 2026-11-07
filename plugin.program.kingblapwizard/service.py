@@ -391,9 +391,15 @@ def _restore_journal_addon_states(journal):
         if (
             not isinstance(addon_id, str)
             or not re.fullmatch(r"[A-Za-z0-9_.-]+", addon_id)
-            or not isinstance(enabled, bool)
+            or (enabled is not None and not isinstance(enabled, bool))
         ):
             raise ValueError("The saved install transaction has an invalid add-on state.")
+    for addon_id, enabled in states.items():
+        if enabled is None:
+            # A null state means the add-on was not registered before the
+            # install. There is no previous enabled state to restore.
+            _log("Skipped restoring {} because its previous state is unknown.".format(addon_id), xbmc.LOGWARNING)
+            continue
         current = _addon_enabled(addon_id)
         if current is not enabled:
             _set_addon_enabled(addon_id, enabled)
