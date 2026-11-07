@@ -1,0 +1,4 @@
+1.0.84
+- Recognize Kodi's required add-on download prompt when Xonfluence leaves its heading blank.
+- Check a displayed component name before confirming a required add-on prompt.
+- Retain the installer and interrupted-install recovery fixes from 1.0.83.

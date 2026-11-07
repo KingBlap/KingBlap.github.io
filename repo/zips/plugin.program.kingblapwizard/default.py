@@ -77,6 +77,12 @@ PUBLIC_SKIN_ID = "skin.xonfluence"
 ONEPLAY_REPO_ID = "One.repo"
 WEATHER_ID = "weather.gismeteo"
 PVR_ADDON_ID = "pvr.iptvsimple"
+KODI_REQUIRED_ADDON_LABELS = {
+    "pvr.iptvsimple": "iptv simple client",
+    "inputstream.adaptive": "inputstream adaptive",
+    "inputstream.ffmpegdirect": "inputstream ffmpeg direct",
+    "inputstream.rtmp": "inputstream rtmp",
+}
 GIPTV_GUIDE_SOURCE_VERSION = "epgtalk-us-lite-local-v1"
 OPTIKLEAN_ID = "program.optiklean"
 WEATHER_LOCATION = "Thomasville"
@@ -1619,7 +1625,16 @@ def _confirm_kodi_addon_prompt(addon_id, progress):
         message = dialog.getControl(9).getText().strip().casefold()
     except (AttributeError, RuntimeError, TypeError):
         return False
-    if heading != "add-on required" or "would you like to download this add-on?" not in message:
+    if heading not in ("", "add-on required") or "would you like to download this add-on?" not in message:
+        return False
+    # Xonfluence can leave the heading control blank. When Kodi includes a
+    # component name in the body, reject a prompt for a different component.
+    named_components = {
+        component_id
+        for component_id, label in KODI_REQUIRED_ADDON_LABELS.items()
+        if label in message
+    }
+    if named_components and addon_id not in named_components:
         return False
     progress.update(
         93,
