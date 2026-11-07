@@ -1,8 +1,8 @@
 # KingBlap Kodi Repository
 
-Install individual add-ons from the KingBlap Kodi Repository, or install a complete public or private build with **KingBlap Wizard 1.0.81**. Builds are available for **Kodi 21.3** and **Kodi 22**.
+Install individual add-ons from the KingBlap Kodi Repository, or install a complete public or private build with **KingBlap Wizard 1.0.82**. Builds are available for **Kodi 21.3** and **Kodi 22**.
 
-Updated October 30, 2026.
+Updated November 7, 2026.
 
 **Kodi File Manager source:** https://kingblap.github.io/
 
@@ -14,8 +14,8 @@ Updated October 30, 2026.
 | --- | --- | --- | --- | --- |
 | Kodi 21.3 | Public | 1.0.36 | 64 | No private code required |
 | Kodi 22 | Public | 1.0.36 | 64 | No private code required |
-| Kodi 21.3 | Private | 1.0.59 | 81 | 16-digit private access code |
-| Kodi 22 | Private | 1.0.72 | 78 | 16-digit private access code |
+| Kodi 21.3 | Private | 1.0.61 | 89 | 16-digit private access code |
+| Kodi 22 | Private | 1.0.74 | 89 | 16-digit private access code |
 
 Choose the build for the **Kodi version installed on your device**, whether Kodi runs on Windows, Android/Fire TV, Linux, or macOS. The archives contain portable add-on files and settings; Kodi obtains device-specific native components, including IPTV Simple and InputStream components, from a compatible repository when available. Keep Kodi's official add-on repository enabled and allow Kodi to install dependencies. A package check cannot guarantee that every third-party service works on every device.
 
@@ -38,9 +38,9 @@ Menu positions can vary by skin. Kodi documents its [File Manager](https://kodi.
 2. Select **repository.kingblap-1.0.0.zip** and wait for the repository installed notification.
 3. Open **Install from repository → KingBlap Kodi Repository → Program add-ons → KingBlap Wizard**.
 4. Select **Install**, accept dependency prompts, and wait for the Wizard installed notification.
-5. Open **Add-ons → Program add-ons → KingBlap Wizard**. The current Wizard version is **1.0.81**.
+5. Open **Add-ons → Program add-ons → KingBlap Wizard**. The current Wizard version is **1.0.82**.
 
-If you downloaded the repository ZIP to a computer, USB drive, or your device's Downloads folder, browse to that file from **Install from zip file** instead of using the File Manager source. The [Wizard 1.0.81 ZIP](https://kingblap.github.io/repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.81.zip) can also be installed directly from the same Add-ons menu.
+If you downloaded the repository ZIP to a computer, USB drive, or your device's Downloads folder, browse to that file from **Install from zip file** instead of using the File Manager source. The [Wizard 1.0.82 ZIP](https://kingblap.github.io/repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.82.zip) can also be installed directly from the same Add-ons menu.
 
 ### Install individual add-ons
 
@@ -48,7 +48,7 @@ Open **Add-ons → open box/package icon → Install from repository → KingBla
 
 ## Install a public build
 
-1. Install or update **KingBlap Wizard 1.0.81** using the instructions above.
+1. Install or update **KingBlap Wizard 1.0.82** using the instructions above.
 2. Open **Add-ons → Program add-ons → KingBlap Wizard → Public Builds**.
 3. Select **Public KingBlap Build for Kodi 21.3 1.0.36 (download)** on Kodi 21.3, or **Public KingBlap Build for Kodi 22 1.0.36 (download)** on Kodi 22.
 4. Review the installation notice and choose **Install build**.
@@ -64,29 +64,29 @@ The October 24 public package includes Aliunde K19, Gratis Red, Scrubs V2, and t
 
 The private build access code is separate from any IPTV username or password. Keep the code and private archives with their intended recipients.
 
-1. Install or update **KingBlap Wizard 1.0.81** using the repository instructions above.
+1. Install or update **KingBlap Wizard 1.0.82** using the repository instructions above.
 2. Open the Wizard's information page from **Add-ons → open box/package icon → My add-ons → Program add-ons → KingBlap Wizard**, then choose **Configure**.
 3. Under **Private build access**, enter the **16-digit private build access code**. Leave **Build service URL** at its default unless you received a replacement address.
 4. Open **Add-ons → Program add-ons → KingBlap Wizard → Private Builds**.
-5. Select **Private KingBlap Build for Kodi 21.3 (1.0.59)** on Kodi 21.3, or **Private KingBlap Build for Kodi 22 (1.0.72)** on Kodi 22.
+5. Select **Private KingBlap Build for Kodi 21.3 (1.0.61)** on Kodi 21.3, or **Private KingBlap Build for Kodi 22 (1.0.74)** on Kodi 22.
 6. Review the notice about restoring saved add-on settings, choose **Install build**, and leave Kodi open until installation finishes. If the Wizard asks to reload IPTV Simple, accept the prompt. On Android/Fire TV, Kodi may close; reopen it after it exits.
 
 The private releases are served through the protected Cloudflare build service. They contain selected saved profiles and may contain account settings and credentials. A private build can replace matching saved profiles on the device. Do not share the access code or private ZIPs.
 
-The Cloudflare build listing points to private versions **1.0.59** and **1.0.72**, but an existing Kodi installation stays on its installed build until you select and install the matching version in the Wizard. Install after stopping playback, then reopen Kodi. The Wizard asks GIPTV to prepare a complete current guide before starting IPTV Simple on a fresh install. This first download may take several minutes. If the guide source is unavailable, the build still enables IPTV Simple and GIPTV retries later.
+The Cloudflare build listing points to private versions **1.0.61** and **1.0.74**, but an existing Kodi installation stays on its installed build until you select and install the matching version in the Wizard. Install after stopping playback, then reopen Kodi. The Wizard asks GIPTV to prepare a current guide before starting IPTV Simple on a fresh install. This first download may take several minutes. If the guide source is unavailable, the build still enables IPTV Simple and GIPTV retries later.
 
-Wizard 1.0.81 restores Xonfluence menu shortcuts with Kodi's skin-specific commands and verifies they were saved after restart. For a private update, it keeps an existing current guide that matches the playlist. On a first install with no valid guide, it downloads the guide before starting IPTV Simple; the GIPTV instance remains enabled. The installer briefly pauses the PVR client while replacing its settings, then verifies it is enabled. Native IPTV Simple refreshes the local playlist and guide on a paced schedule without GIPTV cycling the client off and on. Guide imports pause during live TV playback. On Android/Fire TV, reopen Kodi after the Wizard closes it.
+Wizard 1.0.82 restores Xonfluence menu shortcuts and verifies them after restart. For a private update, it keeps an existing current guide that matches the playlist. On a first install with no valid guide, it tries to download the guide before starting IPTV Simple; the GIPTV instance remains enabled. The installer briefly pauses the PVR client while replacing its settings, then verifies it is enabled. IPTV Simple can reimport local files on its 120-minute timer. Kodi 22 also uses local-file change watching when its IPTV Simple version supports it. A timed import can briefly affect playback. On Android/Fire TV, reopen Kodi after the Wizard closes it.
 
 ## What is included
 
 | Feature | Public Kodi 21.3 | Public Kodi 22 | Private Kodi 21.3 | Private Kodi 22 |
 | --- | --- | --- | --- | --- |
-| Packaged add-ons | 64 | 64 | 81 | 78 |
+| Packaged add-ons | 64 | 64 | 89 | 89 |
 | Skin | Xonfluence 5.1.1 | Xonfluence 6.0.7 | Xonfluence SKINBASE 5.1 | Xonfluence 6.0.8 |
 | Appearance and weather | Fire colors, Massive font, Gismeteo | Fire colors, Massive font, Gismeteo | Fire colors, Massive font, Gismeteo | Fire colors, Massive font, Gismeteo |
 | IPTV playlist and guide | PC Kodi IPTV Simple profile; credentialed URLs are public | PC Kodi IPTV Simple profile; credentialed URLs are public | GIPTV 3.1.3 and IPTV Simple; USA/24/7 groups with a filtered 24-hour guide | GIPTV 3.1.3 and IPTV Simple; USA/24/7 groups with a filtered 24-hour guide |
 | Menus and views | PC Movies & Shows, Anime, TV, and Sports shortcuts with bundled icons | PC Movies & Shows, Anime, TV, and Sports shortcuts with bundled icons | Xonfluence video views plus Preview List for TV channels | Xonfluence video views plus Preview List for TV channels |
-| Saved add-on profiles | Otaku reset for first-run setup; other personal profiles omitted | Otaku reset for first-run setup; other personal profiles omitted | Selected profiles restored; Otaku reset for first-run setup | Selected profiles restored; Otaku reset for first-run setup |
+| Saved add-on profiles | Otaku reset for first-run setup; other personal profiles omitted | Otaku reset for first-run setup; other personal profiles omitted | Selected October 11 profiles restored; existing Otaku profile retained | Selected October 11 profiles restored; existing Otaku profile retained |
 | Screensaver | Not configured by this build | Not configured by this build | Kodi's built-in Dim | Kodi's built-in Dim |
 | Automatic add-on updates | Enabled | Enabled | Enabled | Enabled |
 | Device-specific native add-ons | Installed by Kodi | Installed by Kodi | Installed by Kodi | Installed by Kodi |
@@ -95,12 +95,13 @@ The public releases are built from the October 24 snapshot without machine-speci
 
 The public video add-ons are Aliunde K19, Gratis Red, Jet Guide, Mad Titan Sports, Maneflix, Otaku, Scrubs V2, SportHD, TATV2, and WatchNixtoons2. The archives also include the Xonfluence skin, Gismeteo weather, artwork, repositories, and supporting libraries. The October 24 context.otaku database is included for Otaku 5.3.4; the Wizard clears Otaku's existing saved profile so its first-run prompts appear after installation. Kodi may later update Otaku from an enabled repository because automatic add-on updates remain enabled. The exact package list for each Kodi version is in [Build package inventory](#build-package-inventory) below.
 
-The private video add-ons are Absolution, C.O.S.M.O.S, Dailymotion, Forge, The Gears, Genocide, GIPTV, Homelander, Jet Guide, Loop Guide, Loop TV, Mad Titan Sports, Otaku, TATV2, The Chains, WatchNixtoons2, and Zoro. Kodi 21.3 also includes Prism. The archives include Xonfluence, Gismeteo, artwork, Otaku's repository, and supporting libraries. Their saved GIPTV and IPTV Simple setup limits channels and guide data to USA/24/7 groups, and the TV channel view is Preview List. They include selected saved add-on profiles, so installing a private build can replace existing settings. The full private package list is below.
+The private video add-ons are Absolution, C.O.S.M.O.S, Dailymotion, Forge, The Gears, Genocide, GIPTV, Homelander, Jet Guide, Loop Guide, Loop TV, Mad Titan Sports, Otaku, TATV2, The Chains, WatchNixtoons2, and Zoro. Both archives contain the same 89 add-on IDs except for their Kodi-specific Xonfluence skins. They include Gismeteo, artwork, Otaku's repository, and supporting libraries. The saved GIPTV and IPTV Simple setup contains 9,689 channels in USA and 24/7 groups, keeps their original IDs and logos, and generates a filtered guide for those groups. The TV channel view is Preview List. Selected October 11 profiles are restored; an existing Otaku profile is retained, while a clean installation starts Otaku with its defaults. The full private package list is below.
 
 ## Recent updates
 
 | Release | Change |
 | --- | --- |
+| **Wizard 1.0.82 / Private Builds 1.0.61 and 1.0.74** | Rebuilt both private archives from the October 11 Kodi backup with 89 portable add-ons each. Removed Windows binaries, expired guide data, Kodi databases, and caches; kept the USA/24/7 lineup, channel IDs, logos, and saved GIPTV settings. Kodi installs its own native IPTV Simple client. Fixed the out-of-range 420-minute refresh setting to 120 minutes and added Kodi 22 local-file watching when supported. Both archives passed integrity, dependency, path, and Wizard validation. A fresh Android install and guide import remain to be verified. |
 | **Wizard 1.0.81 / Private Builds 1.0.59 and 1.0.72** | GIPTV exports a complete guide before IPTV Simple starts its first import. The client and GIPTV instance are enabled at the end of installation, and native local-file refresh replaces GIPTV's disable/re-enable cycle. Both private ZIPs passed integrity and Wizard archive checks; the first-install handshake passed focused regression tests. A live install of these versions is still pending. |
 | **Private Builds 1.0.58 and 1.0.71** | Repaired GIPTV's saved settings format for Kodi's version 2 loader and removed default markers that reset saved values. The Kodi 22 release was installed on a Fire Stick; its guide populated after Kodi's PVR cache was cleared manually. The next release automates guide preparation before the first scan. |
 | **Wizard 1.0.80 / Private Builds 1.0.57 and 1.0.70** | Added guide preservation and a startup gate. A Fire Stick test later showed the gate could leave the GIPTV PVR instance disabled and Kodi could cache an empty initial guide. Wizard 1.0.81 corrects that sequence. |
@@ -113,23 +114,23 @@ The private video add-ons are Absolution, C.O.S.M.O.S, Dailymotion, Forge, The G
 
 Updating the Wizard alone does not apply a newer full build. Reopen **Public Builds** or **Private Builds** and install the build matching your Kodi version.
 
-Older public download parts remain available for existing Wizard installs. Update the Wizard to 1.0.81 and choose public build 1.0.36 to use the current archives.
+Older public download parts remain available for existing Wizard installs. Update the Wizard to 1.0.82 and choose public build 1.0.36 to use the current public archives.
 
 ## Help with installation
 
-- **A new build does not appear:** update KingBlap Wizard to 1.0.81, reopen the build list, and check Kodi's version under **Settings → System information**.
+- **A new build does not appear:** update KingBlap Wizard to 1.0.82, reopen the build list, and check Kodi's version under **Settings → System information**.
 - **Kodi version mismatch:** use the Kodi 21.3 build on Kodi 21.3 or the Kodi 22 build on Kodi 22.
 - **A dependency cannot install:** enable Kodi's official add-on repository, check the device's connection and free storage, and retry the compatible dependency.
-- **Installation stops or Kodi closes:** update to Wizard 1.0.81, reopen Kodi and the Wizard. If the install did not finish, retry after checking free space; the Wizard needs room for the download, staged add-ons, and recovery data.
-- **IPTV Simple is enabled but the guide is empty after a private build apply:** allow the first GIPTV guide download to complete. If the XMLTV file has current programmes but Kodi still shows only channels, use **Settings → PVR & Live TV → Guide → Clear data** once while playback is stopped; Kodi will reimport the guide. [Kodi documents this guide-cache action](https://kodi.wiki/view/Settings/Live_TV/Guide). If the file stays empty, check the Kodi log for the GIPTV sync error.
-- **GIPTV still resets or Kodi exits after installing a private build:** check that the installed build is 1.0.59 for Kodi 21.3 or 1.0.72 for Kodi 22, with Wizard 1.0.81. If the problem continues, collect a fresh Kodi log and Android exit reason. Both new archives passed package and Wizard checks; long-running stability still needs device observation.
+- **Installation stops or Kodi closes:** update to Wizard 1.0.82, reopen Kodi and the Wizard. If the install did not finish, retry after checking free space; the Wizard needs room for the download, staged add-ons, and recovery data.
+- **IPTV Simple is enabled but the guide is empty after a private build apply:** allow the first GIPTV guide download to complete. Kodi 22's local-file watcher can reload a finished guide when the installed IPTV Simple version supports it; Kodi 21.3 may wait up to 120 minutes for its next timed import. If the XMLTV file has current programmes but Kodi still shows only channels, use **Settings → PVR & Live TV → Guide → Clear data** once while playback is stopped; Kodi will reimport the guide. [Kodi documents this guide-cache action](https://kodi.wiki/view/Settings/Live_TV/Guide). If the file stays empty, check the Kodi log for the GIPTV sync error.
+- **GIPTV still resets or Kodi exits after installing a private build:** check that the installed build is 1.0.61 for Kodi 21.3 or 1.0.74 for Kodi 22, with Wizard 1.0.82. If the problem continues, collect a fresh Kodi log and Android exit reason. Both archives passed package and Wizard checks; long-running stability still needs device observation.
 - **The public IPTV guide or playlist is unavailable:** the public build uses the PC Kodi PVR URLs. They contain credentials and are shared with every ZIP download; contact the owner if they need to be changed.
 - **Otaku changes version after installation:** the public ZIP installs Otaku 5.3.4, but Kodi can update it later. To keep 5.3.4, open **Add-ons → My add-ons → Video add-ons → Otaku → Information** and turn off **Auto-update** for Otaku.
 
 ## Downloads
 
 - [Repository installer 1.0.0](https://kingblap.github.io/repository.kingblap-1.0.0.zip)
-- [KingBlap Wizard 1.0.81](https://kingblap.github.io/repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.81.zip)
+- [KingBlap Wizard 1.0.82](https://kingblap.github.io/repo/zips/plugin.program.kingblapwizard/plugin.program.kingblapwizard-1.0.82.zip)
 - [Current public and private build list](https://kingblap.github.io/builds.txt)
 - [Repository add-on catalog](https://kingblap.github.io/repo/zips/addons.xml)
 - [Repository website and installation guide](https://kingblap.github.io/)
@@ -211,12 +212,11 @@ The tables list the add-on packages actually bundled in the current public and p
 
 ### Private packages
 
-Kodi 21.3 has 81 bundled packages; Kodi 22 has 78. A dash means that package is not in that build. Packages can update later from enabled repositories.
+Kodi 21.3 and Kodi 22 each have 89 bundled packages. A dash means that package is not in that build. Packages can update later from enabled repositories.
 
 | Add-on ID | Kodi 21.3 private | Kodi 22 private |
 | --- | ---: | ---: |
 | `context.otaku` | 1.0.35 | 1.0.35 |
-| `context.prism` | 4.0.2 | — |
 | `context.seren` | 3.0.2 | 3.0.2 |
 | `metadata.generic.albums` | 1.0.20 | 1.0.20 |
 | `metadata.generic.artists` | 1.0.20 | 1.0.20 |
@@ -229,18 +229,28 @@ Kodi 21.3 has 81 bundled packages; Kodi 22 has 78. A dash means that package is 
 | `plugin.video.genocide` | 6.9.9 | 6.9.9 |
 | `plugin.video.giptv` | 3.1.3 | 3.1.3 |
 | `plugin.video.homelander` | 1.3.1 | 1.3.1 |
-| `plugin.video.jet_guide` | 0.0.22 | 0.0.22 |
-| `plugin.video.loopguide` | 3.8.4 | 3.8.4 |
+| `plugin.video.jet_guide` | 0.0.21 | 0.0.21 |
+| `plugin.video.loopguide` | 3.8.2 | 3.8.2 |
 | `plugin.video.looptv` | 26+matrix.2 | 26+matrix.2 |
-| `plugin.video.madtitansports` | 2.0.47 | 2.0.47 |
+| `plugin.video.madtitansports` | 2.0.45 | 2.0.45 |
 | `plugin.video.otaku` | 5.3.4 | 5.3.4 |
-| `plugin.video.prism` | 5.0.56 | — |
 | `plugin.video.tatv2` | 1.0.3 | 1.0.3 |
 | `plugin.video.thechains` | 6.0.1 | 6.0.1 |
-| `plugin.video.watchnixtoons2` | 0.14.24 | 0.14.24 |
+| `plugin.video.watchnixtoons2` | 0.14.23 | 0.14.23 |
 | `plugin.video.zoro` | 1.1.9 | 1.1.9 |
 | `program.easyplayerswitch` | 1.1.0 | 1.1.0 |
+| `repository.709` | 1.0.2 | 1.0.2 |
+| `repository.aliunde` | 1.9.5 | 1.9.5 |
+| `repository.chainsrepo` | 0.0.15 | 0.0.15 |
+| `repository.enigmawiz` | 2.1.6 | 2.1.6 |
+| `repository.forge` | 0.1.0 | 0.1.0 |
+| `repository.G00380316` | 3.1.1 | 3.1.1 |
+| `repository.gaia.full` | 8.0.0 | 8.0.0 |
+| `repository.loop` | 3.0.4 | 3.0.4 |
+| `repository.Magnetic` | 1.1.0b | 1.1.0b |
 | `repository.otaku` | 1.0 | 1.0 |
+| `repository.peno64` | 1.5 | 1.5 |
+| `repository.thecrew` | 0.3.8 | 0.3.8 |
 | `resource.images.recordlabels.white` | 0.0.7 | 0.0.7 |
 | `resource.images.studios.white` | 0.0.34 | 0.0.34 |
 | `resource.uisounds.appletv` | 0.0.2 | 0.0.2 |
@@ -250,24 +260,24 @@ Kodi 21.3 has 81 bundled packages; Kodi 22 has 78. A dash means that package is 
 | `script.homelander.artwork` | 1.0.4 | 1.0.4 |
 | `script.image.resource.select` | 3.0.2 | 3.0.2 |
 | `script.module.absolutionscrapers` | 4.0.5 | 4.0.5 |
-| `script.module.acctmgr` | 1.2.1 | 1.2.1 |
-| `script.module.acctvwr` | 1.1.6 | 1.1.6 |
+| `script.module.acctmgr` | 1.2.0a | 1.2.0a |
+| `script.module.acctvwr` | 1.1.5 | 1.1.5 |
 | `script.module.backports.zoneinfo` | 0.2.1 | 0.2.1 |
 | `script.module.beautifulsoup4` | 4.12.2 | 4.12.2 |
 | `script.module.certifi` | 2023.5.7 | 2023.5.7 |
 | `script.module.chainscrapers` | 1.0.8 | 1.0.8 |
 | `script.module.chardet` | 5.1.0 | 5.1.0 |
-| `script.module.cocoscrapers` | 1.0.45 | 1.0.45 |
+| `script.module.cocoscrapers` | 1.0.39 | 1.0.39 |
 | `script.module.dateutil` | 2.8.2 | 2.8.2 |
 | `script.module.defusedxml` | 0.6.0+matrix.1 | 0.6.0+matrix.1 |
 | `script.module.dropbox` | 10.3.1+matrix.1 | 10.3.1+matrix.1 |
 | `script.module.fenomscrapers` | 1.5.4 | 1.5.4 |
 | `script.module.future` | 1.0.0+matrix.1 | 1.0.0+matrix.1 |
-| `script.module.gearsscrapers` | 1.6.3 | 1.6.3 |
+| `script.module.gearsscrapers` | 1.6.2 | 1.6.2 |
 | `script.module.homelanderscrapers` | 2.0.4 | 2.0.4 |
 | `script.module.idna` | 3.10.0 | 3.10.0 |
 | `script.module.inputstreamhelper` | 0.8.6 | 0.8.6 |
-| `script.module.jetextractors` | 3.3.30 | 3.3.30 |
+| `script.module.jetextractors` | 3.3.27 | 3.3.27 |
 | `script.module.kodi-six` | 0.1.3.1 | 0.1.3.1 |
 | `script.module.microjenscrapers` | 1.4 | 1.4 |
 | `script.module.myaccounts` | 1.1.3 | 1.1.3 |
@@ -278,9 +288,8 @@ Kodi 21.3 has 81 bundled packages; Kodi 22 has 78. A dash means that package is 
 | `script.module.pytz` | 2023.3.0+matrix.1 | 2023.3.0+matrix.1 |
 | `script.module.qrcode` | 6.1.0+matrix.3 | 6.1.0+matrix.3 |
 | `script.module.requests` | 2.31.0 | 2.31.0 |
-| `script.module.resolveurl` | 5.1.212 | 5.1.212 |
+| `script.module.resolveurl` | 5.1.211 | 5.1.211 |
 | `script.module.routing` | 0.2.3+matrix.1 | 0.2.3+matrix.1 |
-| `script.module.simpleeval` | 0.9.13 | — |
 | `script.module.simplejson` | 3.19.1+matrix.1 | 3.19.1+matrix.1 |
 | `script.module.simpleplugin3` | 3.0.6+matrix.1 | 3.0.6+matrix.1 |
 | `script.module.six` | 1.16.0+matrix.1 | 1.16.0+matrix.1 |
@@ -290,9 +299,9 @@ Kodi 21.3 has 81 bundled packages; Kodi 22 has 78. A dash means that package is 
 | `script.module.tzlocal` | 5.0.1 | 5.0.1 |
 | `script.module.unidecode` | 1.3.6 | 1.3.6 |
 | `script.module.urllib3` | 2.2.3 | 2.2.3 |
-| `script.skinshortcuts` | 2.0.3 | 3.0.5 |
+| `script.skinshortcuts` | 3.0.4 | 3.0.4 |
 | `script.xbmcbackup` | 1.7.3 | 1.7.3 |
-| `service.upnext` | 1.3.0 | 1.3.0 |
+| `service.upnext` | 1.1.9+matrix.1 | 1.1.9+matrix.1 |
 | `service.xbmc.versioncheck` | 0.5.30+matrix.1 | 0.5.30+matrix.1 |
 | `skin.xonfluence` | — | 6.0.8 |
 | `skin.xonfluence.skinbase` | 5.1 | — |

@@ -1117,16 +1117,32 @@ def _set_staged_giptv_instance_enabled(staged_userdata, enabled):
         # Kodi treats default="true" as a request to use the schema value,
         # which would re-enable this instance despite the saved false text.
         node.attrib.pop("default", None)
-    # IPTV Simple's mode 0 never rereads a changed local XMLTV file. GIPTV
-    # exports every six hours, so let the native client reimport the files
-    # once after that interval without cycling the PVR add-on off and on.
+    # Keep the refresh interval supplied by the private build, but clamp
+    # older packages to IPTV Simple's supported 1..120 minute range. The
+    # staged instance is loaded when the native PVR client starts below.
+    interval_node = values.get("m3uRefreshIntervalMins")
+    try:
+        interval = int((interval_node.text or "").strip())
+    except (AttributeError, TypeError, ValueError):
+        interval = 120
+    interval = min(120, max(1, interval))
     for setting_id, value in (("m3uRefreshMode", "1"),
-                              ("m3uRefreshIntervalMins", "420")):
+                              ("m3uRefreshIntervalMins", str(interval))):
         refresh_node = values.get(setting_id)
         if refresh_node is None:
             refresh_node = ET.SubElement(root, "setting", {"id": setting_id})
         refresh_node.text = value
         refresh_node.attrib.pop("default", None)
+    if KODI_MAJOR >= 22:
+        # Recent Kodi 22 IPTV Simple builds watch local playlist and XMLTV
+        # files. Older builds ignore this setting and use the timer above.
+        watcher_node = values.get("reloadOnLocalFileChange")
+        if watcher_node is None:
+            watcher_node = ET.SubElement(
+                root, "setting", {"id": "reloadOnLocalFileChange"}
+            )
+        watcher_node.text = "true"
+        watcher_node.attrib.pop("default", None)
     ET.ElementTree(root).write(path, encoding="utf-8", xml_declaration=True)
 
 

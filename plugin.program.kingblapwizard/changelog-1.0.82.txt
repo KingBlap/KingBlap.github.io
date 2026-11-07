@@ -1,0 +1,4 @@
+1.0.82
+- Preserve the private build IPTV Simple refresh interval and limit older values to Kodi's supported 1–120 minutes.
+- Enable local playlist and guide file monitoring on Kodi 22, with a timer fallback for older PVR Simple versions.
+- Keep the GIPTV IPTV Simple instance enabled after installation.
