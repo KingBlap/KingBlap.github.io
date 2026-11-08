@@ -22,7 +22,7 @@ PENDING_SKIN_SETTINGS_PATH = xbmcvfs.translatePath(
     "special://profile/addon_data/{}/pending-skin-settings.xml".format(ADDON_ID)
 )
 SKIN_MENU_SETTING_ID = re.compile(
-    r"^AddonSet(?:One|Two|Three|Four|Six)\.\d+\.(?:path|label|icon)$",
+    r"^(?:AddonSet(?:One|Two|Three|Four|Six)\.\d+\.(?:path|label|icon)|UsrSelectAddon)$",
     re.IGNORECASE,
 )
 TRANSACTION_ROOT = xbmcvfs.translatePath(
@@ -196,10 +196,13 @@ def _apply_pending_menu_settings(monitor):
     try:
         root = ET.parse(PENDING_SKIN_SETTINGS_PATH).getroot()
         settings = {}
+        resets = set()
         for item in root.findall("setting"):
             setting_id = item.get("id", "")
             if SKIN_MENU_SETTING_ID.fullmatch(setting_id):
                 settings[setting_id] = "".join(item.itertext())
+                if item.get("reset") == "true":
+                    resets.add(setting_id)
         if not settings:
             raise ValueError("The pending Xonfluence file contains no menu rows.")
 
@@ -207,7 +210,7 @@ def _apply_pending_menu_settings(monitor):
         changed = False
         for setting_id, value in settings.items():
             current = _read_skin_setting(setting_id)
-            if current != value:
+            if setting_id in resets or current != value:
                 if value:
                     # Xonfluence persists these strings in its per-skin file.
                     xbmc.executebuiltin(

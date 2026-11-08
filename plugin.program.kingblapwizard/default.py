@@ -107,6 +107,15 @@ SKIN_MENU_SETTING_ID = re.compile(
     r"^AddonSet(?:One|Two|Three|Four|Six)\.\d+\.(?:path|label|icon)$",
     re.IGNORECASE,
 )
+REMOVED_ADDON_SKIN_SHORTCUTS = {
+    "plugin.video.forge": (
+        "AddonSetOne.4.Icon", "addonsetone.4.path", "AddonSetOne.4.Label",
+    ),
+    "plugin.video.cosmos": (
+        "AddonSetOne.6.Icon", "addonsetone.6.path", "AddonSetOne.6.Label",
+        "UsrSelectAddon",
+    ),
+}
 
 
 class _ClosedProgressDialog:
@@ -1783,36 +1792,53 @@ def _apply_skin_settings(skin_id=SKIN_ID):
     _activate_skin(skin_id)
 
 
-def _request_skin_reapply(skin_id=SKIN_ID):
+def _request_skin_reapply(skin_id=SKIN_ID, removed_addons=()):
     marker_dir = os.path.join(_path("special://profile/addon_data"), ADDON_ID)
     os.makedirs(marker_dir, exist_ok=True)
     pending_settings = os.path.join(marker_dir, "pending-skin-settings.xml")
     source_settings = _path(
         "special://profile/addon_data/{}/settings.xml".format(skin_id)
     )
+    # Kodi may save its old, still loaded skin settings over the packaged XML
+    # while applying a build. Queue explicit resets for retired shortcuts so
+    # the post-restart service cannot restore those stale values.
+    clear_settings = {
+        setting_id.casefold(): setting_id
+        for addon_id in removed_addons
+        for setting_id in REMOVED_ADDON_SKIN_SHORTCUTS.get(addon_id, ())
+    }
     menu_setting_count = 0
+    pending_root = ET.Element("settings")
     if os.path.isfile(source_settings):
         source_root = ET.parse(source_settings).getroot()
-        pending_root = ET.Element("settings", source_root.attrib)
+        pending_root.attrib.update(source_root.attrib)
         for setting in source_root.findall("setting"):
             setting_id = setting.get("id", "")
+            if setting_id.casefold() in clear_settings:
+                clear_settings[setting_id.casefold()] = setting_id
+                continue
             if not SKIN_MENU_SETTING_ID.fullmatch(setting_id):
                 continue
             pending_setting = ET.SubElement(pending_root, "setting", setting.attrib)
             pending_setting.text = "".join(setting.itertext())
             menu_setting_count += 1
-        if menu_setting_count:
-            temporary_settings = pending_settings + ".tmp"
-            ET.ElementTree(pending_root).write(
-                temporary_settings, encoding="utf-8", xml_declaration=True
-            )
-            os.replace(temporary_settings, pending_settings)
-            _log(
-                "Queued {} Xonfluence menu settings for post-restart restore."
-                .format(menu_setting_count)
-            )
-        else:
-            _log("No Xonfluence add-on menu settings were found to queue.", xbmc.LOGWARNING)
+    for setting_id in clear_settings.values():
+        ET.SubElement(
+            pending_root, "setting", {"id": setting_id, "reset": "true"}
+        ).text = ""
+        menu_setting_count += 1
+    if menu_setting_count:
+        temporary_settings = pending_settings + ".tmp"
+        ET.ElementTree(pending_root).write(
+            temporary_settings, encoding="utf-8", xml_declaration=True
+        )
+        os.replace(temporary_settings, pending_settings)
+        _log(
+            "Queued {} Xonfluence menu settings for post-restart restore."
+            .format(menu_setting_count)
+        )
+    else:
+        _log("No Xonfluence add-on menu settings were found to queue.", xbmc.LOGWARNING)
 
     marker = os.path.join(marker_dir, "skin-reapply.json")
     temporary = marker + ".tmp"
@@ -2572,7 +2598,7 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
             success_message,
         )
         try:
-            _request_skin_reapply(build_skin_id)
+            _request_skin_reapply(build_skin_id, removed_addons)
         except OSError as marker_exc:
             _log("Could not schedule the final Xonfluence apply: {}".format(marker_exc), xbmc.LOGWARNING)
         _log("Installed build {} with {} add-ons.".format(name, len(packages)))
