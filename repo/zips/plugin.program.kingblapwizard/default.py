@@ -539,6 +539,31 @@ def _required_external_dependencies(archive, packages):
     return sorted(dependencies)
 
 
+def _retained_removed_addon_data_ids(
+    build_info, removed_addons, profile_addon_data_ids, reset_addon_data_ids,
+    expected_public,
+):
+    retained = build_info.get("retain_removed_addon_data_ids", [])
+    if (
+        not isinstance(retained, list)
+        or any(
+            not isinstance(addon_id, str)
+            or not re.fullmatch(r"[A-Za-z0-9_.-]+", addon_id)
+            for addon_id in retained
+        )
+        or len(retained) != len(set(retained))
+        or not set(retained).issubset(removed_addons)
+        or set(retained) & (set(profile_addon_data_ids) | set(reset_addon_data_ids))
+        or (expected_public is True and retained)
+    ):
+        raise ValueError("The build information contains invalid retained add-on profile IDs.")
+    return sorted(retained)
+
+
+def _removed_addon_data_targets(removed_addons, retained):
+    return sorted(set(removed_addons) - set(retained))
+
+
 def _validate_archive(archive, expected_public=None):
     archive_skin_id = PUBLIC_SKIN_ID if expected_public is True else SKIN_ID
     archive_skin_settings_path = "userdata/addon_data/{}/settings.xml".format(archive_skin_id)
@@ -843,6 +868,10 @@ def _validate_archive(archive, expected_public=None):
         or (expected_public is True and set(reset_addon_data_ids) - {"plugin.video.otaku"})
     ):
         raise ValueError("The build information contains invalid add-on profile reset IDs.")
+    retained_removed_addon_data_ids = _retained_removed_addon_data_ids(
+        build_info, removed_addons, profile_addon_data_ids, reset_addon_data_ids,
+        expected_public,
+    )
     if expected_public is True:
         credentialed_profile_addons = build_info.get("credentialed_profile_addons", [])
         if profile_mode == "settings-only":
@@ -1012,6 +1041,7 @@ def _validate_archive(archive, expected_public=None):
         packages,
         sorted(set(platform_addons)),
         sorted(set(removed_addons)),
+        retained_removed_addon_data_ids,
         profile_mode,
         sorted(profile_addon_data_ids) if profile_mode == PROFILE_DATA_MODE else [],
         sorted(reset_addon_data_ids),
@@ -1993,6 +2023,7 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                 packages,
                 platform_addons,
                 removed_addons,
+                retained_removed_addon_data_ids,
                 profile_mode,
                 profile_addon_data_ids,
                 reset_addon_data_ids,
@@ -2260,7 +2291,9 @@ def _install(name, build_id, access_code, public_build=False, local_archive=None
                 journal_state,
                 "addon_data",
             )
-        for addon_id in removed_addons:
+        for addon_id in _removed_addon_data_targets(
+            removed_addons, retained_removed_addon_data_ids
+        ):
             _swap_child(
                 data_root,
                 addon_id,
